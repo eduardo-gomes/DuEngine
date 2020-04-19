@@ -1,1 +1,1 @@
-# freeglut-game
+# glut-game
