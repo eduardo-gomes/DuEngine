@@ -106,11 +106,12 @@ void Teclado_press(unsigned char key, int x, int y) {
 	(void)x;
 	(void)y;
 	if (key == 27) exit(0);
-	//std::cout << "Teclado_press function" << key << std::endl;
+	std::cout << "Teclado_press function " << key << std::endl;
 }
 void Teclado_spec(int key, int x, int y) {
 	(void)x;
 	(void)y;
+	if(key == 11) fscr_toggle();
 	std::cout << "Teclado_spec function" << key << std::endl;
 }
 

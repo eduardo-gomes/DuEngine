@@ -98,6 +98,8 @@ void drawn_quad_with_texture(const vector_quad_text& vector){
 	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
 	glColor3d(1.0, 1.0, 1.0);
 	glBegin(GL_QUADS);
 		glTexCoord2d(vector.vector[2] , vector.vector[3] );glVertex2d(vector.vector[0] , vector.vector[1] );

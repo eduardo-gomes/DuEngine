@@ -36,7 +36,7 @@ void fscr_toggle() {
 	if (fullscreen) {
 		glutFullScreen();
 	} else {
-		glutPositionWindow(0, 0);
+		glutPositionWindow(20, 20);
 		glutReshapeWindow(dfwidth, dfheight);
 	}
 }
@@ -57,21 +57,24 @@ void AlteraTamanhoTela(int w, int h) {
 	screen::height = h;
 	screen::width = w;
 	screen::x = 16.0 / 9;
-	if (screen::x - (w * 1.0 / h) > 0.001) {
-		screen::height = h;
-		screen::width = (int)(h * screen::x);
-		glutReshapeWindow(screen::width, screen::height);
-	} else if (screen::x - (w * 1.0 / h) < -0.001) {
-		screen::height = (int)(w / screen::x);
-		screen::width = w;
-		glutReshapeWindow(screen::width, screen::height);
-	}
+	if(!fullscreen){
+		if (screen::x - (w * 1.0 / h) > 0.01) {
+			screen::height = h;
+			screen::width = (int)(h * screen::x);
+			glutReshapeWindow(screen::width, screen::height);
+		} else if (screen::x - (w * 1.0 / h) < -0.01) {
+			screen::height = (int)(w / screen::x);
+			screen::width = w;
+			glutReshapeWindow(screen::width, screen::height);
+		}
+	}/*else*/
 	std::cout << screen::width << ' ' << screen::height << ' ' << screen::x << ' ' << screen::y << std::endl;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(0, 0, w, h);
+	glViewport(0, 0, screen::width, screen::height);
 	gluPerspective(45.0, screen::x, 0.1, 100.0);
 	glMatrixMode(GL_MODELVIEW);
+	
 }
 
 void close() {
