@@ -16,23 +16,66 @@ void getcord() {
 	pos.y = (y * (-screen::y * 2)) / (screen::height - 1) + screen::y;
 }
 }  // namespace mouse
-static int texture_index = 0;
+static vector_quad_text pers = {
+		0.5,  0.5,		1.0, 1.0,
+		0.5, -0.5,		1.0, 0.0,
+		-0.5,-0.5,		0.0, 0.0,
+		-0.5, 0.5,		0.0, 1.0,
+		spritesname::persparado01
+};
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
-	glEnable(GL_TEXTURE_2D);
-	//texture_index++;
-	glBindTexture(GL_TEXTURE_2D, textures[texture_index%5+1]);
+	
+	//brick texture
+	static vector_quad_text brick = {
+		//pos			text pos
+		0.25, -0.5,		1.0, 1.0,
+		0.25, -1.0,		1.0, 0.0,
+		-0.25,-1.0,		0.0, 0.0,
+		-0.25,-0.5,		0.0, 1.0,
+		//texture
+		sprites::brick
+	};
+	drawn_quad_with_texture(brick);
+	/*glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[8]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glColor3d(1.0, 1.0, 1.0);
+	glBegin(GL_QUADS);
+		glTexCoord2d(1.0, 1.0);glVertex2d( 0.25, -0.5);
+		glTexCoord2d(1.0, 0.0);glVertex2d( 0.25, -1.0);
+		glTexCoord2d(0.0, 0.0);glVertex2d(-0.25, -1.0);
+		glTexCoord2d(0.0, 1.0);glVertex2d(-0.25, -0.5);
+	glEnd();
+	//pers texture
+	glDisable(GL_TEXTURE_2D);*/
+	
+	/*static vector_quad_text pers = {
+		0.5,  0.5,		1.0, 1.0,
+		0.5, -0.5,		1.0, 0.0,
+		-0.5,-0.5,		0.0, 0.0,
+		-0.5, 0.5,		0.0, 1.0,
+		spritesname::persparado01
+	};*/
+	drawn_quad_with_texture(pers);//global var
+	/*glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[texture_index % 5 + 1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//texture configured
 	glBegin(GL_QUADS);
 		glTexCoord2d(1.0, 1.0);glVertex2d( 0.5,  0.5);
 		glTexCoord2d(1.0, 0.0);glVertex2d( 0.5, -0.5);
 		glTexCoord2d(0.0, 0.0);glVertex2d(-0.5, -0.5);
 		glTexCoord2d(0.0, 1.0);glVertex2d(-0.5,  0.5);
+
+		//brick
+
 	glEnd();
-	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_2D);*/
+
 	glDisable(GL_BLEND);
 	if (pressed_mouse)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
@@ -51,7 +94,10 @@ void logica() {
 	static std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now();
 	if(t < std::chrono::steady_clock::now()){
 		t += std::chrono::milliseconds(100);
-		texture_index ++;
+		pers.text_index++;
+		if(pers.text_index > spritesname::persandando04){
+			pers.text_index = spritesname::persparado01;
+		}
 	}
 	
 	glutPostRedisplay();

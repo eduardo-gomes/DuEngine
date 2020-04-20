@@ -7,7 +7,7 @@
 #ifndef _MAIN
 #include "demo.cpp"
 #endif
-const long unsigned assets_size = 8;
+const long unsigned assets_size = 9;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
@@ -53,19 +53,57 @@ void loadtexture(long unsigned index){
 	free(fdata);
 }
 
+enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick};
+enum spritesname{
+	persparado00 = pers01,
+	persparado01 = pers02,
+	persandando01 = pers03,
+	persandando02 = pers04,
+	persandando03 = pers05,
+	persandando04 = pers06,
+	persparado02 = pers07,
+	perspulando01 = pers09
+};
+
 int loadassets(){
-	assetsToLoad[0] = "assets/pers01.bmp";
-	assetsToLoad[1] = "assets/pers02.bmp";
-	assetsToLoad[2] = "assets/pers03.bmp";
-	assetsToLoad[3] = "assets/pers04.bmp";
-	assetsToLoad[4] = "assets/pers05.bmp";
-	assetsToLoad[5] = "assets/pers06.bmp";
-	assetsToLoad[6] = "assets/pers07.bmp";
-	assetsToLoad[7] = "assets/pers09.bmp";
+	assetsToLoad[pers01] = "assets/pers01.bmp";
+	assetsToLoad[pers02] = "assets/pers02.bmp";
+	assetsToLoad[pers03] = "assets/pers03.bmp";
+	assetsToLoad[pers04] = "assets/pers04.bmp";
+	assetsToLoad[pers05] = "assets/pers05.bmp";
+	assetsToLoad[pers06] = "assets/pers06.bmp";
+	assetsToLoad[pers07] = "assets/pers07.bmp";
+	assetsToLoad[pers09] = "assets/pers09.bmp";
+	assetsToLoad[brick] = "assets/brick.bmp";
 	glGenTextures(assets_size, textures);
 	for (long unsigned i = 0; i < assets_size; ++i) {
 		loadtexture(i);
 	}
 	std::cout << "load end" << std::endl;
 	return 0;
+}
+
+struct vector_quad_text{
+	double vector[16] = {
+		//pos		text pos
+		0.0, 0.0,	0.0, 0.0,
+		0.0, 0.0,	0.0, 0.0,
+		0.0, 0.0,	0.0, 0.0,
+		0.0, 0.0,	0.0, 0.0
+	};
+	int text_index;
+};
+void drawn_quad_with_texture(const vector_quad_text& vector){
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glColor3d(1.0, 1.0, 1.0);
+	glBegin(GL_QUADS);
+		glTexCoord2d(vector.vector[2] , vector.vector[3] );glVertex2d(vector.vector[0] , vector.vector[1] );
+		glTexCoord2d(vector.vector[6] , vector.vector[7] );glVertex2d(vector.vector[4] , vector.vector[5] );
+		glTexCoord2d(vector.vector[10], vector.vector[11]);glVertex2d(vector.vector[8] , vector.vector[9] );
+		glTexCoord2d(vector.vector[14], vector.vector[15]);glVertex2d(vector.vector[12], vector.vector[13]);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
