@@ -83,6 +83,9 @@ int loadassets(){
 	return 0;
 }
 
+struct position {
+	double x, y;
+};
 struct vector_quad_text{
 	double vector[16] = {
 		//pos		text pos
@@ -92,6 +95,7 @@ struct vector_quad_text{
 		0.0, 0.0,	0.0, 0.0
 	};
 	int text_index;
+	position pos = {0.0, 0.0};
 };
 void drawn_quad_with_texture(const vector_quad_text& vector){
 	glEnable(GL_TEXTURE_2D);
@@ -102,10 +106,32 @@ void drawn_quad_with_texture(const vector_quad_text& vector){
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
 	glColor3d(1.0, 1.0, 1.0);
 	glBegin(GL_QUADS);
-		glTexCoord2d(vector.vector[2] , vector.vector[3] );glVertex2d(vector.vector[0] , vector.vector[1] );
-		glTexCoord2d(vector.vector[6] , vector.vector[7] );glVertex2d(vector.vector[4] , vector.vector[5] );
-		glTexCoord2d(vector.vector[10], vector.vector[11]);glVertex2d(vector.vector[8] , vector.vector[9] );
-		glTexCoord2d(vector.vector[14], vector.vector[15]);glVertex2d(vector.vector[12], vector.vector[13]);
+		glTexCoord2d(vector.vector[2] , vector.vector[3] );glVertex2d(vector.pos.x + vector.vector[0] , vector.pos.y + vector.vector[1] );
+		glTexCoord2d(vector.vector[6] , vector.vector[7] );glVertex2d(vector.pos.x + vector.vector[4] , vector.pos.y + vector.vector[5] );
+		glTexCoord2d(vector.vector[10], vector.vector[11]);glVertex2d(vector.pos.x + vector.vector[8] , vector.pos.y + vector.vector[9] );
+		glTexCoord2d(vector.vector[14], vector.vector[15]);glVertex2d(vector.pos.x + vector.vector[12], vector.pos.y + vector.vector[13]);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+struct vector_triangs_text{
+	int text_index;
+	std::vector<double> cords;
+	position pos = {0.0, 0.0};
+};
+void drawn_triang_with_texture(const vector_triangs_text& vector){
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
+	glColor3d(1.0, 1.0, 1.0);
+	glBegin(GL_TRIANGLES);
+		for(long unsigned int i = 0; i < vector.cords.size()/4; ++i){
+			//printf("%lu\n", i);
+			glTexCoord2d(vector.cords[2 + i*4], vector.cords[3 + i*4]);
+			glVertex2d(vector.pos.x + vector.cords[0 + i*4], vector.pos.y + vector.cords[1 + i*4]);
+		}
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }

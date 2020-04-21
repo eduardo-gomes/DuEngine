@@ -7,7 +7,14 @@
 #define PI 3.1415926535897932
 namespace screen{
 	int width, height;
-	double x = 1.0, y = 1.0;
+	double aspect, &x = aspect, y = 1.0;
+	double camx = 0.0, camy = 0.0, camz = 7.5;
+	double fovy = 45.0;
+	double viewx, viewy;
+	void calcview(){
+		viewy = camz * tan(fovy / 2 * PI / 180);
+		viewx = aspect * viewy;
+	}
 }
 	const int dfwidth = 1366,
 			  dfheight = 768;
@@ -15,11 +22,10 @@ bool fullscreen = 0;
 void render();
 void logica();
 
-const float camz = 2.415f;
 void Restaura() {
 	glLoadIdentity();
-	gluLookAt(0.0f, 0.0f, camz,
-			  0.0f, 0.0f, 0.0f,
+	gluLookAt(screen::camx, screen::camy, screen::camz,
+			  screen::camx, screen::camy, 0.0f,
 			  0.0f, 1.0f, 0.0f);
 }
 
@@ -54,25 +60,25 @@ void Inicializa(void) ;/*{
 void AlteraTamanhoTela(int w, int h) {
 	if (h == 0)
 		h = 1;
+	screen::aspect = 16.0 / 9;
 	screen::height = h;
 	screen::width = w;
-	screen::x = 16.0 / 9;
 	if(!fullscreen){
-		if (screen::x - (w * 1.0 / h) > 0.01) {
+		if (screen::aspect - (w * 1.0 / h) > 0.01) {
 			screen::height = h;
-			screen::width = (int)(h * screen::x);
+			screen::width = (int)(h * screen::aspect);
 			glutReshapeWindow(screen::width, screen::height);
-		} else if (screen::x - (w * 1.0 / h) < -0.01) {
-			screen::height = (int)(w / screen::x);
+		} else if (screen::aspect - (w * 1.0 / h) < -0.01) {
+			screen::height = (int)(w / screen::aspect);
 			screen::width = w;
 			glutReshapeWindow(screen::width, screen::height);
 		}
 	}/*else*/
-	std::cout << screen::width << ' ' << screen::height << ' ' << screen::x << ' ' << screen::y << std::endl;
+	std::cout << screen::width << ' ' << screen::height << ' ' << screen::aspect << std::endl;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, screen::width, screen::height);
-	gluPerspective(45.0, screen::x, 0.1, 100.0);
+	gluPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 	
 }
@@ -85,7 +91,7 @@ void start_gl(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(dfwidth, dfheight);
-	screen::x = (double)dfwidth / dfheight;
+	screen::aspect = (double)dfwidth / dfheight;
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Game");
 	glutDisplayFunc(DesenhaNaTela);

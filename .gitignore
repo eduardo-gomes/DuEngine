@@ -33,3 +33,6 @@
 
 # Folders
 .vscode
+rgb.bmp
+*.xcf
+.gitignore
