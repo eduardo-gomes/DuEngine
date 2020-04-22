@@ -96,7 +96,8 @@ int loadassets(){
 }
 
 struct position {
-	double x, y;
+	double x = 0.0, y = 0.0;
+	position(double nx = 0.0, double ny = 0.0) : x(nx), y(ny){};
 };
 struct vector_quad_text{
 	double vector[16] = {
