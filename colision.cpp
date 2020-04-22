@@ -71,7 +71,7 @@ class entidade{
 		spritesname::persparado01,
 		{0.5, 3.0}
 	};
-	position lastpos;
+	position lastpos = element.pos;
 
 	public:
 	const double* getVector(){return element.vector;};
@@ -87,6 +87,15 @@ class entidade{
 	//void 
 };
 entidade pers;
+vector_quad_text quad = {
+	//pos			text pos
+	0.0, 0.0,		0.0, 0.0,
+	0.0, 1.0,		0.0, 1.0,
+	1.0, 1.0,		1.0, 1.0,
+	1.0, 0.0,		1.0, 0.0,
+	//texture
+	sprites::rgba
+};
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
@@ -106,18 +115,9 @@ void drawn_pointer() {
 	
 	drawn_quad_with_texture(pers.getElement());//global var
 
-	static vector_quad_text quad = {
-		//pos			text pos
-		0.0, 0.0,		0.0, 0.0,
-		0.0, 1.0,		0.0, 1.0,
-		1.0, 1.0,		1.0, 1.0,
-		1.0, 0.0,		1.0, 0.0,
-		//texture
-		sprites::rgba
-	};
 	quad.pos = mouse::pos;
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
-	if(colide(quad, *it))
+	if(colide(quad, *it) || colide(quad, pers.getElement()))
 		quad.text_index = sprites::brick;
 	else
 		quad.text_index = sprites::rgba;
@@ -141,8 +141,10 @@ void render() {
 }
 
 //std::chrono::steady_clock::time_point;
+double millis;
+unsigned char key_pressed;
 void logica() {
-	static std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now();
+	static std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now(), clock = t;
 	if(t < std::chrono::steady_clock::now()){
 		t += std::chrono::milliseconds(100);
 		int& pers_tex = pers.texture();
@@ -151,9 +153,14 @@ void logica() {
 			pers_tex = spritesname::persparado01;
 		}
 	}
-	if(colide(pers.getElement(), scene_box[0])){
+	if(key_pressed == 'a') pers.move(-0.125*millis);
+	else if(key_pressed == 'd') pers.move( 0.125*millis);
+	key_pressed = 0;
+	if(colide(pers.getElement(), scene_box[0]) | colide(pers.getElement(), quad)){
 		pers.onColision();
 	}
+	millis = ((std::chrono::steady_clock::now() - clock).count()/10e5)/13;
+	clock = std::chrono::steady_clock::now();
 	glutPostRedisplay();
 }
 void Teclado_press(unsigned char key, int x, int y) {
@@ -162,9 +169,10 @@ void Teclado_press(unsigned char key, int x, int y) {
 	if (key == 27) exit(0);
 	else if(key == 'w') screen::camz -= 0.5;
 	else if(key == 's') screen::camz += 0.5;
-	else if(key == 'a') pers.move(-0.125);
-	else if(key == 'd') pers.move( 0.125);
-	std::cout << "camz " << screen::camz << std::endl;
+	else/* if(key == 'a') pers.move(-0.125*millis);
+	else if(key == 'd') pers.move( 0.125*millis);*/
+	key_pressed = key;
+	std::cout << "millis " << millis << std::endl;
 }
 void Teclado_spec(int key, int x, int y) {
 	(void)x;

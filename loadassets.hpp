@@ -6,13 +6,14 @@
 #include <vector>
 #include <mutex>
 #ifndef _MAIN
-#include "demo.cpp"
+#include "colision.cpp"
 #endif
 const long unsigned assets_size = 10;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
-void loadtexture(long unsigned index){
+std::mutex bind_text_mtx;
+void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	std::ifstream file(assetsToLoad[index], std::ios::binary | std::ios::ate);
 	file.seekg(0, std::ios::beg);
 	char* fdata;
@@ -21,9 +22,15 @@ void loadtexture(long unsigned index){
 	char header[54];
 	file.read(header, 54);
 	unsigned int width = *(unsigned int*)&header[18], height = *(unsigned int*)&header[22], offset = *(unsigned int*)&header[10];
+	size[index][0] = (int)width;
+	size[index][1] = (int)height;
 	const int color_depth = 4;
 	int datasize = (int)(width * height * color_depth);
-	fdata = (char*)malloc(width * height * color_depth);
+	saveto[index] = fdata = (char*)malloc(width * height * color_depth);
+	if(fdata == NULL){
+		std::cout << "can't malloc" << std::endl;
+		exit(0);
+	}
 	file.seekg(offset, std::ios::beg);
 	if(!file.fail()){
 		file.read(fdata, datasize);
@@ -44,17 +51,8 @@ void loadtexture(long unsigned index){
 				(image[pixel] & 0x00FF0000) >> 16  ; //______RR
 												  //0xAABBGGRR
 			}
-			//std::cout << (int)fdata[6*4] << " " << (int)fdata[6*4+1] << " " << (int)fdata[6*4+2] << " " << (int)(unsigned char)fdata[6*4+3]<< " " << std::endl;
-			//std::cout << "w: " << width << " H: " << height << " OF: " << offset << std::endl;
-			static std::mutex bind_text_mtx;
-			bind_text_mtx.lock();
-			glBindTexture(GL_TEXTURE_2D, textures[index]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int)width, (int)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fdata);
-			bind_text_mtx.unlock();
-			//if(index == 1) std::cout << "loaded " << index << " to " << textures << std::endl;
 		}
 	}
-	free(fdata);
 }
 
 enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba};
@@ -82,8 +80,16 @@ int loadassets(){
 	assetsToLoad[rgba] = "assets/rgb.bmp";
 	glGenTextures(assets_size, textures);
 	std::array<std::future<void>, assets_size> futures;
+	void* images[assets_size];
+	int imagesize[assets_size][2];//w h
 	for (long unsigned i = 0; i < assets_size; ++i) {
-		futures[i] = std::async(loadtexture, i);
+		futures[i] = std::async(loadtexture, i, images, imagesize);
+	}
+	for (long unsigned i = 0; i < assets_size; ++i) {
+		futures[i].wait();
+		glBindTexture(GL_TEXTURE_2D, textures[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);
+		free(images[i]);
 	}
 	//std::cout << "load end" << std::endl;
 	return 0;
