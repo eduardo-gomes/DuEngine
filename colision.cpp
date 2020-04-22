@@ -14,84 +14,146 @@ namespace mouse {
 		pos.y = y * ((screen::camy - screen::viewy) - (screen::camy + screen::viewy)) / screen::height + (screen::camy + screen::viewy);
 	}
 }  // namespace mouse
-
-vector_triangs_text vector_floor = {
-	sprites::brick,
-	{
-		0.0, 0.0, 0.0, 0.0,
-		0.0, 3.0, 0.0, 3.0,
-		16.0,3.0, 16.0,3.0,
-
-		8.0, 3.0, 8.0, 3.0,
-		9.0, 3.0, 9.0, 3.0,
-		9.0, 4.0, 9.0, 4.0,
-		
-		9.0, 4.0, 9.0, 4.0,
-		8.0, 4.0, 8.0, 4.0,
-		8.0, 3.0, 8.0, 3.0,
-		
-		0.0, 0.0, 0.0, 0.0,
-		16.0,0.0, 16.0,0.0,
-		16.0,3.0, 16.0,3.0
+bool colide(const vector_quad_text &a, const vector_quad_text&b){
+	const position &bPos = a.pos, &aPos = b.pos;
+	const double &bWidth = a.vector[3*4],
+				 &aWidth = b.vector[3*4],
+				 &bHeight = a.vector[1*4 + 1],
+				 &aHeight = b.vector[1*4 + 1];
+	return (
+		aPos.x < bPos.x + bWidth &&//
+		aPos.x + aWidth > bPos.x &&
+		aPos.y < bPos.y + bHeight &&
+		aPos.y + aHeight > bPos.y);
+}
+bool colide(const vector_quad_text &a, const vector_with_text&b){
+	const position &aPos = a.pos;
+	const double &aWidth = a.vector[3*4],
+				 &aHeight = a.vector[1 * 4 + 1];
+	bool has_colided = 0;
+	for(long unsigned int nQuad= 0; nQuad < b.cords.size()/(4*4); ++nQuad){
+		const double &bX = b.cords[nQuad * 4 * 4],
+					 &bY = b.cords[nQuad * 4 * 4 + 1],
+					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 3],
+					 &bHeigth = b.cords[nQuad * 4 * 4 + 4 * 1 + 1];
+		if( //Test if there isn't a gap betwin any the two quads
+			aPos.x < bX + (bWidth - bX) &&
+			aPos.x + aWidth > bX &&
+			aPos.y < bY + (bHeigth - bY) &&
+			aPos.y + aHeight > bY) has_colided = 1;
 	}
-};
+	return has_colided;
+}
 
-static vector_quad_text pers = {
-		0.5,  0.5,		1.0, 1.0,
-		0.5, -0.5,		1.0, 0.0,
-		-0.5,-0.5,		0.0, 0.0,
-		-0.5, 0.5,		0.0, 1.0,
+std::vector<vector_with_text> scene_box = {
+	{//vector_with_text
+		sprites::brick, GL_QUADS,
+		{// clockwise from botom_left corner
+			0.0, 0.0, 0.0, 0.0,
+			0.0, 3.0, 0.0, 3.0,
+			16.0,3.0, 16.0,3.0,
+			16.0,0.0, 16.0,0.0,
+
+			8.0, 3.0, 8.0, 3.0,
+			8.0, 4.0, 8.0, 4.0,
+			9.0, 4.0, 9.0, 4.0,
+			9.0, 3.0, 9.0, 3.0
+		}
+	}// vector_with_text
+};//vector
+
+class entidade{
+	vector_quad_text element = {
+		0.0, 0.0,		0.0, 0.0,
+		0.0, 1.0,		0.0, 1.0,
+		1.0, 1.0,		1.0, 1.0,
+		1.0, 0.0,		1.0, 0.0,
 		spritesname::persparado01,
-		{1.0, 3.5}
+		{0.5, 3.0}
+	};
+	position lastpos;
+
+	public:
+	const double* getVector(){return element.vector;};
+	const vector_quad_text& getElement(){return element;}
+	int& texture(){return element.text_index;}
+	void onColision(){element.pos = lastpos;}
+	void move(double x = 0.0, double y = 0.0){
+		lastpos = element.pos;
+		element.pos.x += x;
+		element.pos.y += y;
+	}
+	bool colide = 0;
+	//void 
 };
+entidade pers;
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
-	drawn_triang_with_texture(vector_floor);
+	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
+		drawn_triang_with_texture(*it);
 	//brick texture
-	static vector_quad_text brick = {
+	/*static vector_quad_text brick = {
 		//pos			text pos
-		0.25, -0.5,		1.0, 1.0,
-		0.25, -1.0,		1.0, 0.0,
-		-0.25,-1.0,		0.0, 0.0,
-		-0.25,-0.5,		0.0, 1.0,
+		0.0, 0.0,		0.0, 0.0,
+		0.0, 2.0,		0.0, 1.0,
+		2.0, 2.0,		1.0, 1.0,
+		2.0, 0.0,		1.0, 0.0,
 		//texture
 		sprites::brick
 	};
-	drawn_quad_with_texture(brick);
+	drawn_quad_with_texture(brick);*/
 	
-	drawn_quad_with_texture(pers);//global var
+	drawn_quad_with_texture(pers.getElement());//global var
 
+	static vector_quad_text quad = {
+		//pos			text pos
+		0.0, 0.0,		0.0, 0.0,
+		0.0, 1.0,		0.0, 1.0,
+		1.0, 1.0,		1.0, 1.0,
+		1.0, 0.0,		1.0, 0.0,
+		//texture
+		sprites::rgba
+	};
+	quad.pos = mouse::pos;
+	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
+	if(colide(quad, *it))
+		quad.text_index = sprites::brick;
+	else
+		quad.text_index = sprites::rgba;
+	drawn_quad_with_texture(quad);
 	glDisable(GL_BLEND);
 	if (pressed_mouse)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
 	else
 		glColor4d(1.0, 1.0, 1.0, 1.0);
+	if(pers.colide)
+		glColor4d(0.5, 0.0, 1.0, 1.0);
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);
-	mouse::getcord();
 	glVertex2d(mouse::pos.x, mouse::pos.y);
-	glVertex2d(0.0, 0.0);
-	glVertex2d(screen::camx + screen::viewx, screen::camy + screen::viewy);
-	glVertex2d(screen::camx + screen::viewx, screen::camy - screen::viewy);
-	glVertex2d(screen::camx - screen::viewx, screen::camy - screen::viewy);
-	glVertex2d(screen::camx - screen::viewx, screen::camy + screen::viewy);
 	glEnd();
 }
 void render() {
 	screen::calcview();
+	mouse::getcord();
 	drawn_pointer();
 }
+
+//std::chrono::steady_clock::time_point;
 void logica() {
 	static std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now();
 	if(t < std::chrono::steady_clock::now()){
 		t += std::chrono::milliseconds(100);
-		pers.text_index++;
-		if(pers.text_index > spritesname::persandando04){
-			pers.text_index = spritesname::persparado01;
+		int& pers_tex = pers.texture();
+		pers_tex++;
+		if(pers_tex > spritesname::persandando04){
+			pers_tex = spritesname::persparado01;
 		}
 	}
-	
+	if(colide(pers.getElement(), scene_box[0])){
+		pers.onColision();
+	}
 	glutPostRedisplay();
 }
 void Teclado_press(unsigned char key, int x, int y) {
@@ -100,8 +162,8 @@ void Teclado_press(unsigned char key, int x, int y) {
 	if (key == 27) exit(0);
 	else if(key == 'w') screen::camz -= 0.5;
 	else if(key == 's') screen::camz += 0.5;
-	else if(key == 'a') pers.pos.x -= 0.125;
-	else if(key == 'd') pers.pos.x += 0.125;
+	else if(key == 'a') pers.move(-0.125);
+	else if(key == 'd') pers.move( 0.125);
 	std::cout << "camz " << screen::camz << std::endl;
 }
 void Teclado_spec(int key, int x, int y) {
@@ -140,7 +202,7 @@ void Inicializa(void) {
 	glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
 	screen::camx = 5.5;
 	screen::camy = 5.0;
-	std::cout << "loading" << std::endl;
+	//std::cout << "loading" << std::endl;
 	loadassets();
-	std::cout << "loaded" << std::endl;
+	//std::cout << "loaded" << std::endl;
 }

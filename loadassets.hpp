@@ -4,10 +4,11 @@
 #include <string>
 #include <future>
 #include <vector>
+#include <mutex>
 #ifndef _MAIN
 #include "demo.cpp"
 #endif
-const long unsigned assets_size = 9;
+const long unsigned assets_size = 10;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
@@ -45,15 +46,18 @@ void loadtexture(long unsigned index){
 			}
 			//std::cout << (int)fdata[6*4] << " " << (int)fdata[6*4+1] << " " << (int)fdata[6*4+2] << " " << (int)(unsigned char)fdata[6*4+3]<< " " << std::endl;
 			//std::cout << "w: " << width << " H: " << height << " OF: " << offset << std::endl;
+			static std::mutex bind_text_mtx;
+			bind_text_mtx.lock();
 			glBindTexture(GL_TEXTURE_2D, textures[index]);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int)width, (int)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fdata);
+			bind_text_mtx.unlock();
 			//if(index == 1) std::cout << "loaded " << index << " to " << textures << std::endl;
 		}
 	}
 	free(fdata);
 }
 
-enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick};
+enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba};
 enum spritesname{
 	persparado00 = pers01,
 	persparado01 = pers02,
@@ -75,11 +79,13 @@ int loadassets(){
 	assetsToLoad[pers07] = "assets/pers07.bmp";
 	assetsToLoad[pers09] = "assets/pers09.bmp";
 	assetsToLoad[brick] = "assets/brick.bmp";
+	assetsToLoad[rgba] = "assets/rgb.bmp";
 	glGenTextures(assets_size, textures);
+	std::array<std::future<void>, assets_size> futures;
 	for (long unsigned i = 0; i < assets_size; ++i) {
-		loadtexture(i);
+		futures[i] = std::async(loadtexture, i);
 	}
-	std::cout << "load end" << std::endl;
+	//std::cout << "load end" << std::endl;
 	return 0;
 }
 
@@ -113,12 +119,13 @@ void drawn_quad_with_texture(const vector_quad_text& vector){
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
-struct vector_triangs_text{
+struct vector_with_text{
 	int text_index;
+	GLenum mode;
 	std::vector<double> cords;
 	position pos = {0.0, 0.0};
 };
-void drawn_triang_with_texture(const vector_triangs_text& vector){
+void drawn_triang_with_texture(const vector_with_text& vector){
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -126,7 +133,7 @@ void drawn_triang_with_texture(const vector_triangs_text& vector){
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
 	glColor3d(1.0, 1.0, 1.0);
-	glBegin(GL_TRIANGLES);
+	glBegin(vector.mode);
 		for(long unsigned int i = 0; i < vector.cords.size()/4; ++i){
 			//printf("%lu\n", i);
 			glTexCoord2d(vector.cords[2 + i*4], vector.cords[3 + i*4]);
