@@ -95,21 +95,6 @@ int loadassets(){
 	return 0;
 }
 
-struct position {
-	double x = 0.0, y = 0.0;
-	position(double nx = 0.0, double ny = 0.0) : x(nx), y(ny){};
-};
-struct vector_quad_text{
-	double vector[16] = {
-		//pos		text pos
-		0.0, 0.0,	0.0, 0.0,
-		0.0, 0.0,	0.0, 0.0,
-		0.0, 0.0,	0.0, 0.0,
-		0.0, 0.0,	0.0, 0.0
-	};
-	int text_index;
-	position pos = {0.0, 0.0};
-};
 void drawn_quad_with_texture(const vector_quad_text& vector){
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
@@ -126,12 +111,7 @@ void drawn_quad_with_texture(const vector_quad_text& vector){
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
-struct vector_with_text{
-	int text_index;
-	GLenum mode;
-	std::vector<double> cords;
-	position pos = {0.0, 0.0};
-};
+
 void drawn_triang_with_texture(const vector_with_text& vector){
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
