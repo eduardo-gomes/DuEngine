@@ -46,7 +46,7 @@ void fscr_toggle() {
 		glutReshapeWindow(dfwidth, dfheight);
 	}
 }
-
+void Teclado_press_up(unsigned char key, int, int);
 void Teclado_press(unsigned char key, int, int);
 void Teclado_spec(int key, int, int);
 void mouse_click(int, int, int, int);
@@ -97,6 +97,8 @@ void start_gl(int argc, char** argv) {
 	glutDisplayFunc(DesenhaNaTela);
 	glutIdleFunc(logica);
 	glutKeyboardFunc(Teclado_press);
+	glutKeyboardUpFunc(Teclado_press_up);
+	glutIgnoreKeyRepeat(1);
 	glutSpecialFunc(Teclado_spec);
 	glutMouseFunc(mouse_click);
 	glutPassiveMotionFunc(mouse_move);

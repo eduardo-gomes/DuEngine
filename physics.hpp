@@ -2,6 +2,11 @@
 #ifndef _MAIN
 #include "colision.cpp"
 #endif
+namespace phy{
+	const double gravity = 0.020,
+				 jumpVel = 0.30,
+				 moveVel = 0.125;
+}
 int colide(const vector_quad_text &a, const vector_quad_text&b){
 	const position &bPos = a.pos, &aPos = b.pos;
 	const double &bWidth = a.vector[3*4],
@@ -144,7 +149,7 @@ extern entidade pers;
 const vector_quad_text &persElement = pers.getElement();
 
 
-int colide_all(){
+int colide_all(){//if quad colide 0b01 if colide with the foor 0b1x
 	int out = 0;
 	for(auto x : colision_static)
 		out |= colide(persElement, *x);
@@ -184,13 +189,6 @@ void physics(){
 
 	static position push_colision;
 	has_colided = 0;
-	/*push_colision = colision_push(pers.getElement(), quad);
-	if(push_colision.x != 0.0 || push_colision.y != 0.0){//normal colision
-		pers.move(push_colision);
-		if(push_colision.y > 0.0)
-			pers.onhorizontalColision();
-		has_colided = 1;
-	}*/
 	push_colision = push_colision_calc();
 	if(push_colision.x != 0.0 || push_colision.y != 0.0){//normal colision
 		pers.move(push_colision);

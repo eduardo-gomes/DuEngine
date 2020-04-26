@@ -12,7 +12,6 @@ const long unsigned assets_size = 10;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
-std::mutex bind_text_mtx;
 void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	std::ifstream file(assetsToLoad[index], std::ios::binary | std::ios::ate);
 	file.seekg(0, std::ios::beg);
@@ -93,39 +92,4 @@ int loadassets(){
 	}
 	//std::cout << "load end" << std::endl;
 	return 0;
-}
-
-void drawn_quad_with_texture(const vector_quad_text& vector){
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
-	glColor3d(1.0, 1.0, 1.0);
-	glBegin(GL_QUADS);
-		glTexCoord2d(vector.vector[2] , vector.vector[3] );glVertex2d(vector.pos.x + vector.vector[0] , vector.pos.y + vector.vector[1] );
-		glTexCoord2d(vector.vector[6] , vector.vector[7] );glVertex2d(vector.pos.x + vector.vector[4] , vector.pos.y + vector.vector[5] );
-		glTexCoord2d(vector.vector[10], vector.vector[11]);glVertex2d(vector.pos.x + vector.vector[8] , vector.pos.y + vector.vector[9] );
-		glTexCoord2d(vector.vector[14], vector.vector[15]);glVertex2d(vector.pos.x + vector.vector[12], vector.pos.y + vector.vector[13]);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-}
-
-void drawn_triang_with_texture(const vector_with_text& vector){
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
-	glColor3d(1.0, 1.0, 1.0);
-	glBegin(vector.mode);
-		for(long unsigned int i = 0; i < vector.cords.size()/4; ++i){
-			//printf("%lu\n", i);
-			glTexCoord2d(vector.cords[2 + i*4], vector.cords[3 + i*4]);
-			glVertex2d(vector.pos.x + vector.cords[0 + i*4], vector.pos.y + vector.cords[1 + i*4]);
-		}
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
 }

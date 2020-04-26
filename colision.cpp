@@ -3,8 +3,8 @@
 #include <iostream>
 #include <chrono>
 #include "graphics.hpp"
-#include "elements.hpp"
 #include "loadassets.hpp"
+#include "elements.hpp"
 #include "physics.hpp"
 bool pressed_mouse = 0;
 namespace mouse {
@@ -16,6 +16,9 @@ namespace mouse {
 		pos.y = y * ((screen::camy - screen::viewy) - (screen::camy + screen::viewy)) / screen::height + (screen::camy + screen::viewy);
 	}
 }  // namespace mouse
+namespace keyboard{
+	bool w = 0, a = 0, s = 0, d = 0, space = 0;
+}
 
 std::vector<vector_with_text> scene_box = {
 	{//vector_with_text
@@ -53,7 +56,7 @@ void drawn_pointer() {
 
 	quad.pos = mouse::pos;
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
-	if(colide(quad, *it) || colide(quad, pers.getElement()))
+	if(colide(quad, *it) || colide(quad, pers.getElement()))//quad colision
 		quad.text_index = sprites::brick;
 	else
 		quad.text_index = sprites::rgba;
@@ -72,7 +75,7 @@ void drawn_pointer() {
 }
 void render() {
 	screen::calcview();
-	mouse::getcord();
+	//mouse::getcord(); //moved to before physics() call
 	drawn_pointer();
 }
 
@@ -92,10 +95,11 @@ void logica() {
 		}
 		//std::cout << 'x' << pers.getElement().pos.x << 'y' << pers.getElement().pos.y << std::endl;
 	}
-	if(key_pressed == 'a') pers.move(-0.125*millis);
-	else if(key_pressed == 'd') pers.move( 0.125*millis);
-	else if(key_pressed == ' ') pers.jump();
+	if (keyboard::a) pers.move(-phy::moveVel * millis);
+	if (keyboard::d) pers.move( phy::moveVel * millis);
+	if (keyboard::space) pers.jump();
 	key_pressed = 0;
+	mouse::getcord();
 	physics();//colision physics
 	millis = ((std::chrono::steady_clock::now() - clock).count()/10e5)/13;
 	clock = std::chrono::steady_clock::now();
@@ -112,10 +116,20 @@ void Teclado_press(unsigned char key, int x, int y) {
 	if (key == 27) exit(0);
 	else if(key == 'w') screen::camz -= 0.5;
 	else if(key == 's') screen::camz += 0.5;
+	else if (key == 'a') keyboard::a = 1;
+	else if (key == 'd') keyboard::d = 1;
+	else if (key == ' ') keyboard::space = 1;
 	else/* if(key == 'a') pers.move(-0.125*millis);
 	else if(key == 'd') pers.move( 0.125*millis);*/
 	key_pressed = key;
 	//std::cout << "millis " << millis << std::endl;
+}
+void Teclado_press_up(unsigned char key, int x, int y) {
+	(void)x;
+	(void)y;
+	if (key == 'a') keyboard::a = 0;
+	else if (key == 'd') keyboard::d = 0;
+	else if (key == ' ') keyboard::space = 0;
 }
 void Teclado_spec(int key, int x, int y) {
 	(void)x;
