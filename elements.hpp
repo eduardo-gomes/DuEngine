@@ -47,7 +47,7 @@ class entidade{
 	}
 	void jump(){if(!has_jumped)jump_vel += phy::jumpVel; has_jumped = 1;}
 	void apply_jump(){element.pos.y += jump_vel*millis;}
-	void onhorizontalColision(){if(jump_vel < 0) jump_vel = 0; has_jumped = 0;}
+	void onhorizontalColision(){if(jump_vel < 0) has_jumped = 0; jump_vel = 0;}
 	const double* getVector(){return element.vector;};
 	const vector_quad_text& getElement(){return element;}
 	int& texture(){return element.text_index;}
@@ -102,6 +102,53 @@ void drawn_triang_with_texture(const vector_with_text& vector) {
 		glTexCoord2d(vector.cords[2 + i * 4], vector.cords[3 + i * 4]);
 		glVertex2d(vector.pos.x + vector.cords[0 + i * 4], vector.pos.y + vector.cords[1 + i * 4]);
 	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+void drawn_bcg(){
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[sprites::funuv]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glColor3d(1.0, 1.0, 1.0);
+	double offsetx = std::remainder(screen::camx, 1.0);
+	glBegin(GL_QUADS);
+		glTexCoord2d(0.0 + offsetx, 0.0);glVertex3d(screen::camx - screen::bcgViewx, screen::camy - screen::bcgViewy, screen::bcgDist);
+		glTexCoord2d(screen::aspect * 2.0 + offsetx, 0.0);glVertex3d(screen::camx + screen::bcgViewx, screen::camy - screen::bcgViewy, screen::bcgDist);
+		glTexCoord2d(screen::aspect * 2.0 + offsetx, 2.0);glVertex3d(screen::camx + screen::bcgViewx, screen::camy + screen::bcgViewy, screen::bcgDist);
+		glTexCoord2d(0.0 + offsetx, 2.0);glVertex3d(screen::camx - screen::bcgViewx, screen::camy + screen::bcgViewy, screen::bcgDist);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+void drawn_bcg2(){
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[sprites::nuvem]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glColor3d(1.0, 1.0, 1.0);
+	double offsetx = std::remainder(screen::camx, 1.0);
+	glBegin(GL_QUADS);
+		glTexCoord2d(0.0 + offsetx, 0.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy - screen::bcg2Viewy, screen::bcg2Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx, 0.0);glVertex3d(screen::camx + screen::bcg2Viewx, screen::camy - screen::bcg2Viewy, screen::bcg2Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx, 3.0);glVertex3d(screen::camx + screen::bcg2Viewx, screen::camy + screen::bcg2Viewy, screen::bcg2Dist);
+		glTexCoord2d(0.0 + offsetx, 3.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy + screen::bcg2Viewy, screen::bcg2Dist);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+void drawn_bcg3(){
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[sprites::coque]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);//clamp texture on y
+	glColor3d(1.0, 1.0, 1.0);
+	double offsetx = std::remainder(screen::camx, 1.0);
+	glBegin(GL_QUADS);
+		glTexCoord2d(0.0 + offsetx, -0.5);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx, -0.5);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx, 2.5);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(0.0 + offsetx, 2.5);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }

@@ -8,7 +8,7 @@
 #ifndef _MAIN
 #include "colision.cpp"
 #endif
-const long unsigned assets_size = 10;
+const long unsigned assets_size = 13;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
@@ -54,7 +54,7 @@ void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	}
 }
 
-enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba};
+enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba, funuv, nuvem, coque};
 enum spritesname{
 	persparado00 = pers01,
 	persparado01 = pers02,
@@ -77,6 +77,9 @@ int loadassets(){
 	assetsToLoad[pers09] = "assets/pers09.bmp";
 	assetsToLoad[brick] = "assets/brick.bmp";
 	assetsToLoad[rgba] = "assets/rgb.bmp";
+	assetsToLoad[funuv] = "assets/funuv.bmp";
+	assetsToLoad[nuvem] = "assets/nuvem.bmp";
+	assetsToLoad[coque] = "assets/coque.bmp";
 	glGenTextures(assets_size, textures);
 	std::array<std::future<void>, assets_size> futures;
 	void* images[assets_size];
@@ -87,7 +90,7 @@ int loadassets(){
 	for (long unsigned i = 0; i < assets_size; ++i) {
 		futures[i].wait();
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);//the bitmap file is bottom-top, so the texture origin is on the bottom left corner instead of being on the top left
 		free(images[i]);
 	}
 	//std::cout << "load end" << std::endl;

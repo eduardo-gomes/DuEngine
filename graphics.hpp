@@ -9,11 +9,18 @@ namespace screen{
 	int width, height;
 	double aspect, &x = aspect, y = 1.0;
 	double camx = 0.0, camy = 0.0, camz = 7.5;
+	double bcgDist = -15.0, bcgViewy, bcgViewx, bcg2Dist = -7.0, bcg2Viewy, bcg2Viewx, bcg3Dist = -3.0, bcg3Viewy, bcg3Viewx;
 	double fovy = 45.0;
 	double viewx, viewy;
 	void calcview(){
 		viewy = camz * tan(fovy / 2 * PI / 180);
 		viewx = aspect * viewy;
+		bcgViewy = (camz - bcgDist) * tan(fovy / 2 * PI / 180);//the bcg will be at z = bcgDist
+		bcgViewx = aspect * bcgViewy;
+		bcg2Viewy = (camz - bcg2Dist) * tan(fovy / 2 * PI / 180);//the bcg2 will be at z = bcg2Dist
+		bcg2Viewx = aspect * bcg2Viewy;
+		bcg3Viewy = (camz - bcg3Dist) * tan(fovy / 2 * PI / 180);//the bcg3 will be at z = bcg3Dist
+		bcg3Viewx = aspect * bcg3Viewy;
 	}
 }
 	const int dfwidth = 1366,

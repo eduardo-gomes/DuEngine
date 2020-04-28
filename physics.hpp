@@ -18,10 +18,9 @@ int colide(const vector_quad_text &a, const vector_quad_text&b){
 		aPos.x + aWidth > bPos.x &&
 		aPos.y < bPos.y + bHeight &&
 		aPos.y + aHeight > bPos.y){
-		if (aPos.x < bPos.x + bWidth)
-			return 0b11;
-		else
-			return 0b01;
+			int ret = 1;
+			ret |= ((aPos.x < bPos.x + bWidth) && (aPos.x + aWidth > bPos.x) & 1) << 1;
+			return ret;
 	}
 	return 0;
 }
@@ -41,7 +40,7 @@ int colide(const vector_quad_text &a, const vector_with_text&b){
 			aPos.y < bY + (bHeight - bY) &&
 			aPos.y + aHeight > bY){
 				has_colided |= 1;
-				if(aPos.x < bX + (bWidth - bX)) has_colided |= 0b11;
+				if(aPos.x < bX + (bWidth - bX) && (aPos.x + aWidth > bX)) has_colided |= 0b10;
 		}
 	}
 	return has_colided;
@@ -173,20 +172,23 @@ void physics(){
 	static int has_colided = 0;
 	has_colided = colide_all();
 	if(has_colided){//walk colision
-		if(has_colided && 0b10)
-			pers.onhorizontalColision();
+		//if(has_colided && 0b10)
+			//pers.onhorizontalColision();
 		pers.onColision();
+		//std::cout << "Walk colision" << std::endl;
 	}else pers.noColision();
 
 	pers.apply_jump();
-	pers.gravity();
 	has_colided = colide_all();
-	if (has_colided) {  //gravity colision
-		if (has_colided && 0b10)
+	if (has_colided && 0b10) {  //gravity colision
+		//if (has_colided && 0b10)
 			pers.onhorizontalColision();
 		pers.onColision();
-	} else pers.noColision();
-
+		//std::cout << "Gravity colision" << std::endl;
+	}else{
+		pers.gravity();
+		pers.noColision();
+	}
 	static position push_colision;
 	has_colided = 0;
 	push_colision = push_colision_calc();
@@ -195,6 +197,7 @@ void physics(){
 		if(push_colision.y > 0.0)
 			pers.onhorizontalColision();
 		has_colided = 1;
+		//std::cout << "Normal colision" << std::endl;
 	}
 	/*if(!has_colided)*/ pers.noColision();
 }

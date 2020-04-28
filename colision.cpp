@@ -50,6 +50,9 @@ vector_quad_text quad = {
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
+	drawn_bcg();
+	drawn_bcg2();
+	drawn_bcg3();
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
 		drawn_triang_with_texture(*it);
 	drawn_quad_with_texture(pers.getElement());//global var
