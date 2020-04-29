@@ -19,6 +19,20 @@ namespace mouse {
 namespace keyboard{
 	bool w = 0, a = 0, s = 0, d = 0, space = 0;
 }
+namespace screen{
+	void camera_follow(double px){
+		if(px < camx - viewx * 0.4){
+			camx = px + (viewx * 0.4);
+			calcview();
+			return;
+		}
+		if(px > camx + viewx * 0.4){
+			camx = px - (viewx * 0.4);
+			calcview();
+			return;
+		}
+	}
+}
 
 std::vector<vector_with_text> scene_box = {
 	{//vector_with_text
@@ -78,6 +92,7 @@ void drawn_pointer() {
 }
 void render() {
 	screen::calcview();
+	screen::camera_follow(pers.getElement().pos.x);
 	//mouse::getcord(); //moved to before physics() call
 	drawn_pointer();
 }

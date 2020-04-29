@@ -8,7 +8,7 @@
 namespace screen{
 	int width, height;
 	double aspect, &x = aspect, y = 1.0;
-	double camx = 0.0, camy = 0.0, camz = 7.5;
+	double camx = 0.0, camy = 0.0, camz = 8.5;
 	double bcgDist = -15.0, bcgViewy, bcgViewx, bcg2Dist = -7.0, bcg2Viewy, bcg2Viewx, bcg3Dist = -3.0, bcg3Viewy, bcg3Viewx;
 	double fovy = 45.0;
 	double viewx, viewy;

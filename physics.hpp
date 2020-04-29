@@ -5,7 +5,7 @@
 namespace phy{
 	const double gravity = 0.020,
 				 jumpVel = 0.30,
-				 moveVel = 0.125;
+				 moveVel = 0.075;
 }
 int colide(const vector_quad_text &a, const vector_quad_text&b){
 	const position &bPos = a.pos, &aPos = b.pos;

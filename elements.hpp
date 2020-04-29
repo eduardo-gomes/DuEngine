@@ -111,7 +111,7 @@ void drawn_bcg(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glColor3d(1.0, 1.0, 1.0);
-	double offsetx = std::remainder(screen::camx, 1.0);
+	double offsetx = std::remainder((screen::camx * 1.5 *screen::aspect) / screen::bcgViewx, 1.0);
 	glBegin(GL_QUADS);
 		glTexCoord2d(0.0 + offsetx, 0.0);glVertex3d(screen::camx - screen::bcgViewx, screen::camy - screen::bcgViewy, screen::bcgDist);
 		glTexCoord2d(screen::aspect * 2.0 + offsetx, 0.0);glVertex3d(screen::camx + screen::bcgViewx, screen::camy - screen::bcgViewy, screen::bcgDist);
@@ -126,12 +126,12 @@ void drawn_bcg2(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glColor3d(1.0, 1.0, 1.0);
-	double offsetx = std::remainder(screen::camx, 1.0);
+	double offsetx = std::remainder((screen::camx * 3 *screen::aspect) / (screen::bcg2Viewx * 2), 1.0);
 	glBegin(GL_QUADS);
-		glTexCoord2d(0.0 + offsetx, 0.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy - screen::bcg2Viewy, screen::bcg2Dist);
+		glTexCoord2d(				  0.0 + offsetx, 0.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy - screen::bcg2Viewy, screen::bcg2Dist);
 		glTexCoord2d(screen::aspect * 3.0 + offsetx, 0.0);glVertex3d(screen::camx + screen::bcg2Viewx, screen::camy - screen::bcg2Viewy, screen::bcg2Dist);
 		glTexCoord2d(screen::aspect * 3.0 + offsetx, 3.0);glVertex3d(screen::camx + screen::bcg2Viewx, screen::camy + screen::bcg2Viewy, screen::bcg2Dist);
-		glTexCoord2d(0.0 + offsetx, 3.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy + screen::bcg2Viewy, screen::bcg2Dist);
+		glTexCoord2d(				  0.0 + offsetx, 3.0);glVertex3d(screen::camx - screen::bcg2Viewx, screen::camy + screen::bcg2Viewy, screen::bcg2Dist);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
@@ -143,12 +143,17 @@ void drawn_bcg3(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);//clamp texture on y
 	glColor3d(1.0, 1.0, 1.0);
-	double offsetx = std::remainder(screen::camx, 1.0);
+	double offsetx = std::remainder((screen::camx * 3 *screen::aspect) / (screen::bcg3Viewx * 2), 1.0);
+	double offsety = (screen::camy - 5) / screen::bcg3Viewy * 1.5;
 	glBegin(GL_QUADS);
-		glTexCoord2d(0.0 + offsetx, -0.5);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
-		glTexCoord2d(screen::aspect * 3.0 + offsetx, -0.5);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
-		glTexCoord2d(screen::aspect * 3.0 + offsetx, 2.5);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
-		glTexCoord2d(0.0 + offsetx, 2.5);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(				  0.0 + offsetx, -0.5 + offsety);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx, -0.5 + offsety);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0 + offsetx,  2.5 + offsety);glVertex3d(screen::camx + screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(				  0.0 + offsetx,  2.5 + offsety);glVertex3d(screen::camx - screen::bcg3Viewx, screen::camy + screen::bcg3Viewy, screen::bcg3Dist);
+		/*glTexCoord2d(0.0, -0.5);glVertex3d(- screen::bcg3Viewx, - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0, -0.5);glVertex3d(screen::bcg3Viewx, - screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(screen::aspect * 3.0,  2.5);glVertex3d(screen::bcg3Viewx, + screen::bcg3Viewy, screen::bcg3Dist);
+		glTexCoord2d(0.0, 2.5);glVertex3d(- screen::bcg3Viewx, + screen::bcg3Viewy, screen::bcg3Dist);*/
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
