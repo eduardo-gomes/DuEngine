@@ -9,10 +9,10 @@ namespace phy{
 }
 int colide(const vector_quad_text &a, const vector_quad_text&b){
 	const position &bPos = a.pos, &aPos = b.pos;
-	const double &bWidth = a.vector[3*4],
-				 &aWidth = b.vector[3*4],
-				 &bHeight = a.vector[1*4 + 1],
-				 &aHeight = b.vector[1*4 + 1];
+	const double &bWidth = a.vector[1 * 4],
+				 &aWidth = b.vector[1 * 4],
+				 &bHeight = a.vector[3 * 4 + 1],
+				 &aHeight = b.vector[3 * 4 + 1];
 	if(
 		aPos.x < bPos.x + bWidth &&
 		aPos.x + aWidth > bPos.x &&
@@ -26,14 +26,14 @@ int colide(const vector_quad_text &a, const vector_quad_text&b){
 }
 int colide(const vector_quad_text &a, const vector_with_text&b){
 	const position &aPos = a.pos;
-	const double &aWidth = a.vector[3*4],
-				 &aHeight = a.vector[1 * 4 + 1];
+	const double &aWidth = a.vector[1 * 4],
+				 &aHeight = a.vector[3*4 + 1];
 	int has_colided = 0;
 	for(long unsigned int nQuad= 0; nQuad < b.cords.size()/(4*4); ++nQuad){
 		const double &bX = b.cords[nQuad * 4 * 4],
 					 &bY = b.cords[nQuad * 4 * 4 + 1],
-					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 3],
-					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 1 + 1];
+					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 1],
+					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 3 + 1];
 		if( //Test if there isn't a gap betwin any the two quads
 			aPos.x < bX + (bWidth - bX) &&
 			aPos.x + aWidth > bX &&
@@ -47,13 +47,13 @@ int colide(const vector_quad_text &a, const vector_with_text&b){
 }
 position colision_push(const vector_quad_text &a, const vector_with_text&b){
 	const position &aPos = a.pos;
-	const double &aWidth = a.vector[3*4],
-				 &aHeight = a.vector[1 * 4 + 1];
+	const double &aWidth = a.vector[1 * 4 + 1],
+				 &aHeight = a.vector[3*4];
 	for(long unsigned int nQuad= 0; nQuad < b.cords.size()/(4*4); ++nQuad){
 		const double &bX = b.cords[nQuad * 4 * 4],
 					 &bY = b.cords[nQuad * 4 * 4 + 1],
-					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 3],
-					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 1 + 1],
+					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 1],
+					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 3 + 1],
 
 					 overlap_up = bY + (bHeight - bY) - aPos.y,	//+y
 					 overlap_dw = bY - (aPos.y + aHeight),		//-y
@@ -73,10 +73,10 @@ position colision_push(const vector_quad_text &a, const vector_with_text&b){
 }
 position colision_push(const vector_quad_text &a, const vector_quad_text &b) {
 	const position &bPos = b.pos, &aPos = a.pos;
-	const double &bWidth = b.vector[3*4],
-				 &aWidth = a.vector[3*4],
-				 &bHeight = b.vector[1*4 + 1],
-				 &aHeight = a.vector[1*4 + 1],
+	const double &bWidth = b.vector[1*4],
+				 &aWidth = a.vector[1*4],
+				 &bHeight = b.vector[3*4 + 1],
+				 &aHeight = a.vector[3*4 + 1],
 
 				 overlap_up = bPos.y + bHeight - aPos.y,	//+y
 				 overlap_dw = bPos.y - (aPos.y + aHeight),	//-y
@@ -96,13 +96,13 @@ std::vector<position> colision_push_vec_result;
 void colision_push_vec(const vector_quad_text &a, const vector_with_text&b){
 	colision_push_vec_result.clear();
 	const position &aPos = a.pos;
-	const double &aWidth = a.vector[3*4],
-				 &aHeight = a.vector[1 * 4 + 1];
+	const double &aWidth = a.vector[1*4],
+				 &aHeight = a.vector[3 * 4 + 1];
 	for(long unsigned int nQuad= 0; nQuad < b.cords.size()/(4*4); ++nQuad){
 		const double &bX = b.cords[nQuad * 4 * 4],
 					 &bY = b.cords[nQuad * 4 * 4 + 1],
-					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 3],
-					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 1 + 1],
+					 &bWidth = b.cords[nQuad * 4 * 4 + 4 * 1],
+					 &bHeight = b.cords[nQuad * 4 * 4 + 4 * 3 + 1],
 
 					 overlap_up = bY + (bHeight - bY) - aPos.y,	//+y
 					 overlap_dw = bY - (aPos.y + aHeight),		//-y
@@ -123,10 +123,10 @@ void colision_push_vec(const vector_quad_text &a, const vector_with_text&b){
 }
 void colision_push_vec(const vector_quad_text &a, const vector_quad_text &b) {
 	const position &bPos = b.pos, &aPos = a.pos;
-	const double &bWidth = b.vector[3*4],
-				 &aWidth = a.vector[3*4],
-				 &bHeight = b.vector[1*4 + 1],
-				 &aHeight = a.vector[1*4 + 1],
+	const double &bWidth = b.vector[1*4],
+				 &aWidth = a.vector[1*4],
+				 &bHeight = b.vector[3*4 + 1],
+				 &aHeight = a.vector[3*4 + 1],
 
 				 overlap_up = bPos.y + bHeight - aPos.y,	//+y
 				 overlap_dw = bPos.y - (aPos.y + aHeight),	//-y

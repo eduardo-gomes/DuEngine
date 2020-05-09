@@ -4,8 +4,9 @@
 #include <chrono>
 #include "graphics.hpp"
 #include "loadassets.hpp"
-#include "elements.hpp"
+#include "basic_interaction.hpp"
 #include "physics.hpp"
+#include "elements.hpp"
 bool pressed_mouse = 0;
 namespace mouse {
 	int x = -50, y = -50;
@@ -34,30 +35,17 @@ namespace screen{
 	}
 }
 
-std::vector<vector_with_text> scene_box = {
-	{//vector_with_text
-		sprites::brick, GL_QUADS,
-		{// clockwise from botom_left corner
-			0.0, 0.0, 0.0, 0.0,
-			0.0, 3.0, 0.0, 3.0,
-			16.0,3.0, 16.0,3.0,
-			16.0,0.0, 16.0,0.0,
-
-			8.0, 3.0, 8.0, 3.0,
-			8.0, 4.0, 8.0, 4.0,
-			9.0, 4.0, 9.0, 4.0,
-			9.0, 3.0, 9.0, 3.0
-		}
-	}// vector_with_text
+std::vector<vector_with_text *> scene_box = {
+	&levelone::scene_box_one
 };//vector
 extern double millis;
 entidade pers;
 vector_quad_text quad = {
 	//pos			text pos
 	0.0, 0.0,		0.0, 0.0,
-	0.0, 1.0,		0.0, 1.0,
-	1.0, 1.0,		1.0, 1.0,
 	1.0, 0.0,		1.0, 0.0,
+	1.0, 1.0,		1.0, 1.0,
+	0.0, 1.0,		0.0, 1.0,
 	//texture
 	sprites::rgba
 };
@@ -68,12 +56,12 @@ void drawn_pointer() {
 	drawn_bcg2();
 	drawn_bcg3();
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
-		drawn_triang_with_texture(*it);
+		drawn_triang_with_texture(**it);
 	drawn_quad_with_texture(pers.getElement());//global var
 
 	quad.pos = mouse::pos;
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
-	if(colide(quad, *it) || colide(quad, pers.getElement()))//quad colision
+	if(colide(quad, **it) || colide(quad, pers.getElement()))//quad colision
 		quad.text_index = sprites::brick;
 	else
 		quad.text_index = sprites::rgba;
@@ -98,7 +86,7 @@ void render() {
 }
 
 //std::chrono::steady_clock::time_point;
-std::vector<vector_with_text*> colision_static = {&scene_box[0]};//colision objects
+std::vector<vector_with_text*> colision_static = {scene_box[0]};//colision objects
 std::vector<vector_quad_text*> colision_static_quad = {&quad};//colision objects
 double millis;
 unsigned char key_pressed;
