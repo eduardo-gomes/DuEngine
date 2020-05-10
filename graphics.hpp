@@ -111,6 +111,7 @@ void start_gl(int argc, char** argv) {
 	glutPassiveMotionFunc(mouse_move);
 	glutMotionFunc(mouse_move);
 	glutReshapeFunc(AlteraTamanhoTela);
+	glutCloseFunc(close);
 	Inicializa();
 	if (fullscreen) glutFullScreen();
 	glutMainLoop();

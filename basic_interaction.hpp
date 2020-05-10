@@ -8,7 +8,13 @@ struct position {
 	double x = 0.0, y = 0.0;
 	position(double nx = 0.0, double ny = 0.0) : x(nx), y(ny){};
 };
-struct vector_quad_text {
+struct text_params{
+	GLint mag_filter, min_filter, warp_s, warp_t;
+	text_params(GLint mag_filter = GL_NEAREST, GLint min_filter = GL_LINEAR, GLint warp_s = GL_REPEAT, GLint warp_t = GL_REPEAT) :
+	mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t){std::cout << "Text_params constructor" << std::endl;};
+};
+static const text_params def_text_params;
+struct vertex_quad_text {
 	double vector[16] = {
 		//pos		text pos
 		0.0, 0.0, 0.0, 0.0,
@@ -17,12 +23,14 @@ struct vector_quad_text {
 		0.0, 0.0, 0.0, 0.0};
 	int text_index;
 	position pos = {0.0, 0.0};
+	const text_params *params = &def_text_params;
 };
-struct vector_with_text {
+struct vertex_with_text {
 	int text_index;
 	GLenum mode;
-	std::vector<double> cords;
+	std::vector<double> cords = {};
 	position pos = {0.0, 0.0};
+	const text_params *params = &def_text_params;
 };
 
 
@@ -31,7 +39,7 @@ namespace phy{
 }
 extern double millis;
 class entidade{
-	vector_quad_text element = {
+	vertex_quad_text element = {
 		0.0, 0.0,		0.0, 0.0,
 		1.0, 0.0,		1.0, 0.0,
 		1.0, 1.0,		1.0, 1.0,
@@ -50,7 +58,7 @@ class entidade{
 	void apply_jump(){element.pos.y += jump_vel*millis;}
 	void onhorizontalColision(){if(jump_vel < 0) has_jumped = 0; jump_vel = 0;}
 	const double* getVector(){return element.vector;};
-	const vector_quad_text& getElement(){return element;}
+	const vertex_quad_text& getElement(){return element;}
 	int& texture(){return element.text_index;}
 	void onColision(){element.pos = lastpos;}
 	void noColision(){lastpos = element.pos;}
@@ -68,40 +76,40 @@ class entidade{
 	//void 
 };
 
-void drawn_quad_with_texture(const vector_quad_text& vector) {
+void drawn_quad_with_texture(const vertex_quad_text& vertex) {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
+	glBindTexture(GL_TEXTURE_2D, textures[vertex.text_index]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, vertex.params->min_filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, vertex.params->mag_filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, vertex.params->warp_s); //repeat texture on x DISABLED because is the defaut
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, vertex.params->warp_t); //repeat texture on y
 	glColor3d(1.0, 1.0, 1.0);
 	glBegin(GL_QUADS);
-	glTexCoord2d(vector.vector[2], vector.vector[3]);
-	glVertex2d(vector.pos.x + vector.vector[0], vector.pos.y + vector.vector[1]);
-	glTexCoord2d(vector.vector[6], vector.vector[7]);
-	glVertex2d(vector.pos.x + vector.vector[4], vector.pos.y + vector.vector[5]);
-	glTexCoord2d(vector.vector[10], vector.vector[11]);
-	glVertex2d(vector.pos.x + vector.vector[8], vector.pos.y + vector.vector[9]);
-	glTexCoord2d(vector.vector[14], vector.vector[15]);
-	glVertex2d(vector.pos.x + vector.vector[12], vector.pos.y + vector.vector[13]);
+	glTexCoord2d(vertex.vector[2], vertex.vector[3]);
+	glVertex2d(vertex.pos.x + vertex.vector[0], vertex.pos.y + vertex.vector[1]);
+	glTexCoord2d(vertex.vector[6], vertex.vector[7]);
+	glVertex2d(vertex.pos.x + vertex.vector[4], vertex.pos.y + vertex.vector[5]);
+	glTexCoord2d(vertex.vector[10], vertex.vector[11]);
+	glVertex2d(vertex.pos.x + vertex.vector[8], vertex.pos.y + vertex.vector[9]);
+	glTexCoord2d(vertex.vector[14], vertex.vector[15]);
+	glVertex2d(vertex.pos.x + vertex.vector[12], vertex.pos.y + vertex.vector[13]);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
 
-void drawn_triang_with_texture(const vector_with_text& vector) {
+void drawn_triang_with_texture(const vertex_with_text& vertex) {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[vector.text_index]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//repeat texture on x DISABLED because is the defaut
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//repeat texture on y
+	glBindTexture(GL_TEXTURE_2D, textures[vertex.text_index]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, vertex.params->min_filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, vertex.params->mag_filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, vertex.params->warp_s);//repeat texture on x DISABLED because is the defaut
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, vertex.params->warp_t);//repeat texture on y
 	glColor3d(1.0, 1.0, 1.0);
-	glBegin(vector.mode);
-	for (long unsigned int i = 0; i < vector.cords.size() / 4; ++i) {
+	glBegin(vertex.mode);
+	for (long unsigned int i = 0; i < vertex.cords.size() / 4; ++i) {
 		//printf("%lu\n", i);
-		glTexCoord2d(vector.cords[2 + i * 4], vector.cords[3 + i * 4]);
-		glVertex2d(vector.pos.x + vector.cords[0 + i * 4], vector.pos.y + vector.cords[1 + i * 4]);
+		glTexCoord2d(vertex.cords[2 + i * 4], vertex.cords[3 + i * 4]);
+		glVertex2d(vertex.pos.x + vertex.cords[0 + i * 4], vertex.pos.y + vertex.cords[1 + i * 4]);
 	}
 	glEnd();
 	glDisable(GL_TEXTURE_2D);

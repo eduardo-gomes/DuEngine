@@ -2,7 +2,7 @@
 #include "basic_interaction.hpp"
 #endif
 namespace levelone {
-vector_with_text scene_box_one =
+vertex_with_text scene_box_one =
 	{  //vector_with_text
 		sprites::brick,
 		GL_QUADS,

@@ -8,11 +8,11 @@
 #ifndef _MAIN
 #include "colision.cpp"
 #endif
-const long unsigned assets_size = 13;
+const long unsigned assets_size = 14;
 GLuint textures[assets_size];
 std::array<std::string, assets_size> assetsToLoad;
 
-void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
+int loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	std::ifstream file(assetsToLoad[index], std::ios::binary | std::ios::ate);
 	file.seekg(0, std::ios::beg);
 	char* fdata;
@@ -27,15 +27,15 @@ void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	int datasize = (int)(width * height * color_depth);
 	saveto[index] = fdata = (char*)malloc(width * height * color_depth);
 	if(fdata == NULL){
-		std::cout << "can't malloc" << std::endl;
-		exit(0);
+		//std::cout << "can't malloc to load file" << std::endl;
+		return 2;
 	}
 	file.seekg(offset, std::ios::beg);
 	if(!file.fail()){
 		file.read(fdata, datasize);
 		if(file.fail()){
-			std::cout << assetsToLoad[index] << " load fail" << std::endl;
-			exit(0);
+			//std::cout << assetsToLoad[index] << " load fail" << std::endl;
+			return 1;
 		}else{
 			//convert to RGBA
 			uint32_t* image = (uint32_t*)fdata;
@@ -50,11 +50,13 @@ void loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 				(image[pixel] & 0x00FF0000) >> 16  ; //______RR
 												  //0xAABBGGRR
 			}
+			return 0;
 		}
 	}
+	return 1;
 }
 
-enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba, funuv, nuvem, coque};
+enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba, funuv, nuvem, coque, help};
 enum spritesname{
 	persparado00 = pers01,
 	persparado01 = pers02,
@@ -80,15 +82,18 @@ int loadassets(){
 	assetsToLoad[funuv] = "assets/funuv.bmp";
 	assetsToLoad[nuvem] = "assets/nuvem.bmp";
 	assetsToLoad[coque] = "assets/coque.bmp";
+	assetsToLoad[help] = "assets/help1024x303.bmp";
+
 	glGenTextures(assets_size, textures);
-	std::array<std::future<void>, assets_size> futures;
+	std::array<std::future<int>, assets_size> futures;
 	void* images[assets_size];
 	int imagesize[assets_size][2];//w h
 	for (long unsigned i = 0; i < assets_size; ++i) {
 		futures[i] = std::async(loadtexture, i, images, imagesize);
 	}
 	for (long unsigned i = 0; i < assets_size; ++i) {
-		futures[i].wait();
+		if(futures[i].get())
+			std::cout << "Can't load " << assetsToLoad[i] << std::endl;
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);//the bitmap file is bottom-top, so the texture origin is on the bottom left corner instead of being on the top left
 		free(images[i]);

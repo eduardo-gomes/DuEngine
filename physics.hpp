@@ -7,7 +7,7 @@ namespace phy{
 				 jumpVel = 0.30,
 				 moveVel = 0.075;
 }
-int colide(const vector_quad_text &a, const vector_quad_text&b){
+int colide(const vertex_quad_text &a, const vertex_quad_text&b){
 	const position &bPos = a.pos, &aPos = b.pos;
 	const double &bWidth = a.vector[1 * 4],
 				 &aWidth = b.vector[1 * 4],
@@ -24,7 +24,7 @@ int colide(const vector_quad_text &a, const vector_quad_text&b){
 	}
 	return 0;
 }
-int colide(const vector_quad_text &a, const vector_with_text&b){
+int colide(const vertex_quad_text &a, const vertex_with_text&b){
 	const position &aPos = a.pos;
 	const double &aWidth = a.vector[1 * 4],
 				 &aHeight = a.vector[3*4 + 1];
@@ -45,7 +45,7 @@ int colide(const vector_quad_text &a, const vector_with_text&b){
 	}
 	return has_colided;
 }
-position colision_push(const vector_quad_text &a, const vector_with_text&b){
+position colision_push(const vertex_quad_text &a, const vertex_with_text&b){
 	const position &aPos = a.pos;
 	const double &aWidth = a.vector[1 * 4 + 1],
 				 &aHeight = a.vector[3*4];
@@ -71,7 +71,7 @@ position colision_push(const vector_quad_text &a, const vector_with_text&b){
 	}
 	return {0.0, 0.0};
 }
-position colision_push(const vector_quad_text &a, const vector_quad_text &b) {
+position colision_push(const vertex_quad_text &a, const vertex_quad_text &b) {
 	const position &bPos = b.pos, &aPos = a.pos;
 	const double &bWidth = b.vector[1*4],
 				 &aWidth = a.vector[1*4],
@@ -93,7 +93,7 @@ position colision_push(const vector_quad_text &a, const vector_quad_text &b) {
 	return {0.0, 0.0};
 }
 std::vector<position> colision_push_vec_result;
-void colision_push_vec(const vector_quad_text &a, const vector_with_text&b){
+void colision_push_vec(const vertex_quad_text &a, const vertex_with_text&b){
 	colision_push_vec_result.clear();
 	const position &aPos = a.pos;
 	const double &aWidth = a.vector[1*4],
@@ -121,7 +121,7 @@ void colision_push_vec(const vector_quad_text &a, const vector_with_text&b){
 		}
 	}
 }
-void colision_push_vec(const vector_quad_text &a, const vector_quad_text &b) {
+void colision_push_vec(const vertex_quad_text &a, const vertex_quad_text &b) {
 	const position &bPos = b.pos, &aPos = a.pos;
 	const double &bWidth = b.vector[1*4],
 				 &aWidth = a.vector[1*4],
@@ -142,10 +142,10 @@ void colision_push_vec(const vector_quad_text &a, const vector_quad_text &b) {
 	}
 }
 
-extern std::vector<vector_with_text *> colision_static;
-extern std::vector<vector_quad_text *> colision_static_quad;
+extern std::vector<vertex_with_text *> colision_static;
+extern std::vector<vertex_quad_text *> colision_static_quad;
 extern entidade pers;
-const vector_quad_text &persElement = pers.getElement();
+const vertex_quad_text &persElement = pers.getElement();
 
 
 int colide_all(){//if quad colide 0b01 if colide with the foor 0b1x

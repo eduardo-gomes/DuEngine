@@ -18,29 +18,27 @@ namespace mouse {
 	}
 }  // namespace mouse
 namespace keyboard{
-	bool w = 0, a = 0, s = 0, d = 0, space = 0;
+	bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
 }
 namespace screen{
 	void camera_follow(double px){
 		if(px < camx - viewx * 0.4){
 			camx = px + (viewx * 0.4);
-			calcview();
-			return;
 		}
 		if(px > camx + viewx * 0.4){
 			camx = px - (viewx * 0.4);
-			calcview();
-			return;
 		}
+		calcview();
+		return;
 	}
 }
 
-std::vector<vector_with_text *> scene_box = {
+std::vector<vertex_with_text *> scene_box = {
 	&levelone::scene_box_one
 };//vector
 extern double millis;
 entidade pers;
-vector_quad_text quad = {
+vertex_quad_text quad = {
 	//pos			text pos
 	0.0, 0.0,		0.0, 0.0,
 	1.0, 0.0,		1.0, 0.0,
@@ -66,7 +64,7 @@ void drawn_pointer() {
 	else
 		quad.text_index = sprites::rgba;
 	drawn_quad_with_texture(quad);
-	glDisable(GL_BLEND);
+	//glDisable(GL_BLEND);//disable transparency
 	if (pressed_mouse)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
 	else
@@ -77,23 +75,39 @@ void drawn_pointer() {
 	glBegin(GL_POINTS);
 	glVertex2d(mouse::pos.x, mouse::pos.y);
 	glEnd();
+	if(keyboard::F1){
+		static text_params help_params(GL_LINEAR, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+		static vertex_quad_text help{
+			{
+				-screen::viewy, -screen::viewy, 0.0, 1.0 - 1024.0/303.0,
+				 screen::viewy, -screen::viewy, 1.0, 1.0 - 1024.0/303.0,//image aspect 1024/303
+				 screen::viewy,  screen::viewy, 1.0, 1.0,
+				-screen::viewy,  screen::viewy, 0.0, 1.0
+			},
+			sprites::help,
+			{screen::camx, screen::camy},
+			&help_params
+		};
+		help.pos.x = screen::camx;
+		help.pos.y = screen::camy;
+		drawn_quad_with_texture(help);
+	}
 }
 void render() {
-	screen::calcview();
-	screen::camera_follow(pers.getElement().pos.x);
+	//screen::calcview();
+	//screen::camera_follow(pers.getElement().pos.x);
 	//mouse::getcord(); //moved to before physics() call
 	drawn_pointer();
 }
 
 //std::chrono::steady_clock::time_point;
-std::vector<vector_with_text*> colision_static = {scene_box[0]};//colision objects
-std::vector<vector_quad_text*> colision_static_quad = {&quad};//colision objects
+std::vector<vertex_with_text*> colision_static = {scene_box[0]};//colision objects
+std::vector<vertex_quad_text*> colision_static_quad = {&quad};//colision objects
 double millis;
-unsigned char key_pressed;
 void logica() {
-	static std::chrono::steady_clock::time_point t = std::chrono::steady_clock::now(), clock = t;
-	if(t < std::chrono::steady_clock::now()){
-		t += std::chrono::milliseconds(100);
+	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim;
+	if(text_anim < std::chrono::steady_clock::now()){
+		text_anim += std::chrono::milliseconds(100);
 		int& pers_tex = pers.texture();
 		pers_tex++;
 		if(pers_tex > spritesname::persandando04){
@@ -104,48 +118,42 @@ void logica() {
 	if (keyboard::a) pers.move(-phy::moveVel * millis);
 	if (keyboard::d) pers.move( phy::moveVel * millis);
 	if (keyboard::space) pers.jump();
-	key_pressed = 0;
+	millis = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - clock).count()/13000000;
+	clock = std::chrono::steady_clock::now();
 	mouse::getcord();
 	physics();//colision physics
-	millis = ((std::chrono::steady_clock::now() - clock).count()/10e5)/13;
-	clock = std::chrono::steady_clock::now();
-	millis = 1.0;
 	if(pers.getElement().pos.y < 0.5){
 		pers.onColision();
 		pers.onhorizontalColision();
 	}
+	screen::camera_follow(pers.getElement().pos.x);
 	glutPostRedisplay();
 }
+
 void Teclado_press(unsigned char key, int x, int y) {
-	(void)x;
-	(void)y;
-	if (key == 27) exit(0);
+	mouse_move(x, y);
+	if (key == 27) close();
 	else if(key == 'w') screen::camz -= 0.5;
 	else if(key == 's') screen::camz += 0.5;
 	else if (key == 'a') keyboard::a = 1;
 	else if (key == 'd') keyboard::d = 1;
 	else if (key == ' ') keyboard::space = 1;
-	else/* if(key == 'a') pers.move(-0.125*millis);
-	else if(key == 'd') pers.move( 0.125*millis);*/
-	key_pressed = key;
-	//std::cout << "millis " << millis << std::endl;
 }
 void Teclado_press_up(unsigned char key, int x, int y) {
-	(void)x;
-	(void)y;
+	mouse_move(x, y);
 	if (key == 'a') keyboard::a = 0;
 	else if (key == 'd') keyboard::d = 0;
 	else if (key == ' ') keyboard::space = 0;
 }
 void Teclado_spec(int key, int x, int y) {
-	(void)x;
-	(void)y;
-	if(key == 11) fscr_toggle();
+	mouse_move(x, y);
+	if(key == GLUT_KEY_F11) fscr_toggle();
+	else if(key == GLUT_KEY_F1) keyboard::F1 ^= 1;
 	else if(key == GLUT_KEY_UP) screen::camy += 0.5;
 	else if(key == GLUT_KEY_DOWN) screen::camy -= 0.5;
 	else if(key == GLUT_KEY_RIGHT) screen::camx += 0.5;
 	else if(key == GLUT_KEY_LEFT) screen::camx -= 0.5;
-	std::cout << "camx " << screen::camx << " camy " << screen::camy << std::endl;
+	//std::cout << "Key " << key << std::endl;
 }
 
 void mouse_click(int button, int state, int x, int y) {
