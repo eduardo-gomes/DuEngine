@@ -38,7 +38,7 @@ namespace phy{
 	extern const double gravity, jumpVel;
 }
 extern double millis;
-class entidade{
+class player{
 	vertex_quad_text element = {
 		0.0, 0.0,		0.0, 0.0,
 		1.0, 0.0,		1.0, 0.0,
@@ -71,6 +71,11 @@ class entidade{
 		lastpos = element.pos;
 		element.pos.x += newpos.x;
 		element.pos.y += newpos.y;
+	}
+	void respawn(){
+		element.pos = { 0.5, 5.0 };
+		noColision();
+		onhorizontalColision();
 	}
 	bool colide = 0;
 	//void 

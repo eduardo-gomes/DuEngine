@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include "graphics.hpp"
+#include "assets.hpp"
 #include "loadassets.hpp"
 #include "basic_interaction.hpp"
 #include "physics.hpp"
@@ -37,8 +38,8 @@ std::vector<vertex_with_text *> scene_box = {
 	&levelone::scene_box_one
 };//vector
 extern double millis;
-entidade pers;
-vertex_quad_text quad = {
+player pers;
+/*vertex_quad_text quad = {
 	//pos			text pos
 	0.0, 0.0,		0.0, 0.0,
 	1.0, 0.0,		1.0, 0.0,
@@ -46,7 +47,7 @@ vertex_quad_text quad = {
 	0.0, 1.0,		0.0, 1.0,
 	//texture
 	sprites::rgba
-};
+};*/
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
@@ -56,14 +57,14 @@ void drawn_pointer() {
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
 		drawn_triang_with_texture(**it);
 	drawn_quad_with_texture(pers.getElement());//global var
-
-	quad.pos = mouse::pos;
+	//remove quad
+	/*quad.pos = mouse::pos; 
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
 	if(colide(quad, **it) || colide(quad, pers.getElement()))//quad colision
 		quad.text_index = sprites::brick;
 	else
 		quad.text_index = sprites::rgba;
-	drawn_quad_with_texture(quad);
+	drawn_quad_with_texture(quad);*/
 	//glDisable(GL_BLEND);//disable transparency
 	if (pressed_mouse)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
@@ -102,10 +103,10 @@ void render() {
 
 //std::chrono::steady_clock::time_point;
 std::vector<vertex_with_text*> colision_static = {scene_box[0]};//colision objects
-std::vector<vertex_quad_text*> colision_static_quad = {&quad};//colision objects
+std::vector<vertex_quad_text*> colision_static_quad = {/*&quad*/};//colision objects
 double millis;
 void logica() {
-	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim;
+	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim, frame_clock;
 	if(text_anim < std::chrono::steady_clock::now()){
 		text_anim += std::chrono::milliseconds(100);
 		int& pers_tex = pers.texture();
@@ -119,14 +120,16 @@ void logica() {
 	if (keyboard::d) pers.move( phy::moveVel * millis);
 	if (keyboard::space) pers.jump();
 	millis = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - clock).count()/13000000;
+	//std::cout << 'M' << millis << std::endl;
 	clock = std::chrono::steady_clock::now();
-	mouse::getcord();
 	physics();//colision physics
 	if(pers.getElement().pos.y < 0.5){
-		pers.onColision();
-		pers.onhorizontalColision();
+		//pers.onColision();
+		//pers.onhorizontalColision();
+		pers.respawn();
 	}
 	screen::camera_follow(pers.getElement().pos.x);
+	mouse::getcord();
 	glutPostRedisplay();
 }
 

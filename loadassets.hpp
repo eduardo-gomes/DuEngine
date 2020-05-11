@@ -1,6 +1,5 @@
 #pragma once
 #include <fstream>
-#include <array>
 #include <string>
 #include <future>
 #include <vector>
@@ -8,16 +7,18 @@
 #ifndef _MAIN
 #include "colision.cpp"
 #endif
-const long unsigned assets_size = 14;
-GLuint textures[assets_size];
-std::array<std::string, assets_size> assetsToLoad;
 
-int loadtexture(long unsigned index, void* saveto[], int size[][2]) {
+GLuint textures[assets_size];
+
+int loadtexture(long unsigned index, std::array<std::string, assets_size> *assetsToLoad_ptr, void *saveto[], int size[][2]){
+	std::array<std::string, assets_size> &assetsToLoad = *assetsToLoad_ptr;
 	std::ifstream file(assetsToLoad[index], std::ios::binary | std::ios::ate);
 	file.seekg(0, std::ios::beg);
 	char* fdata;
-	if(!file.good())
-		std::cout << assetsToLoad[index] << " !good" << std::endl;
+	if(!file.good()){
+		//std::cout << assetsToLoad[index] << " !good" << std::endl;
+		return 3;
+	}
 	char header[54];
 	file.read(header, 54);
 	unsigned int width = *(unsigned int*)&header[18], height = *(unsigned int*)&header[22], offset = *(unsigned int*)&header[10];
@@ -56,48 +57,27 @@ int loadtexture(long unsigned index, void* saveto[], int size[][2]) {
 	return 1;
 }
 
-enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba, funuv, nuvem, coque, help};
-enum spritesname{
-	persparado00 = pers01,
-	persparado01 = pers02,
-	persandando01 = pers03,
-	persandando02 = pers04,
-	persandando03 = pers05,
-	persandando04 = pers06,
-	persparado02 = pers07,
-	perspulando01 = pers09
-};
-
 int loadassets(){
-	assetsToLoad[pers01] = "assets/pers01.bmp";
-	assetsToLoad[pers02] = "assets/pers02.bmp";
-	assetsToLoad[pers03] = "assets/pers03.bmp";
-	assetsToLoad[pers04] = "assets/pers04.bmp";
-	assetsToLoad[pers05] = "assets/pers05.bmp";
-	assetsToLoad[pers06] = "assets/pers06.bmp";
-	assetsToLoad[pers07] = "assets/pers07.bmp";
-	assetsToLoad[pers09] = "assets/pers09.bmp";
-	assetsToLoad[brick] = "assets/brick.bmp";
-	assetsToLoad[rgba] = "assets/rgb.bmp";
-	assetsToLoad[funuv] = "assets/funuv.bmp";
-	assetsToLoad[nuvem] = "assets/nuvem.bmp";
-	assetsToLoad[coque] = "assets/coque.bmp";
-	assetsToLoad[help] = "assets/help1024x303.bmp";
-
 	glGenTextures(assets_size, textures);
 	std::array<std::future<int>, assets_size> futures;
-	void* images[assets_size];
-	int imagesize[assets_size][2];//w h
-	for (long unsigned i = 0; i < assets_size; ++i) {
-		futures[i] = std::async(loadtexture, i, images, imagesize);
+	void* images[sprites_end];
+	int imagesize[sprites_end][2];//w h
+	std::array<std::string, assets_size> &assetsToLoad = *get_assets_files();
+	for (long unsigned i = sprites_begin; i < sprites_end; ++i) {
+		futures[i] = std::async(loadtexture, i, &assetsToLoad, images, imagesize);
 	}
-	for (long unsigned i = 0; i < assets_size; ++i) {
+	for (long unsigned i = sprites_begin; i < sprites_end; ++i) {
 		if(futures[i].get())
 			std::cout << "Can't load " << assetsToLoad[i] << std::endl;
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);//the bitmap file is bottom-top, so the texture origin is on the bottom left corner instead of being on the top left
 		free(images[i]);
 	}
+	/*for (long unsigned i = sounds_begin; i < sounds_end; ++i) {
+		if(futures[i].get())
+			std::cout << "Can't load " << assetsToLoad[i] << std::endl;
+	}*/
 	//std::cout << "load end" << std::endl;
+	delete &assetsToLoad;
 	return 0;
 }

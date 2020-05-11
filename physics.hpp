@@ -144,7 +144,7 @@ void colision_push_vec(const vertex_quad_text &a, const vertex_quad_text &b) {
 
 extern std::vector<vertex_with_text *> colision_static;
 extern std::vector<vertex_quad_text *> colision_static_quad;
-extern entidade pers;
+extern player pers;
 const vertex_quad_text &persElement = pers.getElement();
 
 
