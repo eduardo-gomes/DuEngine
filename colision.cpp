@@ -2,6 +2,8 @@
 #define _MAIN
 #include <iostream>
 #include <chrono>
+#include <thread>
+#include <mutex>
 #include "graphics.hpp"
 #include "assets.hpp"
 #include "loadassets.hpp"
@@ -98,14 +100,19 @@ void drawn_pointer() {
 		drawn_with_texture(help);
 	}
 }
+std::mutex game_state;
+
 void render() {
+	game_state.lock();
 	drawn_pointer();
+	game_state.unlock();
+	glutPostRedisplay();
 }
 
 std::vector<vertex_with_text*> colision_static = {scene_box[0], &quad};//colision objects
 double millis;
 void logica() {
-	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim, frame_clock;
+	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim, logica_clock;
 	if(text_anim < std::chrono::steady_clock::now()){
 		text_anim += std::chrono::milliseconds(100);
 		GLuint& pers_tex = pers.texture();
@@ -118,9 +125,12 @@ void logica() {
 	if (keyboard::a) pers.move(-phy::moveVel * millis);
 	if (keyboard::d) pers.move( phy::moveVel * millis);
 	if (keyboard::space) pers.jump();
+	std::this_thread::sleep_until(logica_clock);
 	millis = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - clock).count()/13000000;
 	//std::cout << 'M' << millis << std::endl;
-	clock = std::chrono::steady_clock::now();
+	logica_clock = clock = std::chrono::steady_clock::now();
+	logica_clock += std::chrono::milliseconds(2);
+	game_state.lock();
 	physics();//colision physics
 	if(pers.getElement().pos.y < 0.5){
 		//pers.onColision();
@@ -129,7 +139,7 @@ void logica() {
 	}
 	screen::camera_follow(pers.getElement().pos.x);
 	mouse::getcord();
-	glutPostRedisplay();
+	game_state.unlock();
 }
 
 void Teclado_press(unsigned char key, int x, int y) {
@@ -175,6 +185,13 @@ void mouse_move(int x, int y) {
 	mouse::y = y;
 }
 
+bool should_close = 0;
+void logica_loop(){
+	while(!should_close)
+		for(int i = 0; i < 16; ++i)
+			logica();
+}
+std::thread logica_loop_thread;
 int main(int argc, char** argv) {
 	start_gl(argc, argv);
 }
@@ -186,4 +203,11 @@ void Inicializa(void) {
 	//std::cout << "loading" << std::endl;
 	loadassets();
 	//std::cout << "loaded" << std::endl;
+	logica_loop_thread = std::thread(logica_loop);
+}
+
+void close() {
+	should_close = 1;
+	if(logica_loop_thread.joinable())logica_loop_thread.join();
+	glutLeaveMainLoop();
 }

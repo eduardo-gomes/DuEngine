@@ -90,9 +90,10 @@ void AlteraTamanhoTela(int w, int h) {
 	
 }
 
-void close() {
+void close();/* {
+	should_close = 1;
 	glutLeaveMainLoop();
-}
+}*/
 
 void start_gl(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -102,7 +103,7 @@ void start_gl(int argc, char** argv) {
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Game");
 	glutDisplayFunc(DesenhaNaTela);
-	glutIdleFunc(logica);
+	glutIdleFunc(NULL);
 	glutKeyboardFunc(Teclado_press);
 	glutKeyboardUpFunc(Teclado_press_up);
 	glutIgnoreKeyRepeat(1);
