@@ -33,6 +33,10 @@
 
 # Folders
 .vscode
-rgb.bmp
+build
+dependencies
+
+# Not compressed files
 *.xcf
-.gitignore
+*.bmp
+*.wav
