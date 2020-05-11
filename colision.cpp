@@ -38,16 +38,19 @@ std::vector<vertex_with_text *> scene_box = {
 	&levelone::scene_box_one
 };//vector
 extern double millis;
-player pers;
-/*vertex_quad_text quad = {
-	//pos			text pos
-	0.0, 0.0,		0.0, 0.0,
-	1.0, 0.0,		1.0, 0.0,
-	1.0, 1.0,		1.0, 1.0,
-	0.0, 1.0,		0.0, 1.0,
+player &pers = player::get();
+vertex_with_text quad = {
 	//texture
-	sprites::rgba
-};*/
+	sprites::rgba,
+	GL_QUADS,
+	//pos			text pos
+	{
+		0.0, 0.0,		0.0, 0.0,
+		1.0, 0.0,		1.0, 0.0,
+		1.0, 1.0,		1.0, 1.0,
+		0.0, 1.0,		0.0, 1.0,
+	}
+};
 void drawn_pointer() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
@@ -55,16 +58,16 @@ void drawn_pointer() {
 	drawn_bcg2();
 	drawn_bcg3();
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
-		drawn_triang_with_texture(**it);
-	drawn_quad_with_texture(pers.getElement());//global var
+		drawn_with_texture(**it);
+	drawn_with_texture(pers.getElement());//global var
 	//remove quad
-	/*quad.pos = mouse::pos; 
+	quad.pos = mouse::pos; 
 	for(auto it = scene_box.begin(); it != scene_box.end(); ++it)
 	if(colide(quad, **it) || colide(quad, pers.getElement()))//quad colision
 		quad.text_index = sprites::brick;
 	else
 		quad.text_index = sprites::rgba;
-	drawn_quad_with_texture(quad);*/
+	drawn_with_texture(quad);
 	//glDisable(GL_BLEND);//disable transparency
 	if (pressed_mouse)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
@@ -78,38 +81,34 @@ void drawn_pointer() {
 	glEnd();
 	if(keyboard::F1){
 		static text_params help_params(GL_LINEAR, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-		static vertex_quad_text help{
+		static vertex_with_text help{
+			sprites::help,
+			GL_QUADS,
 			{
 				-screen::viewy, -screen::viewy, 0.0, 1.0 - 1024.0/303.0,
 				 screen::viewy, -screen::viewy, 1.0, 1.0 - 1024.0/303.0,//image aspect 1024/303
 				 screen::viewy,  screen::viewy, 1.0, 1.0,
 				-screen::viewy,  screen::viewy, 0.0, 1.0
 			},
-			sprites::help,
 			{screen::camx, screen::camy},
 			&help_params
 		};
 		help.pos.x = screen::camx;
 		help.pos.y = screen::camy;
-		drawn_quad_with_texture(help);
+		drawn_with_texture(help);
 	}
 }
 void render() {
-	//screen::calcview();
-	//screen::camera_follow(pers.getElement().pos.x);
-	//mouse::getcord(); //moved to before physics() call
 	drawn_pointer();
 }
 
-//std::chrono::steady_clock::time_point;
-std::vector<vertex_with_text*> colision_static = {scene_box[0]};//colision objects
-std::vector<vertex_quad_text*> colision_static_quad = {/*&quad*/};//colision objects
+std::vector<vertex_with_text*> colision_static = {scene_box[0], &quad};//colision objects
 double millis;
 void logica() {
 	static std::chrono::steady_clock::time_point text_anim = std::chrono::steady_clock::now(), clock = text_anim, frame_clock;
 	if(text_anim < std::chrono::steady_clock::now()){
 		text_anim += std::chrono::milliseconds(100);
-		int& pers_tex = pers.texture();
+		GLuint& pers_tex = pers.texture();
 		pers_tex++;
 		if(pers_tex > spritesname::persandando04){
 			pers_tex = spritesname::persparado01;

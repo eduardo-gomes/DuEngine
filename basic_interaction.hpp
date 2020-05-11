@@ -14,21 +14,16 @@ struct text_params{
 	mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t){std::cout << "Text_params constructor" << std::endl;};
 };
 static const text_params def_text_params;
-struct vertex_quad_text {
-	double vector[16] = {
-		//pos		text pos
-		0.0, 0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0};
-	int text_index;
-	position pos = {0.0, 0.0};
-	const text_params *params = &def_text_params;
-};
+
+//GLuint text_index
+//GLenum mode // gl primitive
+//vector<double> //x, y, s, t cc form botom_left
+//position pos
+//const text_params //default to def_text_params
 struct vertex_with_text {
-	int text_index;
+	GLuint text_index;
 	GLenum mode;
-	std::vector<double> cords = {};
+	std::vector<double> cords = {}; // counterclockwise from botom_left corner
 	position pos = {0.0, 0.0};
 	const text_params *params = &def_text_params;
 };
@@ -39,27 +34,35 @@ namespace phy{
 }
 extern double millis;
 class player{
-	vertex_quad_text element = {
-		0.0, 0.0,		0.0, 0.0,
-		1.0, 0.0,		1.0, 0.0,
-		1.0, 1.0,		1.0, 1.0,
-		0.0, 1.0,		0.0, 1.0,
+	vertex_with_text element = {
 		spritesname::persparado01,
+		GL_QUADS,
+		{
+			0.0, 0.0,		0.0, 0.0,
+			1.0, 0.0,		1.0, 0.0,
+			1.0, 1.0,		1.0, 1.0,
+			0.0, 1.0,		0.0, 1.0,
+		},
 		{0.5, 5.0}
 	};
 	double jump_vel;
 	position lastpos = element.pos;
 	bool has_jumped = 0;
+	player() = default;
 	public:
+	static player& get(){
+		static player &instance = *(new player());
+		return instance;
+	}
 	void gravity(){
 		jump_vel -= phy::gravity*millis;
 	}
 	void jump(){if(!has_jumped)jump_vel += phy::jumpVel; has_jumped = 1;}
 	void apply_jump(){element.pos.y += jump_vel*millis;}
 	void onhorizontalColision(){if(jump_vel < 0) has_jumped = 0; jump_vel = 0;}
-	const double* getVector(){return element.vector;};
-	const vertex_quad_text& getElement(){return element;}
-	int& texture(){return element.text_index;}
+	//const double* getVector(){return element.vector;};
+	const vertex_with_text& getElement(){return element;}
+	GLuint& texture(){return element.text_index;}
 	void onColision(){element.pos = lastpos;}
 	void noColision(){lastpos = element.pos;}
 	void move(double x = 0.0, double y = 0.0){
@@ -81,28 +84,7 @@ class player{
 	//void 
 };
 
-void drawn_quad_with_texture(const vertex_quad_text& vertex) {
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[vertex.text_index]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, vertex.params->min_filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, vertex.params->mag_filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, vertex.params->warp_s); //repeat texture on x DISABLED because is the defaut
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, vertex.params->warp_t); //repeat texture on y
-	glColor3d(1.0, 1.0, 1.0);
-	glBegin(GL_QUADS);
-	glTexCoord2d(vertex.vector[2], vertex.vector[3]);
-	glVertex2d(vertex.pos.x + vertex.vector[0], vertex.pos.y + vertex.vector[1]);
-	glTexCoord2d(vertex.vector[6], vertex.vector[7]);
-	glVertex2d(vertex.pos.x + vertex.vector[4], vertex.pos.y + vertex.vector[5]);
-	glTexCoord2d(vertex.vector[10], vertex.vector[11]);
-	glVertex2d(vertex.pos.x + vertex.vector[8], vertex.pos.y + vertex.vector[9]);
-	glTexCoord2d(vertex.vector[14], vertex.vector[15]);
-	glVertex2d(vertex.pos.x + vertex.vector[12], vertex.pos.y + vertex.vector[13]);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-}
-
-void drawn_triang_with_texture(const vertex_with_text& vertex) {
+void drawn_with_texture(const vertex_with_text& vertex) {
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textures[vertex.text_index]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, vertex.params->min_filter);
