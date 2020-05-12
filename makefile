@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror -lpthread
-LIBS=-lglut -lGL -lGLU -lm
+LIBS=-lSDL2 -lGL -lGLU -lm
 
 #use Visual Studio Developer Command Prompt
 MSVC_INIT=vcvars64.bat

@@ -10,9 +10,8 @@
 #include "basic_interaction.hpp"
 #include "physics.hpp"
 #include "elements.hpp"
-bool pressed_mouse = 0;
 namespace mouse {
-	int x = -50, y = -50;
+	extern int x, y, pressed;
 	position pos;
 	void getcord() {
 		//(x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -20,9 +19,6 @@ namespace mouse {
 		pos.y = y * ((screen::camy - screen::viewy) - (screen::camy + screen::viewy)) / screen::height + (screen::camy + screen::viewy);
 	}
 }  // namespace mouse
-namespace keyboard{
-	bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
-}
 namespace screen{
 	void camera_follow(double px){
 		if(px < camx - viewx * 0.4){
@@ -71,7 +67,7 @@ void drawn_pointer() {
 		quad.text_index = sprites::rgba;
 	drawn_with_texture(quad);
 	//glDisable(GL_BLEND);//disable transparency
-	if (pressed_mouse)
+	if (mouse::pressed)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
 	else
 		glColor4d(1.0, 1.0, 1.0, 1.0);
@@ -106,7 +102,7 @@ void render() {
 	game_state.lock();
 	drawn_pointer();
 	game_state.unlock();
-	glutPostRedisplay();
+	//glutPostRedisplay();
 }
 
 std::vector<vertex_with_text*> colision_static = {scene_box[0], &quad};//colision objects
@@ -142,7 +138,7 @@ void logica() {
 	game_state.unlock();
 }
 
-void Teclado_press(unsigned char key, int x, int y) {
+/*void Teclado_press(unsigned char key, int x, int y) {
 	mouse_move(x, y);
 	if (key == 27) close();
 	else if(key == 'w') screen::camz -= 0.5;
@@ -183,17 +179,25 @@ void mouse_click(int button, int state, int x, int y) {
 void mouse_move(int x, int y) {
 	mouse::x = x;
 	mouse::y = y;
-}
+}*/
 
-bool should_close = 0;
 void logica_loop(){
-	while(!should_close)
+	while(!window::quit)
 		for(int i = 0; i < 16; ++i)
 			logica();
 }
 std::thread logica_loop_thread;
+void close() {
+	window::quit = 1;
+	if(logica_loop_thread.joinable())logica_loop_thread.join();
+}
 int main(int argc, char** argv) {
-	start_gl(argc, argv);
+	//start_gl(argc, argv);
+	(void)argc;
+	(void)argv;
+	if (window::init())
+		window::MainLoop();
+	close();
 }
 
 void Inicializa(void) {
@@ -204,10 +208,4 @@ void Inicializa(void) {
 	loadassets();
 	//std::cout << "loaded" << std::endl;
 	logica_loop_thread = std::thread(logica_loop);
-}
-
-void close() {
-	should_close = 1;
-	if(logica_loop_thread.joinable())logica_loop_thread.join();
-	glutLeaveMainLoop();
 }

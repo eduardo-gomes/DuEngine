@@ -1,10 +1,15 @@
-// antes : sudo apt - get install freeglut3 - dev
-// g++ (arquivo) -lglut -lGL -lGLU -lm
-// g++ opengl_space_invader.cpp -o jogo.exe -lfreeglut -lopengl32 -lglu32 -Wl,-subsystem,windows
-#include <GL/freeglut.h>
-
-#include <cmath>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#include <GL/glu.h>
+#include <stdio.h>
 #define PI 3.1415926535897932
+extern void render();
+extern void Inicializa();
+namespace window{
+	extern bool quit;
+	void toggle_fullscreen();
+}
+
 namespace screen{
 	int width, height;
 	double aspect, &x = aspect, y = 1.0;
@@ -23,12 +28,209 @@ namespace screen{
 		bcg3Viewx = aspect * bcg3Viewy;
 	}
 }
-	const int dfwidth = 1366,
-			  dfheight = 768;
-bool fullscreen = 0;
-void render();
-void logica();
 
+namespace mouse {
+	int x = 0, y = 0, pressed;
+	void motion_event(const SDL_Event& e){
+		const SDL_MouseMotionEvent &motion = e.motion;
+		x = motion.x;
+		y = motion.y;
+	}
+	void button_event(const SDL_Event& e){
+		const SDL_MouseButtonEvent &button = e.button;
+		pressed = button.state == SDL_PRESSED;
+		printf("Mouse button %hhu, state %hhu, x %d, y %d\n", button.button, button.state, button.x, button.y);
+		x = button.x;
+		y = button.y;
+	}
+}
+namespace keyboard{
+	bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
+	uint16_t mod = KMOD_NONE;
+	void event(const SDL_Event &e){//Keyboard event handler
+		/*
+		Uint32 	type		the event type; SDL_KEYDOWN or SDL_KEYUP
+		Uint32	timestamp	timestamp of the event
+		Uint32	windowID	the window with keyboard focus, if any
+		Uint8	state		the state of the key; SDL_PRESSED or SDL_RELEASED
+		Uint8	repeat		non-zero if this is a key repeat
+		SDL_Keysym	keysym	the SDL_Keysym representing the key that was pressed or released
+			SDL_Scancode	scancode	SDL physical key code; see SDL_Scancode for details
+			SDL_Keycode		sym			SDL virtual key code; see SDL_Keycode for details
+			Uint16			mod			current key modifiers; see SDL_Keymod for details
+		*/
+		const SDL_KeyboardEvent &key = e.key;
+		//printf("KEY type %u, timestamp %u, windowID %u, state %hhu, repeat %hhu, keycode %d, mod %hu\n", key.type, key.timestamp, key.windowID, key.state, key.repeat, key.keysym.sym, key.keysym.mod);
+		bool state = key.state == SDL_PRESSED;
+		mod = key.keysym.mod;
+		if(!key.repeat)
+		switch(key.keysym.sym){
+			case SDLK_ESCAPE:
+				window::quit = true;
+				break;
+			case SDLK_a:
+				a = state;
+				break;
+			case SDLK_d:
+				d = state;
+				break;
+			case SDLK_s:
+				s = state;
+				break;
+			case SDLK_w:
+				w = state;
+				break;
+			case SDLK_SPACE:
+				space = state;
+				break;
+			case SDLK_F1:
+				F1 = state;
+				break;
+			case SDLK_F11:
+				if(state)
+				window::toggle_fullscreen();
+				break;
+		} 
+	}
+}
+namespace window{
+//Screen dimension constants
+const int dfwidth = 1366,
+		  dfheight = 768;
+const char window_name[] = "GL game";
+bool quit = false;
+//The window we'll be rendering to
+SDL_Window *window = NULL;
+//The surface contained by the window
+SDL_Surface *screenSurface = NULL;
+//Event handler
+SDL_Event event;
+
+SDL_GLContext glcontext;
+void glinit_reshape(){
+	SDL_GL_MakeCurrent(window, glcontext);
+	/*if (h == 0)
+		h = 1;*/
+	//screen::height = h;
+	//screen::width = w;
+	screen::aspect = (double)screen::width / screen::height;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, screen::width, screen::height);
+	gluPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
+	glMatrixMode(GL_MODELVIEW);
+}
+void glinit_reshape(int w, int h){
+	screen::height = h;
+	screen::width = w;
+	glinit_reshape();
+}
+
+void toggle_fullscreen(){
+	static bool windowed = 1;
+	windowed = !windowed;
+	int i = SDL_GetWindowDisplayIndex(window);
+	if (windowed){
+		screen::width = dfwidth;
+		screen::height = dfwidth;
+		if(SDL_SetWindowFullscreen(window, 0))
+			printf("Window could not be resized! SDL_Error: %s\n", SDL_GetError());
+	}
+	else{
+		SDL_Rect j;
+		SDL_GetDisplayBounds(i, &j);
+		screen::width = j.w;
+		screen::height = j.h;
+		if(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP))
+			printf("Window could not be resized! SDL_Error: %s\n", SDL_GetError());
+	}
+	//glinit_reshape();
+}
+
+bool init_window(){
+	bool success = 1;
+	//Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO) < 0){
+		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+	}
+	else{
+		//OpenGL 2.1
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		//Create window
+		window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, dfwidth, dfheight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+		if (window == NULL){
+			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+			success = 0;
+		}
+		else{
+			//Get window surface
+			screenSurface = SDL_GetWindowSurface(window);
+			//Create context
+			glcontext = SDL_GL_CreateContext(window);
+			if (glcontext == NULL)			{
+				printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
+				success = false;
+			}
+			else{
+				//Use Vsync
+				if (SDL_GL_SetSwapInterval(1) < 0){
+					printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
+				}
+
+				//Initialize OpenGL
+				glinit_reshape(dfwidth, dfheight);
+				GLenum error = glGetError();
+				if (error != GL_NO_ERROR){
+					printf("Error initializing OpenGL! %s\n", gluErrorString(error));
+					success = false;
+				}
+				Inicializa();
+			}
+		}
+	}
+	return success;
+}
+SDL_Surface *rgbbmp = NULL;
+void close_window(){
+	SDL_FreeSurface(rgbbmp);
+	rgbbmp = NULL;
+	SDL_GL_DeleteContext(glcontext);
+	glcontext = NULL;
+	//Destroy window
+	SDL_DestroyWindow(window);
+	window = NULL;
+
+	//Quit SDL subsystems
+	SDL_Quit();
+}
+bool loadMedia(){
+	//Loading success flag
+	bool success = true;
+
+	//Load splash image
+	rgbbmp = SDL_LoadBMP("assets/rgb.bmp");
+	if (rgbbmp == NULL){
+		printf("Unable to load image %s! SDL Error: %s\n", "assets/rgb.bmp", SDL_GetError());
+		success = false;
+	}
+
+	return success;
+}
+
+bool shoud_drawn = 1;
+void drawn(){
+	//Fill the surface white
+	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0xFF, 0xFF));
+	SDL_BlitScaled(rgbbmp, NULL, screenSurface, NULL);
+
+	//Update the surface
+	SDL_UpdateWindowSurface(window);
+
+	shoud_drawn = 0;
+}
 void Restaura() {
 	glLoadIdentity();
 	gluLookAt(screen::camx, screen::camy, screen::camz,
@@ -36,84 +238,50 @@ void Restaura() {
 			  0.0f, 1.0f, 0.0f);
 }
 
+
 void DesenhaNaTela(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	Restaura();
 	render();
 	glFinish();
-	glutSwapBuffers();
+	SDL_GL_SwapWindow(window);
 }
 
-void fscr_toggle() {
-	fullscreen = !fullscreen;
-	if (fullscreen) {
-		glutFullScreen();
-	} else {
-		glutPositionWindow(20, 20);
-		glutReshapeWindow(dfwidth, dfheight);
+void MainLoop(){
+	while(!quit){
+		//Handle events on queue
+		while (SDL_PollEvent(&event) != 0){
+			switch(event.type){
+				case SDL_QUIT:
+					quit = true;
+					break;
+				//keyboard
+				case SDL_KEYDOWN:
+				case SDL_KEYUP:
+					keyboard::event(event);
+					break;
+				case SDL_MOUSEMOTION:
+					mouse::motion_event(event);
+					break;
+				case SDL_MOUSEBUTTONUP:
+				case SDL_MOUSEBUTTONDOWN:
+					mouse::button_event(event);
+					break;
+				case SDL_WINDOWEVENT:
+					if(event.window.event == SDL_WINDOWEVENT_RESIZED)
+						glinit_reshape(event.window.data1, event.window.data2);
+					break;
+			}
+		}
+		if(shoud_drawn)
+			DesenhaNaTela();
 	}
 }
-void Teclado_press_up(unsigned char key, int, int);
-void Teclado_press(unsigned char key, int, int);
-void Teclado_spec(int key, int, int);
-void mouse_click(int, int, int, int);
-void mouse_move(int, int);
 
-// Inicializa parâmetros de rendering
-void Inicializa(void) ;/*{
-	glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
-}*/
-
-void AlteraTamanhoTela(int w, int h) {
-	if (h == 0)
-		h = 1;
-	screen::aspect = 16.0 / 9;
-	screen::height = h;
-	screen::width = w;
-	if(!fullscreen){
-		if (screen::aspect - (w * 1.0 / h) > 0.01) {
-			screen::height = h;
-			screen::width = (int)(h * screen::aspect);
-			glutReshapeWindow(screen::width, screen::height);
-		} else if (screen::aspect - (w * 1.0 / h) < -0.01) {
-			screen::height = (int)(w / screen::aspect);
-			screen::width = w;
-			glutReshapeWindow(screen::width, screen::height);
-		}
-	}/*else*/
-	std::cout << screen::width << ' ' << screen::height << ' ' << screen::aspect << std::endl;
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, screen::width, screen::height);
-	gluPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
-	glMatrixMode(GL_MODELVIEW);
-	
+int init(){
+	if (init_window())
+		if (loadMedia())
+			return 1;
+	return 0;
 }
-
-void close();/* {
-	should_close = 1;
-	glutLeaveMainLoop();
-}*/
-
-void start_gl(int argc, char** argv) {
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowSize(dfwidth, dfheight);
-	screen::aspect = (double)dfwidth / dfheight;
-	glutInitWindowPosition(0, 0);
-	glutCreateWindow("Game");
-	glutDisplayFunc(DesenhaNaTela);
-	glutIdleFunc(NULL);
-	glutKeyboardFunc(Teclado_press);
-	glutKeyboardUpFunc(Teclado_press_up);
-	glutIgnoreKeyRepeat(1);
-	glutSpecialFunc(Teclado_spec);
-	glutMouseFunc(mouse_click);
-	glutPassiveMotionFunc(mouse_move);
-	glutMotionFunc(mouse_move);
-	glutReshapeFunc(AlteraTamanhoTela);
-	glutCloseFunc(close);
-	Inicializa();
-	if (fullscreen) glutFullScreen();
-	glutMainLoop();
 }
