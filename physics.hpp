@@ -19,15 +19,15 @@ int colide(const vertex_with_text &a, const vertex_with_text&b){
 		for(long unsigned int nQuad= 0; nQuad < b.cords.size()/(4*4); ++nQuad){
 			const double &bX = b.cords[nQuad * 4 * 4] + b.pos.x,
 						&bY = b.cords[nQuad * 4 * 4 + 1] + b.pos.y,
-						&bWidth = b.cords[nQuad * 4 * 4 + 4 * 1],
-						&bHeight = b.cords[nQuad * 4 * 4 + 4 * 3 + 1];
+						&bWidth = b.cords[nQuad * 4 * 4 + 4 * 1] - bX + b.pos.x,
+						&bHeight = b.cords[nQuad * 4 * 4 + 4 * 3 + 1] - bY + b.pos.y;
 			if( //Test if there isn't a gap betwin any the two quads
-				aX < bX + (bWidth - bX) &&
+				aX < bX + bWidth &&
 				aX + aWidth > bX &&
-				aY < bY + (bHeight - bY) &&
+				aY < bY + bHeight &&
 				aY + aHeight > bY){
 					has_colided |= 1;
-					if(aX < bX + (bWidth - bX) && (aX + aWidth > bX)) has_colided |= 0b10;
+					if(aX < bX + bWidth && (aX + aWidth > bX)) has_colided |= 0b10;
 			}
 		}
 	}
@@ -63,6 +63,7 @@ void colision_push_vec(const vertex_with_text &a, const vertex_with_text&b){
 }
 
 extern std::vector<vertex_with_text *> colision_static;
+extern std::list<coins> coins_list;
 extern player &pers;
 
 int colide_all(){//if quad colide 0b01 if colide with the foor 0b1x
@@ -115,4 +116,11 @@ void physics(){
 		//std::cout << "Normal colision" << std::endl;
 	}
 	/*if(!has_colided)*/ pers.noColision();
+
+	for (auto it = coins_list.begin(); it != coins_list.end(); ++it){
+		if(colide(pers.getElement(), it->getElement())){
+			it->colide_player(pers);
+			it = coins_list.erase(it);
+		}
+	}
 }

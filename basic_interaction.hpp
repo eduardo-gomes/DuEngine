@@ -48,6 +48,7 @@ class player{
 	double jump_vel;
 	position lastpos = element.pos;
 	bool has_jumped = 0;
+	int coins_get = 0;
 	player() = default;
 	public:
 	static player& get(){
@@ -80,8 +81,37 @@ class player{
 		noColision();
 		onhorizontalColision();
 	}
+	void coinhit(int i){
+		coins_get += i;
+		std::cout << "Now have " << coins_get << " coins" << std::endl;
+	}
+	int& get_coins(){
+		return coins_get;
+	}
 	bool colide = 0;
 	//void 
+};
+
+class coins{
+	vertex_with_text element = {
+		sprites::coin,
+		GL_QUADS,
+		{
+			0.0, 0.0,		0.0, 0.0,
+			1.0, 0.0,		1.0, 0.0,
+			1.0, 1.0,		1.0, 1.0,
+			0.0, 1.0,		0.0, 1.0,
+		},
+		{5.5, 5.0}
+	};
+	public:
+	coins(position pos){
+		element.pos = pos;
+	}
+	const vertex_with_text &getElement() { return element; }
+	void colide_player(player &p){
+		p.coinhit(1);
+	}
 };
 
 void drawn_with_texture(const vertex_with_text& vertex) {

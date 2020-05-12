@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <list>
 #include "graphics.hpp"
 #include "assets.hpp"
 #include "loadassets.hpp"
@@ -35,6 +36,7 @@ namespace screen{
 std::vector<vertex_with_text *> scene_box = {
 	&levelone::scene_box_one
 };//vector
+std::list<coins> coins_list;
 extern double millis;
 player &pers = player::get();
 vertex_with_text quad = {
@@ -66,6 +68,8 @@ void drawn_pointer() {
 	else
 		quad.text_index = sprites::rgba;
 	drawn_with_texture(quad);
+	for(auto it = coins_list.begin(); it != coins_list.end(); ++it)
+		drawn_with_texture(it->getElement());
 	//glDisable(GL_BLEND);//disable transparency
 	if (mouse::pressed)
 		glColor4d(1.0, 0.0, 0.0, 1.0);
@@ -138,49 +142,6 @@ void logica() {
 	game_state.unlock();
 }
 
-/*void Teclado_press(unsigned char key, int x, int y) {
-	mouse_move(x, y);
-	if (key == 27) close();
-	else if(key == 'w') screen::camz -= 0.5;
-	else if(key == 's') screen::camz += 0.5;
-	else if (key == 'a') keyboard::a = 1;
-	else if (key == 'd') keyboard::d = 1;
-	else if (key == ' ') keyboard::space = 1;
-}
-void Teclado_press_up(unsigned char key, int x, int y) {
-	mouse_move(x, y);
-	if (key == 'a') keyboard::a = 0;
-	else if (key == 'd') keyboard::d = 0;
-	else if (key == ' ') keyboard::space = 0;
-}
-void Teclado_spec(int key, int x, int y) {
-	mouse_move(x, y);
-	if(key == GLUT_KEY_F11) fscr_toggle();
-	else if(key == GLUT_KEY_F1) keyboard::F1 ^= 1;
-	else if(key == GLUT_KEY_UP) screen::camy += 0.5;
-	else if(key == GLUT_KEY_DOWN) screen::camy -= 0.5;
-	else if(key == GLUT_KEY_RIGHT) screen::camx += 0.5;
-	else if(key == GLUT_KEY_LEFT) screen::camx -= 0.5;
-	//std::cout << "Key " << key << std::endl;
-}
-
-void mouse_click(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON) {
-		if (state == GLUT_DOWN) {
-			pressed_mouse = 1;
-		} else if (state == GLUT_UP) {
-			glColor4d(1.0, 1.0, 1.0, 1.0);
-			pressed_mouse = 0;
-		}
-		mouse_move(x, y);
-	}
-}
-
-void mouse_move(int x, int y) {
-	mouse::x = x;
-	mouse::y = y;
-}*/
-
 void logica_loop(){
 	while(!window::quit)
 		for(int i = 0; i < 16; ++i)
@@ -208,4 +169,7 @@ void Inicializa(void) {
 	loadassets();
 	//std::cout << "loaded" << std::endl;
 	logica_loop_thread = std::thread(logica_loop);
+	coins_list.emplace_back(position(7.0, 5.0));
+	coins_list.emplace_back(position(10.0, 5.0));
+	coins_list.emplace_back(position(15.0, 5.0));
 }
