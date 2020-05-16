@@ -5,7 +5,7 @@
 //std::array<std::string, assets_size> assetsToLoad;
 
 enum sprites{pers01, pers02, pers03, pers04, pers05, pers06, pers07, pers09, brick, rgba, funuv, nuvem, coque, coin, help};//help is the last
-enum sounds{scoin = help +1};
+enum sounds{scoin, jump, fall};
 enum spritesname{
 	persparado00 = pers01,
 	persparado01 = pers02,
@@ -17,13 +17,13 @@ enum spritesname{
 	perspulando01 = pers09
 };
 
-constexpr long unsigned sprites_begin =0;
+constexpr long unsigned sprites_begin = 0;
 constexpr long unsigned sprites_end = sprites::help + 1;
 constexpr long unsigned sounds_begin = sounds::scoin;
-constexpr long unsigned sounds_end = sounds::scoin + 1;
-constexpr long unsigned assets_size = sprites_end;//sounds_end;// until implement function to load sound
-std::array<std::string, assets_size>* get_assets_files(){
-	std::array<std::string, assets_size> & assetsToLoad = *(new std::array<std::string, assets_size>);
+constexpr long unsigned sounds_end = sounds::fall + 1;
+constexpr long unsigned sprites_size = sprites_end, sounds_size = sounds_end - sounds_begin;//, assets_size = sounds_size + sprites_size;
+std::array<std::string, sprites_size>* get_sprites_files(){
+	std::array<std::string, sprites_size> & assetsToLoad = *(new std::array<std::string, sprites_size>);
 	assetsToLoad[pers01] = "assets/pers01.bmp";
 	assetsToLoad[pers02] = "assets/pers02.bmp";
 	assetsToLoad[pers03] = "assets/pers03.bmp";
@@ -39,6 +39,12 @@ std::array<std::string, assets_size>* get_assets_files(){
 	assetsToLoad[coque] = "assets/coque.bmp";
 	assetsToLoad[help] = "assets/help1024x303.bmp";
 	assetsToLoad[coin] = "assets/coin.bmp";
-	//assetsToLoad[scoin] = "assets/sfx_coin_double1.wav";
+	return &assetsToLoad;
+}
+std::array<std::string, sounds_size>* get_sounds_files(){
+	std::array<std::string, sounds_size> & assetsToLoad = *(new std::array<std::string, sounds_size>);
+	assetsToLoad[scoin] = "assets/audio/sfx_coin_double1.ogg";
+	assetsToLoad[jump] = "assets/audio/sfx_movement_jump13.ogg";
+	assetsToLoad[fall] = "assets/audio/sfx_movement_jump13_landing.ogg";
 	return &assetsToLoad;
 }

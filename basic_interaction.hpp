@@ -11,7 +11,9 @@ struct position {
 struct text_params{
 	GLint mag_filter, min_filter, warp_s, warp_t;
 	text_params(GLint mag_filter = GL_NEAREST, GLint min_filter = GL_LINEAR, GLint warp_s = GL_REPEAT, GLint warp_t = GL_REPEAT) :
-	mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t){std::cout << "Text_params constructor" << std::endl;};
+	mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t){
+		//std::cout << "Text_params constructor" << std::endl;
+	};
 };
 static const text_params def_text_params;
 
@@ -58,7 +60,13 @@ class player{
 	void gravity(){
 		jump_vel -= phy::gravity*millis;
 	}
-	void jump(){if(!has_jumped)jump_vel += phy::jumpVel; has_jumped = 1;}
+	void jump(){
+		if(!has_jumped){
+			jump_vel += phy::jumpVel;
+			audio::queue(sounds::jump);
+		}
+		has_jumped = 1;
+	}
 	void apply_jump(){element.pos.y += jump_vel*millis;}
 	void onhorizontalColision(){if(jump_vel < 0) has_jumped = 0; jump_vel = 0;}
 	//const double* getVector(){return element.vector;};
@@ -110,9 +118,13 @@ class coins{
 	}
 	const vertex_with_text &getElement() { return element; }
 	void colide_player(player &p){
+		audio::queue(scoin);
 		p.coinhit(1);
 	}
 };
+void test_sound(){
+	audio::queue(scoin);
+}
 
 void drawn_with_texture(const vertex_with_text& vertex) {
 	glEnable(GL_TEXTURE_2D);

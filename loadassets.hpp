@@ -8,10 +8,11 @@
 #include "colision.cpp"
 #endif
 
-GLuint textures[assets_size];
+GLuint textures[sprites_size];
+//audio::sound sons[sounds_size];
 
-int loadtexture(long unsigned index, std::array<std::string, assets_size> *assetsToLoad_ptr, void *saveto[], int size[][2]){
-	std::array<std::string, assets_size> &assetsToLoad = *assetsToLoad_ptr;
+int loadtexture(long unsigned index, std::array<std::string, sprites_size> *assetsToLoad_ptr, void *saveto[], int size[][2]){
+	std::array<std::string, sprites_size> &assetsToLoad = *assetsToLoad_ptr;
 	std::ifstream file(assetsToLoad[index], std::ios::binary | std::ios::ate);
 	file.seekg(0, std::ios::beg);
 	char* fdata;
@@ -58,14 +59,16 @@ int loadtexture(long unsigned index, std::array<std::string, assets_size> *asset
 }
 
 int loadassets(){
-	glGenTextures(assets_size, textures);
-	std::array<std::future<int>, assets_size> futures;
+	glGenTextures(sprites_size, textures);
+	std::array<std::future<int>, sprites_size> futures;
 	void* images[sprites_end];
 	int imagesize[sprites_end][2];//w h
-	std::array<std::string, assets_size> &assetsToLoad = *get_assets_files();
+	std::array<std::string, sprites_size> &assetsToLoad = *get_sprites_files();
+
 	for (long unsigned i = sprites_begin; i < sprites_end; ++i) {
 		futures[i] = std::async(loadtexture, i, &assetsToLoad, images, imagesize);
 	}
+
 	for (long unsigned i = sprites_begin; i < sprites_end; ++i) {
 		if(futures[i].get())
 			std::cout << "Can't load " << assetsToLoad[i] << std::endl;
@@ -73,11 +76,34 @@ int loadassets(){
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagesize[i][0], imagesize[i][1], 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]);//the bitmap file is bottom-top, so the texture origin is on the bottom left corner instead of being on the top left
 		free(images[i]);
 	}
-	/*for (long unsigned i = sounds_begin; i < sounds_end; ++i) {
-		if(futures[i].get())
-			std::cout << "Can't load " << assetsToLoad[i] << std::endl;
-	}*/
 	//std::cout << "load end" << std::endl;
+	delete &assetsToLoad;
+	return 0;
+}
+
+
+audio::sound & loadsound(long unsigned index, std::array<std::string, sounds_size> *assetsToLoad_ptr){
+	std::array<std::string, sounds_size> &assetsToLoad = *assetsToLoad_ptr;
+	FILE * open = fopen(assetsToLoad[index].c_str(), "r");
+	if(!open){
+		std::cout << assetsToLoad[index] << " load fail" << std::endl;
+	}
+	return audio::create_sound(open);
+}
+int loadaudios(){
+	std::array<std::future<audio::sound &>, sounds_size> futures;
+	std::array<std::string, sounds_size> &assetsToLoad = *get_sounds_files();
+	audio::loaded_sounds.reserve(sounds_size);
+
+	for (long unsigned i = sounds_begin; i < sounds_end; ++i) {
+		futures[i] = std::async(loadsound, i, &assetsToLoad);
+	}
+	for (long unsigned i = sounds_begin; i < sounds_end; ++i){
+		audio::sound &loaded = futures[i].get();
+		audio::loaded_sounds.emplace(audio::loaded_sounds.begin()+(int)i, loaded);
+		// fclose(open);
+		delete &loaded;
+	}
 	delete &assetsToLoad;
 	return 0;
 }

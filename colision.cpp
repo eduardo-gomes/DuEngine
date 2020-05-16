@@ -5,12 +5,14 @@
 #include <thread>
 #include <mutex>
 #include <list>
+#include "audio.hpp"
 #include "graphics.hpp"
 #include "assets.hpp"
 #include "loadassets.hpp"
 #include "basic_interaction.hpp"
 #include "physics.hpp"
 #include "elements.hpp"
+//#define NO_VSYNC
 namespace mouse {
 	extern int x, y, pressed;
 	position pos;
@@ -103,6 +105,15 @@ void drawn_pointer() {
 std::mutex game_state;
 
 void render() {
+	static std::chrono::steady_clock::time_point last = std::chrono::steady_clock::now();
+	#ifdef NO_VSYNC
+	static int times = 0;
+	if(++times >= 1000){
+		times = 0;
+		printf("FPS: %lf\n", 1000*1e9/((double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - last).count()));
+		last = std::chrono::steady_clock::now();
+	}
+	#endif
 	game_state.lock();
 	drawn_pointer();
 	game_state.unlock();
@@ -129,7 +140,7 @@ void logica() {
 	millis = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - clock).count()/13000000;
 	//std::cout << 'M' << millis << std::endl;
 	logica_clock = clock = std::chrono::steady_clock::now();
-	logica_clock += std::chrono::milliseconds(2);
+	logica_clock += std::chrono::milliseconds(5);
 	game_state.lock();
 	physics();//colision physics
 	if(pers.getElement().pos.y < 0.5){
@@ -152,13 +163,25 @@ void close() {
 	window::quit = 1;
 	if(logica_loop_thread.joinable())logica_loop_thread.join();
 }
+//bool &quit = window::quit;
 int main(int argc, char** argv) {
+	//Instrumentor::Get().BeginSession("Session");
 	//start_gl(argc, argv);
 	(void)argc;
 	(void)argv;
-	if (window::init())
+	//std::thread music;
+	if(!audio::init())
+	if (window::init()) {
+		//music = std::thread(play_sound);
+		#ifdef NO_VSYNC
+		SDL_GL_SetSwapInterval(0);
+		#endif
 		window::MainLoop();
+	}
+	audio::close();
+	//music.join();
 	close();
+	//Instrumentor::Get().EndSession();
 }
 
 void Inicializa(void) {
@@ -167,9 +190,11 @@ void Inicializa(void) {
 	screen::camy = 5.0;
 	//std::cout << "loading" << std::endl;
 	loadassets();
+	loadaudios();
 	//std::cout << "loaded" << std::endl;
 	logica_loop_thread = std::thread(logica_loop);
 	coins_list.emplace_back(position(7.0, 5.0));
 	coins_list.emplace_back(position(10.0, 5.0));
-	coins_list.emplace_back(position(15.0, 5.0));
+	for(int i = 0; i < 60; i+= 2)
+		coins_list.emplace_back(position(15.0+i, 5.15));
 }

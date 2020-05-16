@@ -44,6 +44,7 @@ namespace mouse {
 		y = button.y;
 	}
 }
+void test_sound();
 namespace keyboard{
 	bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
 	uint16_t mod = KMOD_NONE;
@@ -90,6 +91,10 @@ namespace keyboard{
 				if(state)
 				window::toggle_fullscreen();
 				break;
+			case SDLK_UP:
+				if(state)
+				test_sound();
+				break;
 		} 
 	}
 }
@@ -101,8 +106,6 @@ const char window_name[] = "GL game";
 bool quit = false;
 //The window we'll be rendering to
 SDL_Window *window = NULL;
-//The surface contained by the window
-SDL_Surface *screenSurface = NULL;
 //Event handler
 SDL_Event event;
 
@@ -166,8 +169,6 @@ bool init_window(){
 			success = 0;
 		}
 		else{
-			//Get window surface
-			screenSurface = SDL_GetWindowSurface(window);
 			//Create context
 			glcontext = SDL_GL_CreateContext(window);
 			if (glcontext == NULL)			{
@@ -187,6 +188,7 @@ bool init_window(){
 					printf("Error initializing OpenGL! %s\n", gluErrorString(error));
 					success = false;
 				}
+				printf("OpenGL %s\n", glGetString(GL_VERSION));
 				Inicializa();
 			}
 		}
@@ -206,31 +208,7 @@ void close_window(){
 	//Quit SDL subsystems
 	SDL_Quit();
 }
-bool loadMedia(){
-	//Loading success flag
-	bool success = true;
 
-	//Load splash image
-	rgbbmp = SDL_LoadBMP("assets/rgb.bmp");
-	if (rgbbmp == NULL){
-		printf("Unable to load image %s! SDL Error: %s\n", "assets/rgb.bmp", SDL_GetError());
-		success = false;
-	}
-
-	return success;
-}
-
-bool shoud_drawn = 1;
-void drawn(){
-	//Fill the surface white
-	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0x00, 0xFF, 0xFF));
-	SDL_BlitScaled(rgbbmp, NULL, screenSurface, NULL);
-
-	//Update the surface
-	SDL_UpdateWindowSurface(window);
-
-	shoud_drawn = 0;
-}
 void Restaura() {
 	glLoadIdentity();
 	gluLookAt(screen::camx, screen::camy, screen::camz,
@@ -273,15 +251,13 @@ void MainLoop(){
 					break;
 			}
 		}
-		if(shoud_drawn)
-			DesenhaNaTela();
+		DesenhaNaTela();
 	}
 }
 
 int init(){
 	if (init_window())
-		if (loadMedia())
-			return 1;
+		return 1;
 	return 0;
 }
 }
