@@ -105,8 +105,8 @@ void drawn_pointer() {
 std::mutex game_state;
 
 void render() {
-	static std::chrono::steady_clock::time_point last = std::chrono::steady_clock::now();
 	#ifdef NO_VSYNC
+	static std::chrono::steady_clock::time_point last = std::chrono::steady_clock::now();
 	static int times = 0;
 	if(++times >= 1000){
 		times = 0;
@@ -140,7 +140,7 @@ void logica() {
 	millis = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - clock).count()/13000000;
 	//std::cout << 'M' << millis << std::endl;
 	logica_clock = clock = std::chrono::steady_clock::now();
-	logica_clock += std::chrono::milliseconds(5);
+	logica_clock += std::chrono::milliseconds(1);
 	game_state.lock();
 	physics();//colision physics
 	if(pers.getElement().pos.y < 0.5){
