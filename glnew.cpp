@@ -1,3 +1,4 @@
+#include <csignal>
 #include <iostream>
 #include "graphics.hpp"
 struct vertex2d{
@@ -5,6 +6,7 @@ struct vertex2d{
 };
 #include <fstream>
 #include <sstream>
+#define ASSERT(X) if(!(X)) raise(SIGTRAP);
 struct ShaderProgramSource{
 	std::string VertexSource;
 	std::string FragmentSource;
@@ -82,7 +84,7 @@ void Inicializa(){
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, 4*sizeof(vertex2d), positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4*sizeof(vertex2d), positions, GL_STATIC_DRAW);//each vertexarray has one so to use other has to switch
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex2d), 0);
 	glEnableVertexAttribArray(0);
 
@@ -98,12 +100,19 @@ void Inicializa(){
 	//std::cout << source.FragmentSource << std::endl;
 
 	shader = CreateShader(source.VertexSource, source.FragmentSource);
-	glUseProgram(shader);
+	gltry(glUseProgram(shader));
+
+	//set color
+	int location = glGetUniformLocation(shader, "u_color");
+	ASSERT(location != -1);
+	gltry(glUniform4f(location, 0.0f, 0.25f, 0.95f, 1.0f));
 }
 void render() {
 	glEnable(GL_BLEND);// to use transparency
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);//documentation
+	window::ClearErrors();
+	gltry(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));//documentation
+	
 }
 int main(){
 	if(!window::init()){

@@ -1,3 +1,4 @@
+#include <csignal>
 #include "graphics.hpp"
 #define PI 3.1415926535897932
 extern void render();
@@ -254,4 +255,15 @@ void MainLoop() {
 }
 
 int init() { return init_window(); }
+bool ClearErrors(){
+	bool ret = 0;
+	while(glGetError() != GL_NO_ERROR){ret = 1;};
+	return ret;
+}
+void PrintAllErrors(const char *fun, const char *file, int line) {
+	while (GLenum error = glGetError()){
+		printf("[GL Error]: %0X from: %s on file: %s on line %d\n", error, fun, file, line);
+		raise(SIGTRAP);
+	}
+}
 }  // namespace window

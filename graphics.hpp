@@ -53,4 +53,8 @@ void DesenhaNaTela(void);
 void MainLoop();
 
 extern int init();
+
+bool ClearErrors();
+void PrintAllErrors(const char*, const char*, int);
 }
+#define gltry(X) X;window::PrintAllErrors(#X, __FILE__, __LINE__);
