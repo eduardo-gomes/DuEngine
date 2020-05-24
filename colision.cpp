@@ -195,6 +195,6 @@ void Inicializa(void) {
 	logica_loop_thread = std::thread(logica_loop);
 	coins_list.emplace_back(position(7.0, 5.0));
 	coins_list.emplace_back(position(10.0, 5.0));
-	for(int i = 0; i < 60; i+= 2)
+	for(int i = 0; i < 50; i+= 2)
 		coins_list.emplace_back(position(15.0+i, 5.15));
 }
