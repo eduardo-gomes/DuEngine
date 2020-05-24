@@ -1,122 +1,104 @@
-#include <csignal>
 #include <iostream>
+
+#include "GLClasses.hpp"
 #include "graphics.hpp"
-struct vertex2d{
-	float x, y, s, t;
+struct vertex2d {
+	float x, y, z, s, t;
 };
-#include <fstream>
-#include <sstream>
-#define ASSERT(X) if(!(X)) raise(SIGTRAP);
-struct ShaderProgramSource{
-	std::string VertexSource;
-	std::string FragmentSource;
-};
-static ShaderProgramSource ParseShader(const std::string& filepath){
-	std::ifstream stream(filepath);
-	enum class ShaderType{
-		NONE = -1, VERTEX = 0, FRAGMENT = 1
-	};
-	ShaderType type= ShaderType::NONE;
-	std::string line;
-	std::stringstream ss[2];
-	while (getline(stream, line)){
-		if(line.find("vertex") != std::string::npos){
-			type = ShaderType::VERTEX;
-		} else if (line.find("fragment") != std::string::npos) {
-			type = ShaderType::FRAGMENT;
-		}else{
-			ss[(int) type] << line << '\n';
-		}
-	}
-	return {ss[0].str(), ss[1].str()};
-}
+Render renderer;
 unsigned int buffer;
-static unsigned int compileshader(unsigned int type, const std::string& source) {
-	unsigned int id = glCreateShader(type);
-	const char* src = source.c_str();
-	glShaderSource(id, 1, &src, NULL);
-	glCompileShader(id);
-	int result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-	if(result == GL_FALSE){
-		int length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-		char* message = (char*)alloca((unsigned)length * sizeof(char));
-		glGetShaderInfoLog(id, length, &length, message);
-		std::cout << "Cant compile shader " << (type == GL_VERTEX_SHADER ? "vertex":"fragment") << std::endl;
-		std::cout << message << std::endl;
-		glDeleteShader(id);
-		return 0;
-	}
-	return id;
-}
-static unsigned int CreateShader(const std::string& vertexshader, const std::string& fragmentshader){
-	unsigned int program = glCreateProgram();
-	unsigned int vs = compileshader(GL_VERTEX_SHADER, vertexshader);
-	unsigned int fs = compileshader(GL_FRAGMENT_SHADER, fragmentshader);
-
-	glAttachShader(program, vs);  // documentation
-	glAttachShader(program, fs);  // documentation
-	glLinkProgram(program);		  // documentation
-	glValidateProgram(program);	  // documentation
-
-	glDeleteShader(vs);	 // documentation
-	glDeleteShader(fs);	 // documentation
-	return program;
-}
-unsigned int shader;
-void Inicializa(){
+int location;
+mat4f ProjectionMatrix;	 // = GenPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
+mat4f ViewMatrix, ModelMatrix;
+Shader *shader;
+VertexArray *va;
+IndexBuffer *ib;
+void Inicializa() {
 	//SDL_GL_SetSwapInterval(0);
 	glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
-	vertex2d positions[4] = {
-		-0.5,-0.5, 0, 0,
-		 0.5,-0.5, 0, 0,
-		 0.5, 0.5, 0, 0,
-		-0.5, 0.5, 0, 0
+	vertex2d positions[8] = {
+		-0.5f,-0.5f, 0.0f, 0.0f, 0.0f,
+		 0.5f,-0.5f, 0.0f, 1.0f, 0.0f,
+		 0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+
+		-0.5f,-0.5f, -0.5f, 0.0f, 0.0f,
+		 0.5f,-0.5f, -0.5f, 1.0f, 0.0f,
+		 0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
 	};
 	unsigned int indices[] = {
-		0, 1, 2,
-		2, 3, 0
+		0, 1, 2,  //front
+		2, 3, 0,
+
+		1, 5, 6,  //right
+		6, 2, 1,
+
+		0, 4, 3,  //bottom
+		3, 1, 0,
+
+		3, 2, 6,  //top
+		6, 7, 3,
+
+		4, 0, 3,  //left
+		3, 7, 4,
+
+		5, 4, 7,  //back
+		7, 6, 5
 	};
-	GLuint vertexArrayID;
-	glGenVertexArrays(1, &vertexArrayID);  // documentation
-	glBindVertexArray(vertexArrayID);	   // documentation
+	va = new VertexArray;
+	va->Bind();
 
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, 4*sizeof(vertex2d), positions, GL_STATIC_DRAW);//each vertexarray has one so to use other has to switch
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex2d), 0);
-	glEnableVertexAttribArray(0);
+	static VertexBuffer vb(positions, 8 * sizeof(vertex2d));
+	static VertexBufferLayout layout;
+	layout.Push(GL_FLOAT, 3);  //pos
+	layout.Push(GL_FLOAT, 2);  //text pos
+	va->AddBuffer(vb, layout);
 
-	unsigned int ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	ib = new IndexBuffer(indices, 36);
+	shader = new Shader("basic.shader");
+	shader->Bind();
+	ModelMatrix = mat4f::GenRotate(15.0f, 1.0f, 0.25f, 0.0f);
+	//shader->SetUniformMat4f("u_ModelMatrix", ModelMatrix);
+	ViewMatrix = mat4f::GenView(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
+	//shader->SetUniformMat4f("u_ViewMatrix", ViewMatrix);
+	// std::cout << ViewMatrix.matrix[0][0] << " " << ViewMatrix.matrix[0][1] << " " << ViewMatrix.matrix[0][2] << " " << ProjectionMatrix.matrix[0][3] << std::endl;
+	// std::cout << ViewMatrix.matrix[1][0] << " " << ViewMatrix.matrix[1][1] << " " << ViewMatrix.matrix[1][2] << " " << ProjectionMatrix.matrix[1][3] << std::endl;
+	// std::cout << ViewMatrix.matrix[2][0] << " " << ViewMatrix.matrix[2][1] << " " << ViewMatrix.matrix[2][2] << " " << ProjectionMatrix.matrix[2][3] << std::endl;
+	// std::cout << ViewMatrix.matrix[3][0] << " " << ViewMatrix.matrix[3][1] << " " << ViewMatrix.matrix[3][2] << " " << ProjectionMatrix.matrix[3][3] << std::endl;
 
-	ShaderProgramSource source = ParseShader("basic.shader");
-	//std::cout << "Vertex" << std::endl;
-	//std::cout << source.VertexSource << std::endl;
-	//std::cout << "Fragment" << std::endl;
-	//std::cout << source.FragmentSource << std::endl;
+	ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
+	//shader->SetUniformMat4f("u_ProjectionMatrix", ProjectionMatrix);
+	// std::cout << ProjectionMatrix.matrix[0][0] << " " << ProjectionMatrix.matrix[0][1] << " " << ProjectionMatrix.matrix[0][2] << " " << ProjectionMatrix.matrix[0][3] << std::endl;
+	// std::cout << ProjectionMatrix.matrix[1][0] << " " << ProjectionMatrix.matrix[1][1] << " " << ProjectionMatrix.matrix[1][2] << " " << ProjectionMatrix.matrix[1][3] << std::endl;
+	// std::cout << ProjectionMatrix.matrix[2][0] << " " << ProjectionMatrix.matrix[2][1] << " " << ProjectionMatrix.matrix[2][2] << " " << ProjectionMatrix.matrix[2][3] << std::endl;
+	// std::cout << ProjectionMatrix.matrix[3][0] << " " << ProjectionMatrix.matrix[3][1] << " " << ProjectionMatrix.matrix[3][2] << " " << ProjectionMatrix.matrix[3][3] << std::endl;
 
-	shader = CreateShader(source.VertexSource, source.FragmentSource);
-	gltry(glUseProgram(shader));
-
-	//set color
-	int location = glGetUniformLocation(shader, "u_color");
-	ASSERT(location != -1);
-	gltry(glUniform4f(location, 0.0f, 0.25f, 0.95f, 1.0f));
+	static Texture texture("assets/rgb.bmp");
+	texture.Bind();
+	shader->SetUniform1i("u_Texture", 0);
+	glEnable(GL_BLEND);									// to use transparency
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
+	glEnable(GL_DEPTH_TEST);
 }
 void render() {
-	glEnable(GL_BLEND);// to use transparency
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);// to use transparency
-	window::ClearErrors();
-	gltry(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));//documentation
-	
+	ClearErrors();
+	static float green = 0.25f, add = 0.05f, rotate = 0.0f, rot = 1.0f;
+	if (green <= 0.0 || green >= 1.0) add = -add;
+	green += add;
+	rotate += rot;
+	ModelMatrix = mat4f::GenRotate(rotate, 1.0f, 0.25f, 0.0f);
+	//shader->SetUniformMat4f("u_ModelMatrix", ModelMatrix);
+	//shader->SetUniform4f("u_color", {0.0f, green, 0.95f, 1.0f});
+	shader->SetUniform4f("u_position", {0.0f, 0.0f, -green, 1.0f});
+	static mat4f MVP;
+	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+	shader->SetUniformMat4f("u_MVP", MVP);
+	renderer.Drawn(*va, *ib, *shader);
 }
-int main(){
-	if(!window::init()){
+int main() {
+	if (!window::init()) {
 		window::MainLoop();
 	}
-	glDeleteProgram(shader);
+	window::close_window();
 }

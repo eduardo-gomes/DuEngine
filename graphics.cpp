@@ -1,4 +1,3 @@
-#include <csignal>
 #include "graphics.hpp"
 #define PI 3.1415926535897932
 extern void render();
@@ -9,22 +8,22 @@ void toggle_fullscreen();
 }  // namespace window
 
 namespace screen {
-	int width, height;
-	double aspect, &x = aspect, y = 1.0;
-	double camx = 0.0, camy = 0.0, camz = 8.5;
-	double bcgDist = -15.0, bcgViewy, bcgViewx, bcg2Dist = -7.0, bcg2Viewy, bcg2Viewx, bcg3Dist = -3.0, bcg3Viewy, bcg3Viewx;
-	double fovy = 45.0;
-	double viewx, viewy;
-	void calcview() {
-		viewy = camz * tan(fovy / 2 * PI / 180);
-		viewx = aspect * viewy;
-		bcgViewy = (camz - bcgDist) * tan(fovy / 2 * PI / 180);  // the bcg will be at z = bcgDist
-		bcgViewx = aspect * bcgViewy;
-		bcg2Viewy = (camz - bcg2Dist) * tan(fovy / 2 * PI / 180);  // the bcg2 will be at z = bcg2Dist
-		bcg2Viewx = aspect * bcg2Viewy;
-		bcg3Viewy = (camz - bcg3Dist) * tan(fovy / 2 * PI / 180);  // the bcg3 will be at z = bcg3Dist
-		bcg3Viewx = aspect * bcg3Viewy;
-	}
+int width, height;
+double aspect, &x = aspect, y = 1.0;
+double camx = 0.0, camy = 0.0, camz = 8.5;
+double bcgDist = -15.0, bcgViewy, bcgViewx, bcg2Dist = -7.0, bcg2Viewy, bcg2Viewx, bcg3Dist = -3.0, bcg3Viewy, bcg3Viewx;
+double fovy = 45.0;
+double viewx, viewy;
+void calcview() {
+	viewy = camz * tan(fovy / 2 * PI / 180);
+	viewx = aspect * viewy;
+	bcgViewy = (camz - bcgDist) * tan(fovy / 2 * PI / 180);  // the bcg will be at z = bcgDist
+	bcgViewx = aspect * bcgViewy;
+	bcg2Viewy = (camz - bcg2Dist) * tan(fovy / 2 * PI / 180);  // the bcg2 will be at z = bcg2Dist
+	bcg2Viewx = aspect * bcg2Viewy;
+	bcg3Viewy = (camz - bcg3Dist) * tan(fovy / 2 * PI / 180);  // the bcg3 will be at z = bcg3Dist
+	bcg3Viewx = aspect * bcg3Viewy;
+}
 }  // namespace screen
 
 namespace mouse {
@@ -47,7 +46,7 @@ namespace keyboard {
 bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
 uint16_t mod = KMOD_NONE;
 void event(const SDL_Event &e) {  // Keyboard event handler
-		/*
+								  /*
 		Uint32 	type		the event type; SDL_KEYDOWN or SDL_KEYUP
 		Uint32	timestamp	timestamp of the event
 		Uint32	windowID	the window with keyboard focus, if any
@@ -59,7 +58,7 @@ void event(const SDL_Event &e) {  // Keyboard event handler
 			Uint16			mod			current key modifiers; see SDL_Keymod for details
 		*/
 	const SDL_KeyboardEvent &key = e.key;
-		//printf("KEY type %u, timestamp %u, windowID %u, state %hhu, repeat %hhu, keycode %d, mod %hu\n", key.type, key.timestamp, key.windowID, key.state, key.repeat, key.keysym.sym, key.keysym.mod);
+	//printf("KEY type %u, timestamp %u, windowID %u, state %hhu, repeat %hhu, keycode %d, mod %hu\n", key.type, key.timestamp, key.windowID, key.state, key.repeat, key.keysym.sym, key.keysym.mod);
 	bool state = key.state == SDL_PRESSED;
 	mod = key.keysym.mod;
 	if (!key.repeat) switch (key.keysym.sym) {
@@ -108,11 +107,8 @@ void glinit_reshape() {
 	// screen::height = h;
 	// screen::width = w;
 	screen::aspect = (double)screen::width / screen::height;
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
 	glViewport(0, 0, screen::width, screen::height);
-	// gluPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
-	// glMatrixMode(GL_MODELVIEW);
+	ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
 }
 void glinit_reshape(int w, int h) {
 	screen::height = h;
@@ -178,7 +174,7 @@ bool init_window() {
 		glinit_reshape(dfwidth, dfheight);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
-			printf("Error initializing OpenGL! %s\n", gluErrorString(error));
+			printf("Error initializing OpenGL! 0x%0X\n", error);
 			return fail = true;
 		}
 		// printf("OpenGL %s\n", glGetString(GL_VERSION));
@@ -211,14 +207,8 @@ void close_window() {
 	SDL_Quit();
 }
 
-void Restaura() {
-	// glLoadIdentity();
-	gluLookAt(screen::camx, screen::camy, screen::camz, screen::camx, screen::camy, 0.0f, 0.0f, 1.0f, 0.0f);
-}
-
 void DesenhaNaTela(void) {
-	glClear(GL_COLOR_BUFFER_BIT);
-	Restaura();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	render();
 	glFinish();
 	SDL_GL_SwapWindow(window);
@@ -255,15 +245,20 @@ void MainLoop() {
 }
 
 int init() { return init_window(); }
-bool ClearErrors(){
+}  // namespace window
+
+/*---------------------------Render----------------------------*/
+#include <csignal>
+bool ClearErrors() {
 	bool ret = 0;
-	while(glGetError() != GL_NO_ERROR){ret = 1;};
+	while (glGetError() != GL_NO_ERROR) {
+		ret = 1;
+	};
 	return ret;
 }
 void PrintAllErrors(const char *fun, const char *file, int line) {
-	while (GLenum error = glGetError()){
+	while (GLenum error = glGetError()) {
 		printf("[GL Error]: %0X from: %s on file: %s on line %d\n", error, fun, file, line);
 		raise(SIGTRAP);
 	}
 }
-}  // namespace window
