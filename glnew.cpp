@@ -22,10 +22,10 @@ void Inicializa() {
 		 0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
 		-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
 
-		-0.5f,-0.5f, -0.5f, 0.0f, 0.0f,
-		 0.5f,-0.5f, -0.5f, 1.0f, 0.0f,
-		 0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f,-0.5f, -1.0f, 1.0f, 0.0f,
+		 0.5f,-0.5f, -1.0f, 0.0f, 0.0f,
+		 0.5f, 0.5f, -1.0f, 0.0f, 1.0f,
+		-0.5f, 0.5f, -1.0f, 1.0f, 1.0f,
 	};
 	unsigned int indices[] = {
 		0, 1, 2,  //front
@@ -58,7 +58,7 @@ void Inicializa() {
 	ib = new IndexBuffer(indices, 36);
 	shader = new Shader("basic.shader");
 	shader->Bind();
-	ModelMatrix = mat4f::GenRotate(15.0f, 1.0f, 0.25f, 0.0f);
+	ModelMatrix = mat4f::GenRotate(0.0f, 1.0f, 1.0f, 1.0f);
 	//shader->SetUniformMat4f("u_ModelMatrix", ModelMatrix);
 	ViewMatrix = mat4f::GenView(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
 	//shader->SetUniformMat4f("u_ViewMatrix", ViewMatrix);
@@ -90,9 +90,9 @@ void render() {
 	ModelMatrix = mat4f::GenRotate(rotate, 1.0f, 0.25f, 0.0f);
 	//shader->SetUniformMat4f("u_ModelMatrix", ModelMatrix);
 	//shader->SetUniform4f("u_color", {0.0f, green, 0.95f, 1.0f});
-	shader->SetUniform4f("u_position", {0.0f, 0.0f, -green, 1.0f});
+	//shader->SetUniform4f("u_position", {0.0f, 0.0f, -green, 1.0f});
 	static mat4f MVP;
-	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+	MVP = ProjectionMatrix * ViewMatrix * mat4f::Translate(ModelMatrix, 0.0f, 0.0f, green);
 	shader->SetUniformMat4f("u_MVP", MVP);
 	renderer.Drawn(*va, *ib, *shader);
 }

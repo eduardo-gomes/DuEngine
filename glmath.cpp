@@ -112,3 +112,33 @@ mat4f mat4f::GenRotate(float angle, float X, float Y, float Z) {
 	mat.matrix[3][3] = 1.0f;
 	return mat;
 }
+mat4f mat4f::GenTranslate(float x, float y, float z) {
+	mat4f mat;
+	mat.matrix[0][0] = 1.0f;
+	mat.matrix[0][1] = 0.0f;
+	mat.matrix[0][2] = 0.0f;
+	mat.matrix[0][3] = 0.0f;
+
+	mat.matrix[1][0] = 0.0f;
+	mat.matrix[1][1] = 1.0f;
+	mat.matrix[1][2] = 0.0f;
+	mat.matrix[1][3] = 0.0f;
+
+	mat.matrix[2][0] = 0.0f;
+	mat.matrix[2][1] = 0.0f;
+	mat.matrix[2][2] = 1.0f;
+	mat.matrix[2][3] = 0.0f;
+
+	mat.matrix[3][0] = x;
+	mat.matrix[3][1] = y;
+	mat.matrix[3][2] = z;
+	mat.matrix[3][3] = 1.0f;
+	return mat;
+}
+mat4f& mat4f::Translate(mat4f& mat, float x, float y, float z) {
+	mat.matrix[3][0] = x;
+	mat.matrix[3][1] = y;
+	mat.matrix[3][2] = z;
+	mat.matrix[3][3] = 1.0f;
+	return mat;
+}

@@ -9,13 +9,8 @@ out vec2 v_TexCoord;
 uniform vec4 u_position;
 uniform mat4 u_MVP;
 
-mat4 TransformMatrix = mat4(1.0);  //TODO: Calc this on cpu
-
 void main(){
-	TransformMatrix[0][2] = u_position.x;  //TODO: Calc this on cpu
-	TransformMatrix[1][2] = u_position.y;  //TODO: Calc this on cpu
-	TransformMatrix[2][2] = u_position.z;  //TODO: Calc this on cpu
-	gl_Position = u_MVP * TransformMatrix * position ;
+	gl_Position = u_MVP * position;
 	v_TexCoord = texCoord;
 };
 
@@ -26,12 +21,12 @@ layout(location = 0) out vec4 color;
 
 in vec2 v_TexCoord;
 
-uniform vec4 u_color;
+//uniform vec4 u_color;
 uniform sampler2D u_Texture;
 
 void main(){
 	//color = u_color;
-	
+
 	vec4 texColor = texture(u_Texture, v_TexCoord);
 
 	color = texColor;

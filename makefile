@@ -12,7 +12,7 @@ INCLUDE_F=-Idependencies/include -Idependencies/imgui
 COLISION_OBJ=dependencies/include/glad.o audio.o graphics.o GLClasses.o loadfile.o glmath.o
 
 glnew: $(COLISION_OBJ)
-	$(CXX) glnew.cpp $(COLISION_OBJ) $(CXXFLAGS) $(LIBS) $(INCLUDE_F) $(DBG)
+	$(CXX) glnew.cpp $(COLISION_OBJ) $(CXXFLAGS) $(LIBS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION)
 #colision_dbg: $(COLISION_OBJ)
 #	export DBG="-g" &&	make colision
 colision: $(COLISION_OBJ)
