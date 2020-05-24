@@ -89,6 +89,7 @@ mat4f mat4f::GenView(float eyeX, float eyeY, float eyeZ, float centerX, float ce
 mat4f mat4f::GenRotate(float angle, float X, float Y, float Z) {
 	float c = cos(angle * M_PI / 180), s = sin(angle * M_PI / 180);
 	float XYZmod = sqrt(pow(X, 2) + pow(Y, 2) + pow(Z, 2));
+	XYZmod = XYZmod != 0 ? XYZmod : 1;
 	float x = X / XYZmod, y = Y / XYZmod, z = Z / XYZmod;
 	mat4f mat;
 	mat.matrix[0][0] = x * x * (1 - c) + c;
@@ -103,7 +104,7 @@ mat4f mat4f::GenRotate(float angle, float X, float Y, float Z) {
 
 	mat.matrix[2][0] = z * x * (1 - c) + y * s;
 	mat.matrix[2][1] = z * y * (1 - c) - x * s;
-	mat.matrix[2][2] = z * x * (1 - c) + c;
+	mat.matrix[2][2] = z * z * (1 - c) + c;
 	mat.matrix[2][3] = 0.0f;
 
 	mat.matrix[3][0] = 0.0f;

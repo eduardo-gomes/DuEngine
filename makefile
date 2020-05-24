@@ -9,7 +9,7 @@ OPTIMIZATION?=-Og
 #MSVC_FLAGS=/W4 /EHsc /std:c++17 /Idependencies\include /Ox /link /LIBPATH:dependencies\lib\x64 /SUBSYSTEM:windows /ENTRY:mainCRTStartup
 
 INCLUDE_F=-Idependencies/include -Idependencies/imgui
-COLISION_OBJ=dependencies/include/glad.o audio.o graphics.o GLClasses.o loadfile.o glmath.o
+COLISION_OBJ=dependencies/include/glad.o audio.o graphics.o GLClasses.o loadfile.o glmath.o dependencies/imgui/imgui.o
 
 glnew: $(COLISION_OBJ)
 	$(CXX) glnew.cpp $(COLISION_OBJ) $(CXXFLAGS) $(LIBS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION)
@@ -38,6 +38,12 @@ glmath.o: glmath.cpp
 
 dependencies/include/glad.o:
 	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o dependencies/include/glad.o $(INCLUDE_F)
+
+IMGUIDIR=dependencies/imgui
+_IMGUISRC=imgui.cpp imgui_demo.cpp imgui_draw.cpp imgui_impl_opengl3.cpp imgui_impl_sdl.cpp imgui_widgets.cpp
+IMGUISRC=$(patsubst %,$(IMGUIDIR)/%,$(_IMGUISRC))
+dependencies/imgui/imgui.o: $(IMGUISRC)
+	$(CXX) dependencies/imgui/all.cpp -c -O3 -o dependencies/imgui/imgui.o $(INCLUDE_F)
 
 clear:
 	rm $(COLISION_OBJ)

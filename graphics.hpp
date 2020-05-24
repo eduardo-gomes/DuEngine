@@ -36,6 +36,8 @@ void event(const SDL_Event& e);
 }  // namespace keyboard
 namespace window {
 extern bool quit;
+extern SDL_Window* window;
+extern SDL_GLContext glcontext;
 
 void glinit_reshape();
 void glinit_reshape(int w, int h);

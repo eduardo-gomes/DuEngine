@@ -3,6 +3,9 @@
 struct vec2f {
 	float v0, v1;
 };
+struct vec3f {
+	float v0, v1, v2;
+};
 struct vec4f {
 	float v0, v1, v2, v3;
 };
