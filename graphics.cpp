@@ -36,14 +36,14 @@ void motion_event(const SDL_Event &e) {
 void button_event(const SDL_Event &e) {
 	const SDL_MouseButtonEvent &button = e.button;
 	pressed = button.state == SDL_PRESSED;
-	printf("Mouse button %hhu, state %hhu, x %d, y %d\n", button.button, button.state, button.x, button.y);
+	//printf("Mouse button %hhu, state %hhu, x %d, y %d\n", button.button, button.state, button.x, button.y);
 	x = button.x;
 	y = button.y;
 }
 }  // namespace mouse
 void test_sound();
 namespace keyboard {
-bool w = 0, a = 0, s = 0, d = 0, space = 0, F1 = 0;
+bool w = 0, a = 0, s = 0, d = 0, backslash = 0, space = 0, F1 = 0;
 uint16_t mod = KMOD_NONE;
 void event(const SDL_Event &e) {  // Keyboard event handler
 								  /*
@@ -76,6 +76,9 @@ void event(const SDL_Event &e) {  // Keyboard event handler
 				break;
 			case SDLK_w:
 				w = state;
+				break;
+			case SDLK_BACKSLASH:
+				backslash = state;
 				break;
 			case SDLK_SPACE:
 				space = state;

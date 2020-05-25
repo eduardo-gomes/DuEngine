@@ -25,7 +25,7 @@ struct VertexBufferElement {
 class VertexBufferLayout {
    private:
 	std::vector<VertexBufferElement> Elements;
-	unsigned int Stride;
+	unsigned int Stride = 0;
 
    public:
 	void Push(unsigned int type, unsigned int count, unsigned char normalized = GL_FALSE) {

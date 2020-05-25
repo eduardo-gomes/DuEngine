@@ -6,7 +6,7 @@
 #include "glmath.hpp"
 extern void render();
 extern void Inicializa();
-extern mat4f ViewMatrix;
+//extern mat4f ViewMatrix;
 extern mat4f ProjectionMatrix;
 namespace window {
 extern bool quit;
@@ -30,7 +30,7 @@ void button_event(const SDL_Event& e);
 }  // namespace mouse
 void test_sound();
 namespace keyboard {
-extern bool w, a, s, d, space, F1;
+extern bool w, a, s, d, backslash, space, F1;
 extern uint16_t mod;
 void event(const SDL_Event& e);
 }  // namespace keyboard
