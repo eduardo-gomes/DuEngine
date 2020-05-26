@@ -8,6 +8,7 @@
 class VertexBuffer {
    private:
 	unsigned int RenderID;
+	static unsigned int BindedRenderID;
 
    public:
 	VertexBuffer(const void* data, unsigned int size);
@@ -39,6 +40,7 @@ class VertexBufferLayout {
 class IndexBuffer {
    private:
 	unsigned int RenderID, m_count;
+	static unsigned int BindedRenderID;
 
    public:
 	IndexBuffer(const unsigned int* data, unsigned int count);
@@ -53,6 +55,7 @@ class IndexBuffer {
 class VertexArray {
    private:
 	unsigned int RenderID;
+	static unsigned int BindedRenderID;
 
    public:
 	VertexArray();
@@ -68,6 +71,7 @@ class Shader {
    private:
 	std::string File;
 	unsigned int RenderID;
+	static unsigned int BindedRenderID;
 	struct ShaderProgramSource;
 	std::unordered_map<std::string, int> UniformLocationCache;
 

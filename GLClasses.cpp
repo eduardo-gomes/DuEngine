@@ -13,11 +13,16 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size) {
 VertexBuffer::~VertexBuffer() {
 	gltry(glDeleteBuffers(1, &RenderID));
 }
+unsigned int VertexBuffer::BindedRenderID = 0;
 void VertexBuffer::Bind() const {
-	gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));
+	if (RenderID != BindedRenderID) {
+		gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));
+		BindedRenderID = RenderID;
+	}
 }
 void VertexBuffer::Unbind() const {
 	gltry(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	BindedRenderID = 0;
 }
 
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count) : m_count(count) {
@@ -30,11 +35,16 @@ IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count) : m_count
 IndexBuffer::~IndexBuffer() {
 	gltry(glDeleteBuffers(1, &RenderID));
 }
+unsigned int IndexBuffer::BindedRenderID = 0;
 void IndexBuffer::Bind() const {
-	gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderID));
+	if (RenderID != BindedRenderID) {
+		gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderID));
+		BindedRenderID = RenderID;
+	}
 }
 void IndexBuffer::Unbind() const {
 	gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+	BindedRenderID = 0;
 }
 
 unsigned int VertexBufferElement::GetSizeOfType(unsigned int type) {
@@ -67,11 +77,16 @@ VertexArray::VertexArray() {
 VertexArray::~VertexArray() {
 	gltry(glDeleteVertexArrays(1, &RenderID));
 }
+unsigned int VertexArray::BindedRenderID = 0;
 void VertexArray::Bind() const {
-	gltry(glBindVertexArray(RenderID));	 // documentation
+	if (RenderID != BindedRenderID) {
+		gltry(glBindVertexArray(RenderID));	 // documentation
+		BindedRenderID = RenderID;
+	}
 }
 void VertexArray::Unbind() const {
 	gltry(glBindVertexArray(0));
+	BindedRenderID = 0;
 }
 
 struct Shader::ShaderProgramSource {
@@ -85,12 +100,16 @@ Shader::Shader(const std::string& Filename) : File(Filename) {
 Shader::~Shader() {
 	gltry(glDeleteProgram(RenderID));
 }
-
+unsigned int Shader::BindedRenderID = 0;
 void Shader::Bind() const {
-	glUseProgram(RenderID);
+	if (RenderID != BindedRenderID) {
+		glUseProgram(RenderID);
+		BindedRenderID = RenderID;
+	}
 }
 void Shader::Unbind() const {
 	glUseProgram(0);
+	BindedRenderID = 0;
 }
 Shader::ShaderProgramSource Shader::ParseShader(const std::string& filepath) {
 	std::ifstream stream(filepath);

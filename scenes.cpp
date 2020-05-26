@@ -1,9 +1,8 @@
 #include "scenes.hpp"
 
-extern mat4f ViewMatrix;
-namespace scene{
+namespace scene {
 ImGuiIO* io;
-void StartImGui(){
+void StartImGui() {
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 	ImGui_ImplSDL2_InitForOpenGL(window::window, window::glcontext);
@@ -22,14 +21,12 @@ BaseScene::BaseScene() {
 		delete instance;
 	}
 	instance = this;
-	printf("BaseScene constructor\n");
 }
 BaseScene::~BaseScene() {
 	instance = nullptr;
-	printf("BaseScene destructor\n");
 }
-BaseScene* BaseScene::GetInstance(){
-	if(instance == nullptr) instance = new BaseScene;
+BaseScene* BaseScene::GetInstance() {
+	if (instance == nullptr) instance = new BaseScene;
 	return instance;
 }
 
@@ -47,23 +44,22 @@ perstest::perstest() {
 	TexVA2D = new VertexArray;
 
 	QuadVB = new VertexBuffer(positions, sizeof(positions));
-	
+
 	Quad2DLayout = new VertexBufferLayout;
 	Quad2DLayout->Push(GL_FLOAT, 2);  //position
 	Quad2DLayout->Push(GL_FLOAT, 2);  //texture cord
 	TexVA2D->AddBuffer(*QuadVB, *Quad2DLayout);
-	
+
 	QuadPersIB = new IndexBuffer(index, 6);
-	
+
 	shader = new Shader("basic.shader");
 
 	persquadtex = new Texture("assets/pers02.bmp");
-	
+
 	ViewMatrix = mat4f::GenView(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
 	ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
-	
+
 	io = &ImGui::GetIO();
-	printf("perstest constructor\n");
 }
 perstest::~perstest() {
 	delete TexVA2D;
@@ -72,14 +68,13 @@ perstest::~perstest() {
 	delete QuadPersIB;
 	delete shader;
 	delete persquadtex;
-	printf("perstest destructor\n");
 }
 void perstest::Render() {
 	persquadtex->Bind();
 	shader->Bind();
 	shader->SetUniform1i("u_Texture", 0);
 
-	ModelMatrix =  mat4f::GenRotate(rotate.v0, rotate.v1, rotate.v2);//mat4f::GenRotate(rotate.v0, rotate.v0, 0.0f, 0.0f) * mat4f::GenRotate(rotate.v1, 0.0f, rotate.v1, 0.0f) * mat4f::GenRotate(rotate.v2, 0.0f, 0.0f, rotate.v2);
+	ModelMatrix = mat4f::GenRotate(rotate.v0, rotate.v1, rotate.v2);  //mat4f::GenRotate(rotate.v0, rotate.v0, 0.0f, 0.0f) * mat4f::GenRotate(rotate.v1, 0.0f, rotate.v1, 0.0f) * mat4f::GenRotate(rotate.v2, 0.0f, 0.0f, rotate.v2);
 	MVP = ProjectionMatrix * ViewMatrix * mat4f::Translate(ModelMatrix, position.v0, position.v1, position.v2);
 	shader->SetUniformMat4f("u_MVP", MVP);
 

@@ -11,8 +11,9 @@ extern Render renderer;
 class BaseScene {
    private:
 	static BaseScene *instance;
+
    public:
-	static BaseScene* GetInstance();
+	static BaseScene *GetInstance();
 	BaseScene();
 	virtual ~BaseScene();
 
@@ -25,9 +26,7 @@ class test : public BaseScene {
    public:
 	test() {
 	}
-	~test() {
-	}
-	/*void RenderGUI() /{
+	~test(){} /*void RenderGUI() /{
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(window::window);
@@ -39,23 +38,25 @@ class test : public BaseScene {
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}*/;
+	}*/
+	;
 };
 
-class perstest : public BaseScene{
-	private:
-		static const float positions[16];
-		static const unsigned int index[6];
-		VertexArray *TexVA2D;
-		VertexBufferLayout *Quad2DLayout;
-		VertexBuffer *QuadVB;
-		IndexBuffer *QuadPersIB;
-		Shader *shader;
-		Texture *persquadtex;
-		vec3f position = {0.0f, 0.0f, 0.0f};
-		mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
-		vec3f rotate = {0.0f, 0.0f, 0.0f};
-	public:
+class perstest : public BaseScene {
+   private:
+	static const float positions[16];
+	static const unsigned int index[6];
+	VertexArray *TexVA2D;
+	VertexBufferLayout *Quad2DLayout;
+	VertexBuffer *QuadVB;
+	IndexBuffer *QuadPersIB;
+	Shader *shader;
+	Texture *persquadtex;
+	vec3f position = {0.0f, 0.0f, 0.0f};
+	mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
+	vec3f rotate = {0.0f, 0.0f, 0.0f};
+
+   public:
 	perstest();
 	~perstest();
 	void Render();

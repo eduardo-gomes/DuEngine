@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "GLClasses.hpp"
 #include "graphics.hpp"
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
