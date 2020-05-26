@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror
 LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
 DBG?=-g
-OPTIMIZATION?=-Og
+OPTIMIZATION?=
 
 ##use Visual Studio Developer Command Prompt
 #MSVC_INIT=vcvars64.bat
@@ -11,12 +11,12 @@ OPTIMIZATION?=-Og
 INCLUDE_F=-Idependencies/include -Idependencies/imgui
 
 OBJS_DIR=objects
-_COLISION_OBJ=audio.o graphics.o GLClasses.o loadfile.o glmath.o scenes.o
+_COLISION_OBJ=audio.o graphics.o GLClasses.o loadfile.o glmath.o scenes.o Renderer.o renderertest.o glnew.o
 COLISION_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_COLISION_OBJ))
 
 LIBS_OBJ=dependencies/include/glad.o dependencies/imgui/imgui.o
 
-glnew: $(COLISION_OBJ) $(LIBS_OBJ) $(OBJS_DIR)/glnew.o
+glnew: $(COLISION_OBJ) $(LIBS_OBJ)
 	$(CXX) $^ $(LIBS) -o $@
 	cp $@ a.out
 #colision_dbg: $(COLISION_OBJ)

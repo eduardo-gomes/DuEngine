@@ -169,13 +169,13 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 void Shader::SetUniform1i(const std::string& name, int value) {
 	gltry(glUniform1i(GetUniformLocation(name), value));
 }
-void Shader::SetUniform2f(const std::string& name, vec2f v) {
+void Shader::SetUniform2f(const std::string& name, const vec2f &v) {
 	gltry(glUniform2f(GetUniformLocation(name), v.v0, v.v1));
 }
-/*void Shader::SetUniform3f(const std::string& name, vec3f v) {
+void Shader::SetUniform3f(const std::string& name, const vec3f &v) {
 	gltry(glUniform3f(GetUniformLocation(name), v.v0, v.v1, v.v2));
-}*/
-void Shader::SetUniform4f(const std::string& name, vec4f v) {
+}
+void Shader::SetUniform4f(const std::string& name, const vec4f &v) {
 	gltry(glUniform4f(GetUniformLocation(name), v.v0, v.v1, v.v2, v.v3));
 }
 void Shader::SetUniformMat4f(const std::string& name, const mat4f& mat) {
@@ -190,13 +190,6 @@ int Shader::GetUniformLocation(const std::string& name) {
 		std::cout << "ERRO: Uniform " << name << " not found" << std::endl;
 	UniformLocationCache[name] = location;
 	return location;
-}
-
-void Render::Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
-	shader.Bind();
-	va.Bind();
-	ib.Bind();
-	gltry(glDrawElements(GL_TRIANGLES, (int)ib.GetCount(), GL_UNSIGNED_INT, NULL));	 //documentation
 }
 
 TextureParameters::TextureParameters(GLint mag_filter, GLint min_filter, GLint warp_s, GLint warp_t) : mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t) {

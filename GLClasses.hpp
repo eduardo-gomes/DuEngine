@@ -82,9 +82,9 @@ class Shader {
 	void Bind() const;
 	void Unbind() const;
 	void SetUniform1i(const std::string& name, int value);
-	void SetUniform2f(const std::string& name, vec2f);
-	//void SetUniform3f(const std::string& name, vec2f);
-	void SetUniform4f(const std::string& name, vec4f);
+	void SetUniform2f(const std::string& name, const vec2f&);
+	void SetUniform3f(const std::string& name, const vec3f&);
+	void SetUniform4f(const std::string& name, const vec4f&);
 	void SetUniformMat4f(const std::string& name, const mat4f& matrix);
 
    private:
@@ -92,11 +92,6 @@ class Shader {
 	unsigned int CreateShader(const std::string& vertexshader, const std::string& fragmentshader);
 	unsigned int CompileShader(unsigned int type, const std::string& source);
 	ShaderProgramSource ParseShader(const std::string& filepath);
-};
-
-class Render {
-   public:
-	void Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
 };
 
 struct TextureParameters {

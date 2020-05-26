@@ -1,13 +1,14 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
+#include <memory>
 
-#include "GLClasses.hpp"
+#include "Renderer.hpp"
 
 namespace scene {
 void StartImGui();
 void StopImGui();
-extern Render renderer;
+extern Renderer renderer;
 class BaseScene {
    private:
 	static BaseScene *instance;
@@ -59,6 +60,21 @@ class perstest : public BaseScene {
    public:
 	perstest();
 	~perstest();
+	void Render();
+	void RenderGUI();
+};
+
+class renderertest : public BaseScene{
+   private:
+	std::unique_ptr<VertexArray> VA;
+	std::unique_ptr<VertexBuffer> VB;
+	std::unique_ptr<IndexBuffer> IB;
+	std::unique_ptr<Shader> shader;
+	mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
+
+   public:
+	renderertest();
+	~renderertest();
 	void Render();
 	void RenderGUI();
 };

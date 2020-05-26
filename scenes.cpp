@@ -13,7 +13,7 @@ void StopImGui() {
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 }
-Render renderer;
+Renderer renderer;
 
 BaseScene* BaseScene::instance = nullptr;
 BaseScene::BaseScene() {
@@ -52,7 +52,7 @@ perstest::perstest() {
 
 	QuadPersIB = new IndexBuffer(index, 6);
 
-	shader = new Shader("basic.shader");
+	shader = new Shader("basic.glsl");
 
 	persquadtex = new Texture("assets/pers02.bmp");
 
@@ -81,19 +81,10 @@ void perstest::Render() {
 	renderer.Drawn(*TexVA2D, *QuadPersIB, *shader);
 }
 void perstest::RenderGUI() {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame(window::window);
-	ImGui::NewFrame();
-	//New frame
-
 	ImGui::Begin("Pers");
 	ImGui::SliderFloat3("Position", &position.v0, -2.0f, 2.0f);
 	ImGui::SliderFloat3("Rotation", &rotate.v0, 0.0f, 360.0f);
 
 	ImGui::End();
-
-	//Render Frame
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 }  // namespace scene
