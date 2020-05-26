@@ -6,8 +6,7 @@
 #include "glmath.hpp"
 extern void render();
 extern void Inicializa();
-//extern mat4f ViewMatrix;
-extern mat4f ProjectionMatrix;
+//extern void OnWindowResize(double fovy, double aspect); //constant fov
 namespace window {
 extern bool quit;
 void toggle_fullscreen();
@@ -39,8 +38,8 @@ extern bool quit;
 extern SDL_Window* window;
 extern SDL_GLContext glcontext;
 
-void glinit_reshape();
-void glinit_reshape(int w, int h);
+void reshapeWindow();
+void reshapeWindow(int w, int h);
 
 void toggle_fullscreen();
 

@@ -103,7 +103,7 @@ SDL_Window *window = NULL;
 SDL_Event event;
 
 SDL_GLContext glcontext;
-void glinit_reshape() {
+void reshapeWindow() {
 	SDL_GL_MakeCurrent(window, glcontext);
 	/*if (h == 0)
 		h = 1;*/
@@ -111,12 +111,12 @@ void glinit_reshape() {
 	// screen::width = w;
 	screen::aspect = (double)screen::width / screen::height;
 	glViewport(0, 0, screen::width, screen::height);
-	ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.1, 100.0);
+	//OnWindowResize(screen::fovy, screen::aspect); //constant fov
 }
-void glinit_reshape(int w, int h) {
+void reshapeWindow(int w, int h) {
 	screen::height = h;
 	screen::width = w;
-	glinit_reshape();
+	reshapeWindow();
 }
 
 void toggle_fullscreen() {
@@ -174,7 +174,7 @@ bool init_window() {
 		SDL_GetError());
 		}*/
 		// Initialize OpenGL
-		glinit_reshape(dfwidth, dfheight);
+		reshapeWindow(dfwidth, dfheight);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
 			printf("Error initializing OpenGL! 0x%0X\n", error);
@@ -239,7 +239,7 @@ void MainLoop() {
 					break;
 				case SDL_WINDOWEVENT:
 					if (event.window.event == SDL_WINDOWEVENT_RESIZED)
-						glinit_reshape(event.window.data1, event.window.data2);
+						reshapeWindow(event.window.data1, event.window.data2);
 					break;
 			}
 		}

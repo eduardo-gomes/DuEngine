@@ -113,6 +113,32 @@ mat4f mat4f::GenRotate(float angle, float X, float Y, float Z) {
 	mat.matrix[3][3] = 1.0f;
 	return mat;
 }
+mat4f mat4f::GenRotate(float anglex, float angley, float anglez){
+	float cx = cos(anglex * M_PI / 180), sx = sin(anglex * M_PI / 180);
+	float cy = cos(angley * M_PI / 180), sy = sin(angley * M_PI / 180);
+	float cz = cos(anglez * M_PI / 180), sz = sin(anglez * M_PI / 180);
+	mat4f mat;
+	mat.matrix[0][0] = cx * cy;
+	mat.matrix[0][1] = sx * cy;
+	mat.matrix[0][2] = -sy;
+	mat.matrix[0][3] = 0.0f;
+
+	mat.matrix[1][0] = cx * sy * sz - sx * cz;
+	mat.matrix[1][1] = sx * sy * sz + cx * cz;
+	mat.matrix[1][2] = cy * sz;
+	mat.matrix[1][3] = 0.0f;
+
+	mat.matrix[2][0] = cx * sy * cz + sx * sz;
+	mat.matrix[2][1] = sx * sy * cz - cx * sz;
+	mat.matrix[2][2] = cy * cz;
+	mat.matrix[2][3] = 0.0f;
+
+	mat.matrix[3][0] = 0.0f;
+	mat.matrix[3][1] = 0.0f;
+	mat.matrix[3][2] = 0.0f;
+	mat.matrix[3][3] = 1.0f;
+	return mat;
+}
 mat4f mat4f::GenTranslate(float x, float y, float z) {
 	mat4f mat;
 	mat.matrix[0][0] = 1.0f;
