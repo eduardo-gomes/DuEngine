@@ -12,8 +12,10 @@ class VertexBuffer {
 
    public:
 	VertexBuffer(const void* data, unsigned int size);
+	VertexBuffer(unsigned int size);//Create dynamic buffer
 	~VertexBuffer();
 
+	void SendData(unsigned int offset, size_t size, const void* data);
 	void Bind() const;
 	void Unbind() const;
 };
@@ -21,6 +23,7 @@ struct VertexBufferElement {
 	unsigned int type;
 	unsigned int count;
 	unsigned char normalized;
+	size_t offset;
 	static unsigned int GetSizeOfType(unsigned int type);
 };
 class VertexBufferLayout {
@@ -30,8 +33,15 @@ class VertexBufferLayout {
 
    public:
 	void Push(unsigned int type, unsigned int count, unsigned char normalized = GL_FALSE) {
-		Elements.push_back({type, count, normalized});
+		Elements.push_back({type, count, normalized, Stride});
 		ASSERT(Stride += VertexBufferElement::GetSizeOfType(type) * count);
+	}
+	void Push(unsigned int type, unsigned int count, size_t offset,unsigned char normalized = GL_FALSE) {
+		Elements.push_back({type, count, normalized, offset});
+		ASSERT(Stride += VertexBufferElement::GetSizeOfType(type) * count);
+	}
+	void Size (unsigned int size){
+		Stride = size;
 	}
 	inline const std::vector<VertexBufferElement>& GetElements() const { return Elements; }
 	inline unsigned int GetStride() const { return Stride; }
@@ -82,6 +92,7 @@ class Shader {
 	void Bind() const;
 	void Unbind() const;
 	void SetUniform1i(const std::string& name, int value);
+	void SetUniform1iv(const std::string& name, unsigned int count, int* data);
 	void SetUniform2f(const std::string& name, const vec2f&);
 	void SetUniform3f(const std::string& name, const vec3f&);
 	void SetUniform4f(const std::string& name, const vec4f&);

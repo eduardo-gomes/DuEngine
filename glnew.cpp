@@ -12,7 +12,7 @@ void Inicializa() {
 	scene::StartImGui();
 	new scene::renderertest;
 }
-#define max(A, B) (A > B ? A : B)
+
 void render() {
 	scene::BaseScene::GetInstance()->Render();
 

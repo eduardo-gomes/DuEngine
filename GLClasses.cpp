@@ -10,10 +10,19 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size) {
 	gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));
 	gltry(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 }
+VertexBuffer::VertexBuffer(unsigned int size) { //Dynamic VertexBuffer
+	gltry(glGenBuffers(1, &RenderID));
+	gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));
+	gltry(glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW));
+}
 VertexBuffer::~VertexBuffer() {
 	gltry(glDeleteBuffers(1, &RenderID));
 }
 unsigned int VertexBuffer::BindedRenderID = 0;
+void VertexBuffer::SendData(unsigned int offset, size_t size, const void* data) {
+	Bind();
+	gltry(glBufferSubData(GL_ARRAY_BUFFER, offset, (GLsizeiptr)size, data));
+}
 void VertexBuffer::Bind() const {
 	if (RenderID != BindedRenderID) {
 		gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));
@@ -53,6 +62,8 @@ unsigned int VertexBufferElement::GetSizeOfType(unsigned int type) {
 			return sizeof(GLfloat);
 		case GL_UNSIGNED_INT:
 			return sizeof(GLuint);
+		case GL_INT:
+			return sizeof(GLint);
 		case GL_UNSIGNED_BYTE:
 			return sizeof(GLbyte);
 	}
@@ -63,12 +74,10 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 	Bind();
 	vb.Bind();
 	const auto& elements = layout.GetElements();
-	size_t offset = 0;
 	for (unsigned int i = 0; i < elements.size(); ++i) {
 		const auto& element = elements[i];
 		gltry(glEnableVertexAttribArray(i));
-		gltry(glVertexAttribPointer(i, (int)element.count, element.type, element.normalized, (int)layout.GetStride(), (const void*)offset));
-		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
+		gltry(glVertexAttribPointer(i, (int)element.count, element.type, element.normalized, (int)layout.GetStride(), (const void*)element.offset));
 	}
 }
 VertexArray::VertexArray() {
@@ -168,6 +177,9 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 
 void Shader::SetUniform1i(const std::string& name, int value) {
 	gltry(glUniform1i(GetUniformLocation(name), value));
+}
+void Shader::SetUniform1iv(const std::string& name, unsigned int count, int * data) {
+	gltry(glUniform1iv(GetUniformLocation(name), (int)count, data));
 }
 void Shader::SetUniform2f(const std::string& name, const vec2f &v) {
 	gltry(glUniform2f(GetUniformLocation(name), v.v0, v.v1));
