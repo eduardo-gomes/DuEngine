@@ -11,7 +11,7 @@ OPTIMIZATION?=
 INCLUDE_F=-Idependencies/include -Idependencies/imgui
 
 OBJS_DIR=objects
-_COLISION_OBJ=audio.o graphics.o GLClasses.o loadfile.o glmath.o scenes.o Renderer.o renderertest.o glnew.o
+_COLISION_OBJ=audio.o graphics.o GLClasses.o loadfile.o glmath.o scenes.o Renderer.o renderertest.o glnew.o random.o
 COLISION_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_COLISION_OBJ))
 
 LIBS_OBJ=dependencies/include/glad.o dependencies/imgui/imgui.o
