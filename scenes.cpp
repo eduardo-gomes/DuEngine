@@ -30,6 +30,7 @@ BaseScene* BaseScene::GetInstance() {
 	return instance;
 }
 
+/*
 const float perstest::positions[16] = {
 	-1.0f, -1.0f, 0.0f, 0.0f,
 	 1.0f, -1.0f, 1.0f, 0.0f,
@@ -56,8 +57,8 @@ perstest::perstest() {
 
 	persquadtex = new Texture("assets/pers02.bmp");
 
-	ViewMatrix = mat4f::GenView(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
-	ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
+	Renderer::ViewMatrix = mat4f::GenView(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
+	Renderer::ProjectionMatrix = mat4f::GenPerspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
 
 	io = &ImGui::GetIO();
 }
@@ -74,9 +75,9 @@ void perstest::Render() {
 	shader->Bind();
 	shader->SetUniform1i("u_Texture", 0);
 
-	ModelMatrix = mat4f::GenRotate(rotate.v0, rotate.v1, rotate.v2);  //mat4f::GenRotate(rotate.v0, rotate.v0, 0.0f, 0.0f) * mat4f::GenRotate(rotate.v1, 0.0f, rotate.v1, 0.0f) * mat4f::GenRotate(rotate.v2, 0.0f, 0.0f, rotate.v2);
-	MVP = ProjectionMatrix * ViewMatrix * mat4f::Translate(ModelMatrix, position.v0, position.v1, position.v2);
-	shader->SetUniformMat4f("u_MVP", MVP);
+	Renderer::ModelMatrix = mat4f::GenRotate(rotate.v0, rotate.v1, rotate.v2);  //mat4f::GenRotate(rotate.v0, rotate.v0, 0.0f, 0.0f) * mat4f::GenRotate(rotate.v1, 0.0f, rotate.v1, 0.0f) * mat4f::GenRotate(rotate.v2, 0.0f, 0.0f, rotate.v2);
+	Renderer::MVP = Renderer::ProjectionMatrix * Renderer::ViewMatrix * mat4f::Translate(Renderer::ModelMatrix, position.v0, position.v1, position.v2);
+	shader->SetUniformMat4f("u_MVP", Renderer::MVP);
 
 	renderer.Drawn(*TexVA2D, *QuadPersIB, *shader);
 }
@@ -86,5 +87,5 @@ void perstest::RenderGUI() {
 	ImGui::SliderFloat3("Rotation", &rotate.v0, 0.0f, 360.0f);
 
 	ImGui::End();
-}
+}*/
 }  // namespace scene

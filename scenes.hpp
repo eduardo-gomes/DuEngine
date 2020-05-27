@@ -43,7 +43,7 @@ class test : public BaseScene {
 	;
 };
 
-class perstest : public BaseScene {
+/*class perstest : public BaseScene {
    private:
 	static const float positions[16];
 	static const unsigned int index[6];
@@ -54,7 +54,6 @@ class perstest : public BaseScene {
 	Shader *shader;
 	Texture *persquadtex;
 	vec3f position = {0.0f, 0.0f, 0.0f};
-	mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
 	vec3f rotate = {0.0f, 0.0f, 0.0f};
 
    public:
@@ -62,7 +61,7 @@ class perstest : public BaseScene {
 	~perstest();
 	void Render();
 	void RenderGUI();
-};
+};*/
 
 class renderertest : public BaseScene{
    private:
@@ -70,7 +69,6 @@ class renderertest : public BaseScene{
 	std::unique_ptr<VertexBuffer> VB;
 	std::unique_ptr<IndexBuffer> IB;
 	std::unique_ptr<Shader> shader;
-	mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
 
    public:
 	renderertest();
