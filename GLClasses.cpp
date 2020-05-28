@@ -19,7 +19,7 @@ VertexBuffer::~VertexBuffer() {
 	gltry(glDeleteBuffers(1, &RenderID));
 }
 unsigned int VertexBuffer::BindedRenderID = 0;
-void VertexBuffer::SendData(unsigned int offset, size_t size, const void* data) {
+void VertexBuffer::SendData(unsigned int offset, unsigned int size, const void* data) {
 	Bind();
 	gltry(glBufferSubData(GL_ARRAY_BUFFER, offset, (GLsizeiptr)size, data));
 }
@@ -39,7 +39,18 @@ IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count) : m_count
 
 	gltry(glGenBuffers(1, &RenderID));
 	gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderID));
-	gltry(glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long int)(count * sizeof(unsigned int)), data, GL_STATIC_DRAW));  //each vertexarray has one so to use other has to switch
+	gltry(glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long int)(count * sizeof(unsigned int)), data, GL_STATIC_DRAW)); 
+}
+IndexBuffer::IndexBuffer(unsigned int count) : m_count(count) {
+	ASSERT(sizeof(unsigned int) == sizeof(GLuint));
+
+	gltry(glGenBuffers(1, &RenderID));
+	gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderID));
+	gltry(glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long int)(count * sizeof(unsigned int)), nullptr, GL_DYNAMIC_DRAW));
+}
+void IndexBuffer::SendData(unsigned int offset, unsigned int count, const unsigned int* data) {
+	Bind();
+	gltry(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, (GLsizeiptr)sizeof(unsigned int) * count, data));
 }
 IndexBuffer::~IndexBuffer() {
 	gltry(glDeleteBuffers(1, &RenderID));

@@ -15,7 +15,7 @@ class VertexBuffer {
 	VertexBuffer(unsigned int size);//Create dynamic buffer
 	~VertexBuffer();
 
-	void SendData(unsigned int offset, size_t size, const void* data);
+	void SendData(unsigned int offset, unsigned int size, const void* data);
 	void Bind() const;
 	void Unbind() const;
 };
@@ -54,8 +54,10 @@ class IndexBuffer {
 
    public:
 	IndexBuffer(const unsigned int* data, unsigned int count);
+	IndexBuffer(unsigned int count);  //Create dynamic buffer
 	~IndexBuffer();
 
+	void SendData(unsigned int offset, unsigned int count, const unsigned int* data);
 	void Bind() const;
 	void Unbind() const;
 

@@ -13,7 +13,6 @@ void StopImGui() {
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 }
-Renderer renderer;
 
 BaseScene* BaseScene::instance = nullptr;
 BaseScene::BaseScene() {
