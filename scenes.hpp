@@ -4,6 +4,7 @@
 
 #include "Renderer.hpp"
 
+extern Renderer *renderer;
 namespace scene {
 void StartImGui();
 void StopImGui();
@@ -68,11 +69,19 @@ class renderertest : public BaseScene{
 	std::unique_ptr<VertexBuffer> VB;
 	std::unique_ptr<IndexBuffer> IB;
 	std::unique_ptr<Shader> shader;*/
-	Renderer renderer;
 
    public:
 	renderertest();
 	~renderertest();
+	void Render();
+	void RenderGUI();
+};
+class renderertestrotate : public BaseScene {
+   private:
+
+   public:
+	renderertestrotate();
+	~renderertestrotate();
 	void Render();
 	void RenderGUI();
 };

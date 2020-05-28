@@ -21,5 +21,6 @@ struct mat4f {
 	static mat4f& GenRotate(mat4f& mat, float anglex, float angley, float anglez);
 	static mat4f GenTranslate(float x, float y, float z);
 	static mat4f& Translate(mat4f&, float x, float y, float z);
+	vec3f& operator*(vec3f&);
 };
 #endif

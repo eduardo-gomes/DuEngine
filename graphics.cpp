@@ -2,6 +2,25 @@
 #define PI 3.1415926535897932
 extern void render();
 extern void Inicializa();
+void GLAPIENTRY MessageCallback(GLenum source,
+								GLenum type,
+								GLuint id,
+								GLenum severity,
+								GLsizei length,
+								const GLchar *message,
+								const void *userParam) {
+	(void) source;
+	(void)id;
+	(void)length;
+	(void)userParam;
+	if(type == GL_DEBUG_TYPE_ERROR){
+		fprintf(stderr, "[GL CALLBACK]: %s type = 0x%x, severity = 0x%x, message = %s\n",
+				(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+				type, severity, message);
+		ASSERT(0);
+	}
+}
+
 namespace window {
 extern bool quit;
 void toggle_fullscreen();
@@ -185,6 +204,9 @@ bool init_window() {
 		printf("GPU       : %s\n", glGetString(GL_RENDERER));
 		printf("GL Version: %s\n", glGetString(GL_VERSION));
 		//printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
+		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0);
 
 		/*if (GLAD_GL_EXT_framebuffer_multisample) {
 			// GL_EXT_framebuffer_multisample is supported

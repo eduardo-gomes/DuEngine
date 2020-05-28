@@ -20,6 +20,7 @@ class Renderer {
 	void Drawn();
 	void Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
 	void DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size);
+	void DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex);
 	static mat4f& LookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ);
 	static mat4f& Perspective(float fovy, float aspect, float zNear, float zFar);
 };

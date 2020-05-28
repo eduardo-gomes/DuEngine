@@ -2,7 +2,7 @@
 #include <imgui.h>
 
 mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer::ModelMatrix;
-#define QUADS_MAX 100000
+#define QUADS_MAX 5000
 const unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6, Renderer::TEXTURES_MAX = 16;
 struct vertex {
 	float position[3];
@@ -44,11 +44,26 @@ struct Renderer::quadBuffer {
 void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, int textid = 0) {
 	float xsize = size.v0/2;
 	float ysize = size.v1/2;
-	ASSERT(xsize);
 	ret[0] = {position.v0 +-xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 0.0f, (float)textid};
 	ret[1] = {position.v0 + xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 0.0f, (float)textid};
 	ret[2] = {position.v0 + xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 1.0f, (float)textid};
 	ret[3] = {position.v0 +-xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
+	return;
+}
+void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, float anglex, int textid = 0) {
+	mat4f rotate;
+	mat4f::GenRotate(rotate, anglex, 0.0f, 0.0f);
+	float xsize = size.v0 / 2;
+	float ysize = size.v1 / 2;
+	vec3f positions[4] = {{-xsize, -ysize, 0.0f}, {xsize, -ysize, 0.0f}, {xsize, ysize, 0.0f}, {-xsize, ysize, 0.0f}};
+	positions[0] = rotate * positions[0];
+	positions[1] = rotate * positions[1];
+	positions[2] = rotate * positions[2];
+	positions[3] = rotate * positions[3];
+	ret[0] = {position.v0 + positions[0].v0, position.v1 + positions[0].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 0.0f, (float)textid};
+	ret[1] = {position.v0 + positions[1].v0, position.v1 + positions[1].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 0.0f, (float)textid};
+	ret[2] = {position.v0 + positions[2].v0, position.v1 + positions[2].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 1.0f, (float)textid};
+	ret[3] = {position.v0 + positions[3].v0, position.v1 + positions[3].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
 	return;
 }
 Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("basic.glsl"){
@@ -88,29 +103,39 @@ void Renderer::DispInfo() {
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	if (ImGui::Checkbox("Vsync", &vsync))
 		SDL_GL_SetSwapInterval(vsync);
-	ImGui::Text("Vertex last drawn %u", elementsLastFrame);
-	ImGui::Text("Indices last drawn %u", indicesLastFrame);
-	ImGui::Text("Drawn calls last frame %u", DrawnCallsLast);
 	ImGui::Checkbox("elementsInfo", &drawnDetail);
+	ImGui::Text("Quads last drawn %u", elementsLastFrame/4);
 	ImGui::End();
 	if (drawnDetail){
 		ImGui::Begin("Elements Drawn Info", &drawnDetail);
-		ImGui::Text("First 16 vertex in buffer");
-		for(int i = 0; i < 16; ++i){
-			ImGui::Text("Vertex %d: x %f, y %f, z %f", i, QBuffer->firstVertex[i].position[0], QBuffer->firstVertex[i].position[1], QBuffer->firstVertex[i].position[2]);
-		}
-		ImGui::Text("First 4 quads indices in buffer");
-		for (int i = 0; i < 16; ++i) {
-			ImGui::Text("quad %d: %u %u %u %u %u %u", i, QBuffer->firstIndex[i * 6], QBuffer->firstIndex[i * 6 + 1], QBuffer->firstIndex[i * 6 + 2], QBuffer->firstIndex[i * 6 + 3], QBuffer->firstIndex[i * 6 + 4], QBuffer->firstIndex[i * 6 + 5]);
-		}
+		ImGui::Text("Vertex last drawn %u", elementsLastFrame);
+		ImGui::Text("Indices last drawn %u", indicesLastFrame);
+		ImGui::Text("Drawn calls last frame %u", DrawnCallsLast);
+		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * elementsLastFrame);
+		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * indicesLastFrame);
+		double totalSize = sizeof(vertex) * elementsLastFrame + sizeof(unsigned int) * indicesLastFrame;
+		if(totalSize > 1000000)
+			ImGui::Text("Buffer size: %lf MB", totalSize/1000000);
+		else
+			ImGui::Text("Buffer size: %.0lf b", totalSize);
+		ImGui::Text("Data transfer: %lf MB/s", totalSize/1000000*ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
 }
 void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size) {
-	if(QBuffer->elements == QUADS_MAX)
+	if (QBuffer->elements == QUADS_MAX)
 		flush();
 	vertex quads[4];
 	GenQuads(quads, position, color, size);
+	unsigned int indexoffset = QBuffer->vertexies;
+	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
+	QBuffer->insert(quads, index.index);
+}
+void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex) {
+	if (QBuffer->elements == QUADS_MAX)
+		flush();
+	vertex quads[4];
+	GenRotateQuads(quads, position, color, size, rotatex);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);

@@ -250,3 +250,12 @@ mat4f& mat4f::Translate(mat4f& mat, float x, float y, float z) {
 	mat.matrix[3][3] = 1.0f;
 	return mat;
 }
+
+vec3f& mat4f::operator*(vec3f& right){
+	vec3f ret;
+	ret.v0 = this->matrix[0][0] * right.v0 + this->matrix[0][1] * right.v1 + this->matrix[0][2] * right.v2;
+	ret.v1 = this->matrix[1][0] * right.v0 + this->matrix[1][1] * right.v1 + this->matrix[1][2] * right.v2;
+	ret.v2 = this->matrix[2][0] * right.v0 + this->matrix[2][1] * right.v1 + this->matrix[2][2] * right.v2;
+	right = ret;
+	return right;
+}

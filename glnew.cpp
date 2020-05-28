@@ -3,17 +3,19 @@
 #include "graphics.hpp"
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
+Renderer *renderer;
 void Inicializa() {
 	//SDL_GL_SetSwapInterval(0);
 	glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
 	glEnable(GL_BLEND);									// to use transparency
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	scene::StartImGui();
-	new scene::renderertest;
+	renderer = new Renderer;
+	new scene::renderertestrotate;
 }
-
 void render() {
+
 	scene::BaseScene::GetInstance()->Render();
 
 	//New frame
@@ -33,5 +35,6 @@ int main() {
 	delete scene::BaseScene::GetInstance();
 	//printf("BaseScene deleted\n");
 	scene::StopImGui();
+	delete renderer;
 	window::close_window();
 }

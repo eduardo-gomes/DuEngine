@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror
 LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
 DBG?=-g
-OPTIMIZATION?=
+OPTIMIZATION?=-O3 -march=native -mfpmath=sse
 
 ##use Visual Studio Developer Command Prompt
 #MSVC_INIT=vcvars64.bat
