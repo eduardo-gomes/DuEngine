@@ -7,7 +7,7 @@ namespace scene {
 renderertest::renderertest(){}
 renderertest::~renderertest(){
 }
-static int elementsToDrawn = 100;
+static int elementsToDrawn = 10000;
 void renderertest::Render(){
 	vec3f pos = {0.0f, 0.0f, 0.0f};
 	vec2f size = {0.5f, 0.5f};
@@ -23,7 +23,7 @@ void renderertest::Render(){
 }
 void renderertest::RenderGUI(){
 	ImGui::Begin("Renderertest");
-	ImGui::SliderInt("Elements to drawn", &elementsToDrawn, 10, 100010);
+	ImGui::SliderInt("Elements to drawn", &elementsToDrawn, 10, 300000);
 	static bool Info = 1;
 	ImGui::Checkbox("Info", &Info);
 	if(ImGui::Button("Next"))

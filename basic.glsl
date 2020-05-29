@@ -32,10 +32,16 @@ uniform sampler2D u_Texture[8];
 
 void main(){
 	int texID = int(v_TexID);
-	if(texID > 0){
-		color = texture(u_Texture[texID-1], v_TexCoord);
-	}else{
-		color = v_Color;
+	switch(texID){
+		case 0: color = v_Color; break;
+		case 1: color = texture(u_Texture[0], v_TexCoord); break;
+		case 2: color = texture(u_Texture[1], v_TexCoord); break;
+		case 3: color = texture(u_Texture[2], v_TexCoord); break;
+		case 4: color = texture(u_Texture[3], v_TexCoord); break;
+		case 5: color = texture(u_Texture[4], v_TexCoord); break;
+		case 6: color = texture(u_Texture[5], v_TexCoord); break;
+		case 7: color = texture(u_Texture[6], v_TexCoord); break;
+		case 8: color = texture(u_Texture[7], v_TexCoord); break;
 	}
 	if(color.a<=0.0 ){
 		discard;
