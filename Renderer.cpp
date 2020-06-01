@@ -2,8 +2,9 @@
 #include <imgui.h>
 
 mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer::ModelMatrix;
-#define QUADS_MAX 5000
-const unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6, Renderer::TEXTURES_MAX = 16;
+constexpr unsigned int QUADS_MAX = 5000, TEXTURES_MAX = 256, TEXTURES_MAX_BINDED = 32;
+constexpr unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6, Renderer::TEXTURES_MAX = 16;
+
 struct vertex {
 	float position[3];
 	float color[4];
@@ -75,6 +76,9 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("ba
 	VBL.Size(sizeof(vertex));
 	VA.AddBuffer(VB, VBL);
 	QBuffer = new quadBuffer(VB_MAX, IB_MAX);
+	Perspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
+	LookAt(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
+	mat4f::GenRotate(ModelMatrix,0.0, 0.0, 0.0);
 }
 Renderer::~Renderer(){
 	delete QBuffer;
@@ -85,9 +89,6 @@ void Renderer::flush() {
 	VB.SendData(0, QBuffer->vertexies * sizeof(vertex), QBuffer->firstVertex);
 	IB.SendData(0, QBuffer->indexies, QBuffer->firstIndex);
 	shader.Bind();
-	Perspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
-	LookAt(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
-	ModelMatrix = mat4f::GenRotate(0.0, 0.0, 0.0);
 	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 	shader.SetUniformMat4f("u_MVP", MVP);
 	gltry(glDrawElements(GL_TRIANGLES, (int)QBuffer->indexies, GL_UNSIGNED_INT, NULL));	 //documentation
