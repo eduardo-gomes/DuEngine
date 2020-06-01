@@ -12,7 +12,7 @@ void Inicializa() {
 	//glEnable(GL_DEPTH_TEST);
 	scene::StartImGui();
 	renderer = new Renderer;
-	new scene::renderertestrotate;
+	new scene::Tetris;
 }
 void render() {
 

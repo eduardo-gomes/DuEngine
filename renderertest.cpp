@@ -27,7 +27,7 @@ void renderertest::RenderGUI(){
 	static bool Info = 1;
 	ImGui::Checkbox("Info", &Info);
 	if(ImGui::Button("Next"))
-		new renderertestrotate;
+		new Tetris;
 	ImGui::End();
 	if(Info) renderer->DispInfo();
 }

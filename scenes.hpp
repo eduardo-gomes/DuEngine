@@ -63,7 +63,7 @@ class test : public BaseScene {
 	void RenderGUI();
 };*/
 
-class renderertest : public BaseScene{
+class renderertest : public BaseScene {
    private:
 	/*std::unique_ptr<VertexArray> VA;
 	std::unique_ptr<VertexBuffer> VB;
@@ -78,10 +78,29 @@ class renderertest : public BaseScene{
 };
 class renderertestrotate : public BaseScene {
    private:
-
    public:
 	renderertestrotate();
 	~renderertestrotate();
+	void Render();
+	void RenderGUI();
+};
+
+class Tetris : public BaseScene {
+   private:
+	int *gameMap;
+	unsigned int points;
+	unsigned int level;
+	struct stillQuad;
+	stillQuad* stillMap;
+	class peca;
+	class bagulhin;
+	friend peca;
+
+   public:
+	Tetris();
+	~Tetris();
+
+	void update(double delta);
 	void Render();
 	void RenderGUI();
 };
