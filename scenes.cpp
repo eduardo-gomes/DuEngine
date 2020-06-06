@@ -20,6 +20,7 @@ BaseScene::BaseScene() {
 		delete instance;
 	}
 	instance = this;
+	Renderer::LookAt(0.0f, 0.0f, 2.95f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 }
 BaseScene::~BaseScene() {
 	instance = nullptr;

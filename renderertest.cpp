@@ -8,7 +8,10 @@ renderertest::renderertest(){}
 renderertest::~renderertest(){
 }
 static int elementsToDrawn = 10000;
+static double ms = 0;//time
 void renderertest::Render(){
+	static std::chrono::high_resolution_clock::time_point tp = std::chrono::high_resolution_clock::now();//time
+	tp = std::chrono::high_resolution_clock::now();//time
 	vec3f pos = {0.0f, 0.0f, 0.0f};
 	vec2f size = {0.5f, 0.5f};
 	vec4f color = {0.0f, 1.0, 0.2f, 1.0f};
@@ -20,9 +23,21 @@ void renderertest::Render(){
 		renderer->DrawnQuad(pos, color, size);
 	}
 	renderer->Drawn();
+	ms = (double)(std::chrono::high_resolution_clock::now() - tp).count() / 1000000;//time
+	tp = std::chrono::high_resolution_clock::now();//time
 }
 void renderertest::RenderGUI(){
 	ImGui::Begin("Renderertest");
+
+	static std::deque<double> ms120;
+	ms120.push_back(ms);
+	if (ms120.size() > 120) ms120.pop_front();
+	double msmed = 0;
+	for (auto x : ms120)
+		msmed += x;
+	msmed /= ms120.size();
+	ImGui::Text("Duration of Render(): %.3lf, cpu max framerate: %.1lf", msmed, 1.0 / (msmed / 1000));
+
 	ImGui::SliderInt("Elements to drawn", &elementsToDrawn, 10, 300000);
 	static bool Info = 1;
 	ImGui::Checkbox("Info", &Info);
@@ -36,11 +51,11 @@ renderertestrotate::renderertestrotate() {}
 renderertestrotate::~renderertestrotate() {
 }
 static int SizeCount = 290;
-static double ms = 0;
+//static double ms = 0;//time previously defined
 static bool rotate = 1;
 void renderertestrotate::Render() {
-	static std::chrono::high_resolution_clock::time_point tp = std::chrono::high_resolution_clock::now();
-	tp = std::chrono::high_resolution_clock::now();
+	static std::chrono::high_resolution_clock::time_point tp = std::chrono::high_resolution_clock::now();//time
+	tp = std::chrono::high_resolution_clock::now();//time
 	vec3f pos = {0.0f, 0.0f, 0.0f};
 	vec2f size = {0.5f, 0.5f};
 	vec4f color = {0.0f, 1.0, 0.2f, 1.0f};
@@ -64,11 +79,12 @@ void renderertestrotate::Render() {
 			}
 		}
 	renderer->Drawn();
-	ms = (double)(std::chrono::high_resolution_clock::now() - tp).count()/1000000;
-	tp = std::chrono::high_resolution_clock::now();
+	ms = (double)(std::chrono::high_resolution_clock::now() - tp).count()/1000000;//time
+	tp = std::chrono::high_resolution_clock::now();//time
 }
 void renderertestrotate::RenderGUI() {
-	ImGui::Begin("Renderertest");
+	ImGui::Begin("Renderertestrotate");
+
 	static std::deque<double> ms120;
 	ms120.push_back(ms);
 	if(ms120.size() > 120) ms120.pop_front();
@@ -77,6 +93,7 @@ void renderertestrotate::RenderGUI() {
 		msmed += x;
 	msmed /= ms120.size();
 	ImGui::Text("Duration of Render(): %.3lf, cpu max framerate: %.1lf", msmed, 1.0/(msmed/1000));
+
 	ImGui::SliderInt("Elements per side", &SizeCount, 10, 1000);
 	ImGui::Checkbox("Rotate quads?", &rotate);
 	static bool Info = 1;

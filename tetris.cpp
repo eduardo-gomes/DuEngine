@@ -5,19 +5,42 @@
 
 namespace scene {
 constexpr unsigned int MAP_HEIGHT = 15, MAP_WIDTH = 8;
-struct Tetris::stillQuad{
-	vec4f cor;
+class Tetris::TetrisMap{
+	Tetris* game;
+	bool ocuped[MAP_HEIGHT][MAP_WIDTH];
+	vec4f color[MAP_HEIGHT][MAP_WIDTH];
+	public:
+	inline bool isOcuped(unsigned int x, unsigned int y){return ocuped[y][x];}
+	inline void Ocupe(unsigned int x, unsigned int y, const vec4f &cor){
+		ocuped[y][x] = 1;
+		color[y][x] = cor;
+	}
+	void render(){
+		for (unsigned int x = 0; x < MAP_WIDTH; ++x)
+			for (unsigned int y = 0; y < MAP_HEIGHT; ++y)
+				if (ocuped[y][x]) renderer->DrawnQuad({(float)x, (float)y, 0.0f}, color[y][x], {0.975f, 0.975f});
+	}
+	TetrisMap(Tetris* g): game(g){
+		for(unsigned int y = 0; y < MAP_HEIGHT; ++y)
+			memset(ocuped[y], 0, sizeof(ocuped[0]));
+	}
+	void update(){
+		for (unsigned int y = 0; y < MAP_HEIGHT; ++y){
+			bool isFull = 1;
+			for(unsigned int x = 0; x < MAP_WIDTH; ++x)
+				isFull = isFull && ocuped[y][x];
+			if(isFull){
+				for (unsigned int y2 = y+1; y2 < MAP_HEIGHT; ++y2) {
+					memcpy(&ocuped[y2 - 1], &ocuped[y2], sizeof(ocuped[y2]));
+					memcpy(&color[y2 - 1], &color[y2], sizeof(color[y2]));
+				}
+				game->points += MAP_WIDTH * 10;
+				if(y > 0) y--;
+			}
+		}
+	}
 };
-inline unsigned int pos(unsigned x, unsigned y) { return y * MAP_WIDTH + x; }
-Tetris::Tetris() {
-	gameMap = new int[pos(MAP_WIDTH, MAP_HEIGHT)]();
-	stillMap = new stillQuad[pos(MAP_WIDTH, MAP_HEIGHT)];
-	renderer->ViewMatrix = Renderer::LookAt(4.0f, 7.5f, 20.0f, 4.0f, 7.5f, 0.0f, 0.0f, 1.0f, 0.0f);
-}
-Tetris::~Tetris() {
-	delete[] gameMap;
-	delete[] stillMap;
-}
+
 
 void Tetris::update(double) {
 }
@@ -30,9 +53,9 @@ class Tetris::peca {
 	int rotation = 0;
 	int xpos, ypos;
 	peca(const float (&arr)[4][4][2], Tetris* t) : game(t), cor({Random::getf(), Random::getf(), Random::getf(), 1.0f}), positions(arr), xpos(3), ypos(13){}
-	virtual ~peca(){}
 
    public:
+	virtual ~peca(){}
 	inline bool rotate(bool clockwise) {
 		int oldRotation = rotation;
 		rotation = (rotation + (clockwise ? 1 : 3)) % 4;
@@ -46,8 +69,7 @@ class Tetris::peca {
 		if(isInsideMap(x, y)){
 			for(int i = 0; i < 4; ++i){
 				unsigned int quady = positions[rotation % 4][i][1] + y, quadx = positions[rotation % 4][i][0] + x;
-				unsigned int posi = pos(quadx, quady);
-				if((game->gameMap)[posi])
+				if(game->Map->isOcuped(quadx, quady))
 					return true;
 			}
 		}else return true;
@@ -82,9 +104,7 @@ class Tetris::peca {
 	}
 	inline void die(){
 		for (int i = 0; i < 4; ++i) {
-			unsigned int posi = pos(positions[rotation % 4][i][0] + xpos, positions[rotation % 4][i][1] + ypos);
-			game->stillMap[posi] = {cor};
-			game->gameMap[posi] = true;
+			game->Map->Ocupe(positions[rotation % 4][i][0] + xpos, positions[rotation % 4][i][1] + ypos, cor);
 		}
 	}
 	void render() {
@@ -112,7 +132,6 @@ void Tetris::Render() {
 			renderer->DrawnQuad({(float)w, (float)h, 0.0f}, {0.0f, 0.35f, 1.0f, 0.10f}, {0.95f, 0.95f});
 		}
 	static std::chrono::steady_clock::time_point tp = std::chrono::steady_clock::now();
-	static bagulhin *atual = new bagulhin(this);
 	if (tp <= std::chrono::steady_clock::now()) {
 		tp += std::chrono::seconds(1);
 		atual->move(0, -1);
@@ -130,20 +149,30 @@ void Tetris::Render() {
 		delete atual;
 		atual = new bagulhin(this);
 	}
-	for(unsigned int x = 0; x < MAP_WIDTH; ++x)
-		for(unsigned int y = 0; y < MAP_HEIGHT; ++y)
-			if (gameMap[y * MAP_WIDTH + x]) renderer->DrawnQuad({(float)x, (float)y, 0.0f}, stillMap[y * MAP_WIDTH + x].cor, {0.975f, 0.975f});
+	Map->update();
+	Map->render();
 	atual->render();
 	renderer->Drawn();
 }
 void Tetris::RenderGUI() {
 	ImGui::Begin("Tetris");
+	ImGui::Text("Points: %u", this->points);
 	static bool Info = 1;
 	ImGui::Checkbox("Info", &Info);
 	if (ImGui::Button("Next"))
 		new renderertestrotate;
 	ImGui::End();
 	if (Info) renderer->DispInfo();
+}
+
+Tetris::Tetris() {
+	Map = new TetrisMap(this);
+	Renderer::LookAt(4.0f, 7.5f, 20.0f, 4.0f, 7.5f, 0.0f, 0.0f, 1.0f, 0.0f);
+	atual = new bagulhin(this);
+}
+Tetris::~Tetris() {
+	delete Map;
+	delete atual;
 }
 
 }  // namespace scene

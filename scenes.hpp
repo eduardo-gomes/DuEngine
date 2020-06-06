@@ -87,12 +87,11 @@ class renderertestrotate : public BaseScene {
 
 class Tetris : public BaseScene {
    private:
-	int *gameMap;
 	unsigned int points;
-	unsigned int level;
-	struct stillQuad;
-	stillQuad* stillMap;
+	class TetrisMap;
+	TetrisMap *Map;
 	class peca;
+	peca *atual;
 	class bagulhin;
 	friend peca;
 
