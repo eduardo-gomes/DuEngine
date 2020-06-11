@@ -3,7 +3,7 @@
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
 
-#include "glmath.hpp"
+#include <graphics/glmath.hpp>
 extern void render();
 extern void Inicializa();
 //extern void OnWindowResize(double fovy, double aspect); //constant fov

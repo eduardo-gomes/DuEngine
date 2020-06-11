@@ -1,4 +1,4 @@
-#include "graphics.hpp"
+#include "window.hpp"
 #define PI 3.1415926535897932
 extern void render();
 extern void Inicializa();

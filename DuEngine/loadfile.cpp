@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "audio.hpp"
+#include <audio/audio.hpp>
 
 unsigned char *LoadTexture(const std::string &FilePath, int *Width, int *Height) {
 	std::ifstream file(FilePath, std::ios::binary | std::ios::ate);
