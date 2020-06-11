@@ -1,7 +1,6 @@
 #include <chrono>
 
-#include "scenes.hpp"
-#include "random.hpp"
+#include <DuEngine/DuEngine.hpp>
 
 namespace scene {
 constexpr unsigned int MAP_HEIGHT = 15, MAP_WIDTH = 8;
@@ -159,8 +158,8 @@ void Tetris::RenderGUI() {
 	ImGui::Text("Points: %u", this->points);
 	static bool Info = 1;
 	ImGui::Checkbox("Info", &Info);
-	if (ImGui::Button("Next"))
-		new renderertestrotate;
+	/*if (ImGui::Button("Next"))
+		new renderertestrotate;*/
 	ImGui::End();
 	if (Info) renderer->DispInfo();
 }
@@ -169,6 +168,7 @@ Tetris::Tetris() {
 	Map = new TetrisMap(this);
 	Renderer::LookAt(4.0f, 7.5f, 20.0f, 4.0f, 7.5f, 0.0f, 0.0f, 1.0f, 0.0f);
 	atual = new bagulhin(this);
+	printf("Tetris constructor\n");
 }
 Tetris::~Tetris() {
 	delete Map;
@@ -176,3 +176,10 @@ Tetris::~Tetris() {
 }
 
 }  // namespace scene
+
+int main(){
+	Start("DuTetris");
+}
+void Setup(){
+	new scene::Tetris;
+}

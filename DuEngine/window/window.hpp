@@ -3,11 +3,11 @@
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
 
-#include <graphics/glmath.hpp>
+#include <DuEngine/graphics/glmath.hpp>
+namespace window {
+//extern void OnWindowResize(double fovy, double aspect); //constant fov
 extern void render();
 extern void Inicializa();
-//extern void OnWindowResize(double fovy, double aspect); //constant fov
-namespace window {
 extern bool quit;
 void toggle_fullscreen();
 }  // namespace window
@@ -43,7 +43,7 @@ void reshapeWindow(int w, int h);
 
 void toggle_fullscreen();
 
-bool init_window();
+bool init_window(const char* windowName = "DuEngine Window");
 
 extern SDL_Surface* rgbbmp;
 void close_window();

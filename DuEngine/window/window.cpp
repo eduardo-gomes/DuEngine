@@ -1,7 +1,6 @@
 #include "window.hpp"
 #define PI 3.1415926535897932
-extern void render();
-extern void Inicializa();
+extern void CleanUp();//Init.cpp used before delete OpenGL context
 void GLAPIENTRY MessageCallback(GLenum source,
 								GLenum type,
 								GLuint id,
@@ -22,6 +21,8 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 namespace window {
+extern void render();
+extern void Inicializa();
 extern bool quit;
 void toggle_fullscreen();
 }  // namespace window
@@ -114,7 +115,6 @@ void event(const SDL_Event &e) {  // Keyboard event handler
 namespace window {
 // Screen dimension constants
 const int dfwidth = 720 * 16 / 9, dfheight = 720;
-const char window_name[] = "GL game";
 bool quit = false;
 // The window we'll be rendering to
 SDL_Window *window = NULL;
@@ -158,7 +158,7 @@ void toggle_fullscreen() {
 	// glinit_reshape();
 }
 
-bool init_window() {
+bool init_window(const char *windowName) {
 	bool fail = 0;
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -171,7 +171,7 @@ bool init_window() {
 
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		// Create window
-		window = SDL_CreateWindow(window_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, dfwidth, dfheight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, dfwidth, dfheight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 		if (window == NULL) {
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 			return fail = true;
@@ -267,9 +267,10 @@ void MainLoop() {
 		}
 		DesenhaNaTela();
 	}
+	CleanUp();
+	close_window();
 }
 
-int init() { return init_window(); }
 }  // namespace window
 
 /*---------------------------Render----------------------------*/

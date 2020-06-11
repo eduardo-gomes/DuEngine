@@ -2,7 +2,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
 
-#include <graphics/Renderer.hpp>
+#include <DuEngine/graphics/Renderer.hpp>
 
 extern Renderer *renderer;
 namespace scene {

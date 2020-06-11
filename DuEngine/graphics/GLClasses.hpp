@@ -2,8 +2,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <graphics/glmath.hpp>
-#include <window/window.hpp>
+#include <DuEngine/graphics/glmath.hpp>
+#include <DuEngine/window/window.hpp>
 
 class VertexBuffer {
    private:
