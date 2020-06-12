@@ -1,1 +1,1 @@
-# glut-game
+# OpenGL-game
