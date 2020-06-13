@@ -133,6 +133,7 @@ void Shader::Unbind() const {
 }
 Shader::ShaderProgramSource Shader::ParseShader(const std::string& filepath) {
 	std::ifstream stream(filepath);
+	if(!stream.good()) throw std::runtime_error("Shader file not good");
 	enum class ShaderType {
 		NONE = -1,
 		VERTEX = 0,

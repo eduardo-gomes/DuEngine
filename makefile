@@ -10,15 +10,14 @@ LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
 _INLCUDE_F=dependencies/include dependencies/imgui .
 INCLUDE_F=$(patsubst %, -I%, $(_INLCUDE_F))
 
-LIBS_OBJ=libglad.so libimgui.so
-Tetris.o: tetris.cpp $(LIBS_OBJ) libDuEngine.so
-	$(CXX) -o $@ $< $(CXXFLAGS) $(DBG) $(INCLUDE_F) -L. -lglad -limgui -lDuEngine $(LIBS) -Wl,-rpath=.
+LIBS_OBJ=libglad.so libimgui.so libDuEngine.so
+build: $(LIBS_OBJ)
+	cp DuEngine/graphics/basic.glsl basic.glsl
 
-.PHONY: clear Prepare clearAll
+.PHONY: clear Prepare clearAll DuEngine/DuEngine.so
 clear:
 	$(MAKE) -C DuEngine clear
-	rm Tetris.o
-
+	rm -f basic.glsl
 clearAll: clear
 	rm -f $(LIBS_OBJ)
 Prepare:

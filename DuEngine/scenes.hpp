@@ -85,23 +85,4 @@ class renderertestrotate : public BaseScene {
 	void RenderGUI();
 };
 
-class Tetris : public BaseScene {
-   private:
-	unsigned int points;
-	class TetrisMap;
-	TetrisMap *Map;
-	class peca;
-	peca *atual;
-	class bagulhin;
-	friend peca;
-
-   public:
-	Tetris();
-	~Tetris();
-
-	void update(double delta);
-	void Render();
-	void RenderGUI();
-};
-
 }  // namespace scene

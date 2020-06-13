@@ -35,8 +35,7 @@ objects/%.o: %.cpp
 build: Prepare DuEngine.so
 clear:
 	rm $(ENGINE_OBJ) DuEngine.so -f
-	rmdir objects/*
-	rmdir objects
+	-rmdir objects/* objects
 Prepare:
 	mkdir -p objects
 	cd objects && mkdir -p $(OBJ_SUB_DIRS)

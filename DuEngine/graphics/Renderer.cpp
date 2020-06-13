@@ -67,7 +67,7 @@ void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, cons
 	ret[3] = {position.v0 + positions[3].v0, position.v1 + positions[3].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
 	return;
 }
-Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("basic.glsl"){
+Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("DuEngine/basic.glsl") {
 	VertexBufferLayout VBL;
 	VBL.Push(GL_FLOAT, 3, offsetof(vertex, position));
 	VBL.Push(GL_FLOAT, 4, offsetof(vertex, color));
