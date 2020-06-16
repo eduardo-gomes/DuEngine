@@ -1,6 +1,8 @@
 #include "window.hpp"
 #define PI 3.1415926535897932
-extern void CleanUp();//Init.cpp used before delete OpenGL context
+//Init.cpp used before delete OpenGL context
+//Clear Renderer and scene
+extern void CleanUp();
 void GLAPIENTRY MessageCallback(GLenum source,
 								GLenum type,
 								GLuint id,
@@ -20,12 +22,6 @@ void GLAPIENTRY MessageCallback(GLenum source,
 	}
 }
 
-namespace window {
-extern void render();
-extern void Inicializa();
-extern bool quit;
-void toggle_fullscreen();
-}  // namespace window
 
 namespace screen {
 int width, height;
@@ -47,7 +43,7 @@ void calcview() {
 }  // namespace screen
 
 namespace mouse {
-int x = 0, y = 0, pressed;
+int x = 0, y = 0;
 void motion_event(const SDL_Event &e) {
 	const SDL_MouseMotionEvent &motion = e.motion;
 	x = motion.x;
@@ -55,7 +51,7 @@ void motion_event(const SDL_Event &e) {
 }
 void button_event(const SDL_Event &e) {
 	const SDL_MouseButtonEvent &button = e.button;
-	pressed = button.state == SDL_PRESSED;
+	//button.state == SDL_PRESSED;
 	//printf("Mouse button %hhu, state %hhu, x %d, y %d\n", button.button, button.state, button.x, button.y);
 	x = button.x;
 	y = button.y;
@@ -116,6 +112,7 @@ namespace window {
 // Screen dimension constants
 const int dfwidth = 720 * 16 / 9, dfheight = 720;
 bool quit = false;
+bool OpenglDebugOutput = false;
 // The window we'll be rendering to
 SDL_Window *window = NULL;
 // Event handler
@@ -130,6 +127,7 @@ void reshapeWindow() {
 	// screen::width = w;
 	screen::aspect = (double)screen::width / screen::height;
 	glViewport(0, 0, screen::width, screen::height);
+	/////////////////Callback to adjust renderer projection matrix
 	//OnWindowResize(screen::fovy, screen::aspect); //constant fov
 }
 void reshapeWindow(int w, int h) {
@@ -159,7 +157,7 @@ void toggle_fullscreen() {
 }
 
 bool init_window(const char *windowName) {
-	bool fail = 0;
+	bool fail = false;//return false if fail
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -174,18 +172,18 @@ bool init_window(const char *windowName) {
 		window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, dfwidth, dfheight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 		if (window == NULL) {
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-			return fail = true;
+			return fail;
 		}
 
 		// Create context
 		glcontext = SDL_GL_CreateContext(window);
 		if (glcontext == NULL) {
 			printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
-			return fail = true;
+			return fail;
 		}
 		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 			printf("Failed to initialize OpenGL context");
-			return fail = true;
+			return fail;
 		}
 		/*//Use Vsync
 		if (SDL_GL_SetSwapInterval(1) < 0){
@@ -197,7 +195,7 @@ bool init_window(const char *windowName) {
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
 			printf("Error initializing OpenGL! 0x%0X\n", error);
-			return fail = true;
+			return fail;
 		}
 		// printf("OpenGL %s\n", glGetString(GL_VERSION));
 		printf("GPU Vendor: %s\n", glGetString(GL_VENDOR));
@@ -205,8 +203,11 @@ bool init_window(const char *windowName) {
 		printf("GL Version: %s\n", glGetString(GL_VERSION));
 		//printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
 		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
-		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(MessageCallback, 0);
+		if(OpenglDebugOutput){
+			glEnable(GL_DEBUG_OUTPUT);
+			glDebugMessageCallback(MessageCallback, 0);
+		}
+		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
 
 		/*if (GLAD_GL_EXT_framebuffer_multisample) {
 			// GL_EXT_framebuffer_multisample is supported
@@ -214,14 +215,17 @@ bool init_window(const char *windowName) {
 		if (GLAD_GL_VERSION_3_0) {
 			// We support at least OpenGL version 3
 		}*/
+
+		//SDL_GL_SetSwapInterval(0);
+		glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
+		glEnable(GL_BLEND);									// to use transparency
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
+		//glEnable(GL_DEPTH_TEST);
 		Inicializa();
 	}
-	return fail;
+	return !fail;
 }
-SDL_Surface *rgbbmp = NULL;
 void close_window() {
-	SDL_FreeSurface(rgbbmp);
-	rgbbmp = NULL;
 	SDL_GL_DeleteContext(glcontext);
 	glcontext = NULL;
 	// Destroy window
@@ -232,7 +236,7 @@ void close_window() {
 	SDL_Quit();
 }
 
-void DesenhaNaTela(void) {
+void Drawn(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	render();
 	glFinish();
@@ -265,7 +269,7 @@ void MainLoop() {
 					break;
 			}
 		}
-		DesenhaNaTela();
+		Drawn();
 	}
 	CleanUp();
 	close_window();

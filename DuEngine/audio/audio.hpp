@@ -9,13 +9,21 @@
 #include "vorbis_ogg.hpp"
 
 namespace audio{
+// audio callback function fill stream with to_out bytes
 void audio_callback(void *userdata, Uint8 *stream, int len);
+//Output audio device specs set when device was opened
 extern SDL_AudioSpec output_spec;
+//Opened Device ID
 extern SDL_AudioDeviceID deviceId;
+//Struct to store PCM audio pointer and len
 struct sound;
+//Vector to store loaded sounds
 extern std::vector<sound> loaded_sounds;
+//Queue sound by index at vector loaded sounds
 void queue(long unsigned);
+//class to convert PCM data to another spec
 class converter;
+//Struct to hold PCM data and spec after load
 struct WAVE{
 	Uint32 length;
 	Uint8 *buffer;
@@ -53,10 +61,14 @@ struct sound{
 };
 
 extern std::list<sound> playing_sound;
-int init();//initialize SDL_AUDIO 
-void close();//Close SDL_AUDIO
+//initialize SDL_AUDIO 
+int init();
+//Close SDL_AUDIO
+void close();
+//Create sound from ogg file
 sound &create_sound(FILE *);
 //sound *create_sound(const ogg_file&);
 }
-int play_sound();
+//Demo play sound
+//int play_sound();
 #endif

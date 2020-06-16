@@ -6,9 +6,12 @@
 
 extern Renderer *renderer;
 namespace scene {
+//Create ImGui context
 void StartImGui();
+//Destroy ImGui context
 void StopImGui();
 
+//Class used to create instances
 class BaseScene {
    private:
 	static BaseScene *instance;
@@ -19,6 +22,7 @@ class BaseScene {
 	virtual ~BaseScene();
 
 	virtual void Update(double) {}
+	//Function to call renderer functions
 	virtual void Render() {}
 	virtual void RenderGUI() {}
 };
