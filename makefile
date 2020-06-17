@@ -20,6 +20,7 @@ clear:
 	rm -f basic.glsl
 clearAll: clear
 	rm -f $(LIBS_OBJ)
+	$(MAKE) -C dependencies/imgui clear
 Prepare:
 	$(MAKE) -C DuEngine Prepare
 	mkdir -p objects
@@ -31,11 +32,9 @@ libDuEngine.so: DuEngine/DuEngine.so
 	cp $< $@
 
 
-IMGUIDIR=dependencies/imgui
-_IMGUISRC=imgui.cpp imgui_demo.cpp imgui_draw.cpp imgui_impl_opengl3.cpp imgui_impl_sdl.cpp imgui_widgets.cpp
-IMGUISRC=$(patsubst %,$(IMGUIDIR)/%,$(_IMGUISRC))
-libimgui.so: $(IMGUISRC)
-	$(CXX) dependencies/imgui/all.cpp -c -O3 -o $@ $(INCLUDE_F) -shared -fPIC
+libimgui.so:
+	$(MAKE) -C dependencies/imgui imgui.so
+	cp dependencies/imgui/imgui.so $@
 
 libglad.so:
 	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC

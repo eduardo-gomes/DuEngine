@@ -1,0 +1,3 @@
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = git@github.com:eduardo-gomes/imgui.git
