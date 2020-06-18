@@ -64,10 +64,11 @@ unsigned char *LoadTexture(const std::string &FilePath, int *Width, int *Height)
 	return nullptr;
 }
 
-audio::sound &LoadSound(const std::string &FilePath) {
+//Removed fileptr now take filepath
+/*audio::sound &LoadSound(const std::string &FilePath) {
 	FILE *open = fopen(FilePath.c_str(), "r");
 	if (!open) {
 		std::cout << FilePath << " load fail" << std::endl;
 	}
 	return audio::create_sound(open);
-}
+}*/

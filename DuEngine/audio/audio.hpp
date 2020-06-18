@@ -59,14 +59,25 @@ struct sound{
 	sound& operator=(const sound&) = default;
 	void to_start();
 };
+typedef unsigned int musicIndex;
+//Create music
+musicIndex music(unsigned int loaded_index);
+//Set music state, -1 = stop, 0 = pause, 1 = play
+void musicPlay(int state, musicIndex I);
+//Reserve slots to create music
+void musicReserve(unsigned int reserve);
+
 
 extern std::list<sound> playing_sound;
 //initialize SDL_AUDIO 
-int init();
+bool init();
 //Close SDL_AUDIO
 void close();
+
 //Create sound from ogg file
-sound &create_sound(FILE *);
+//sound &create_sound(FILE *);
+sound &create_sound(const std::string &filePath);
+
 //sound *create_sound(const ogg_file&);
 }
 //Demo play sound

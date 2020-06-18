@@ -6,8 +6,45 @@
 #include "vorbis_ogg.cpp"
 
 namespace audio{
+//Struct with soundptr and status of music
+struct soundMusic{
+	sound* musicSound;
+	int status;
+	//rewind music to start
+	void rewind(){
+		if(musicSound){
+			musicSound->play_pos = *musicSound->pcm.get();
+			musicSound->play_len = musicSound->length;
+		}
+	}
+	soundMusic(sound *ms) : musicSound(ms), status(1) {}
+	soundMusic() : musicSound(nullptr), status(0){};
+};
+std::vector<soundMusic> playing_music;
+//playing_sound max
+unsigned int playing_music_max = 0;
+musicIndex music(unsigned int loaded_index){
+	musicIndex posi = 0;
+	if(playing_music.size() >= playing_music_max)
+		throw std::out_of_range("playing_music_full");
+	playing_music.emplace_back(&loaded_sounds[loaded_index]);
+	return posi;
+}
+void musicPlay(int state, musicIndex I){
+	soundMusic &toChange =playing_music[I];
+	if(state != -1)
+		toChange.status = state;
+	else 
+		toChange.status = 0;
+}
+void musicReserve(unsigned int reserve){
+	playing_music.reserve(reserve);
+	playing_music_max = reserve;
+}
+
 SDL_AudioSpec output_spec;
 SDL_AudioDeviceID deviceId;
+//list with playind sounds, they get removed when reach end
 std::list<sound> playing_sound;
 std::mutex playing_sound_mtx;
 std::vector<sound> loaded_sounds;
@@ -76,11 +113,11 @@ void sound::to_start() {
 	play_pos = *pcm;
 }
 
-int init(){
+bool init(){
 	// Initialize SDL.
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return -1;
+		return false;
 	}
 	SDL_AudioSpec want_spec;
 	SDL_memset(&want_spec, 0, sizeof(want_spec));
@@ -104,12 +141,12 @@ int init(){
 	//SDL_Log("Using audio device: %s\n", SDL_GetAudioDeviceName(i, 0));
 	if (deviceId <= 0) {
 		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return -1;
+		return false;
 	}
 	SDL_Log("Audio out Freq %d, Format %hu\n", output_spec.freq, output_spec.format);
 	//Unpause
 	SDL_PauseAudioDevice(deviceId, 0);
-	return 0;
+	return true;
 }
 void close(){
 	// shut everything down
@@ -146,6 +183,22 @@ void audio_callback(void *userdata, Uint8 *stream, int out) {
 	Uint32 to_out = (Uint32)out;
 	memset(stream, 0, (size_t)to_out);
 	Uint32 len = to_out;//length to copy of atual audio
+	for(std::vector<soundMusic>::iterator it = playing_music.begin(); it != playing_music.end(); ++it){
+		if(it->status != 1) continue;
+		Uint32 &play_len = it->musicSound->play_len;  // remaining len of *it audio
+		Uint8 *&play_pos = it->musicSound->play_pos;  // reference to atual pos of *it audio
+		//set len
+		len = (to_out > play_len ? play_len : to_out);
+		//mix the audio
+		SDL_MixAudioFormat(stream, play_pos, output_spec.format, len, SDL_MIX_MAXVOLUME);
+
+		play_pos += len;  // increment actual pos by len
+		play_len -= len;  // decrement remaining time by len
+
+		//rewind if ends
+		if (to_out > play_len)
+			it->rewind();
+	}
 	playing_sound_mtx.lock();
 	for(std::list<sound>::iterator it = playing_sound.begin(); it != playing_sound.end(); ++it){
 		Uint32 &play_len = it->play_len;	 // remaining len of *it audio
@@ -165,8 +218,13 @@ void audio_callback(void *userdata, Uint8 *stream, int out) {
 	}
 	playing_sound_mtx.unlock();
 }
-sound &create_sound(FILE * load){
+/*sound &create_sound(FILE * load){
 	return *(new sound(WAVE(converter(ogg_read(load)))));
+}*/
+sound &create_sound(const std::string &filePath) {
+	FILE *fl = fopen(filePath.c_str(), "r");
+	if(!fl) throw std::runtime_error("Can't open audio file: " + filePath);
+	return *(new sound(WAVE(converter(ogg_read(fl)))));
 }
 }
 /*int play_sound() {

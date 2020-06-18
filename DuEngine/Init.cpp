@@ -1,5 +1,5 @@
 #include "Init.hpp"
-
+#include "audio/audio.hpp"
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
 Renderer *renderer;
@@ -24,6 +24,7 @@ void window::render() {//called by MainLoop
 bool Start(const std::string &WindowName){
 	window::OpenglDebugOutput = false;
 	if (window::init_window(WindowName.c_str())) {
+		if(!audio::init()) printf("Cant initializate audio\n");
 		Setup();
 		window::MainLoop();
 	}else return 0;
