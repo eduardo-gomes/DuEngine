@@ -8,6 +8,10 @@ void window::Inicializa() {
 	scene::StartImGui();
 	renderer = new Renderer;
 }
+//update with delta in nanoseconds
+void window::update(int64_t delta){
+	scene::BaseScene::GetInstance()->Update(delta);
+}
 void window::render() {//called by MainLoop
 	scene::BaseScene::GetInstance()->Render();
 

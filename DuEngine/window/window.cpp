@@ -1,4 +1,6 @@
 #include "window.hpp"
+
+#include <chrono>
 #define PI 3.1415926535897932
 //Init.cpp used before delete OpenGL context
 //Clear Renderer and scene
@@ -244,6 +246,7 @@ void Drawn(void) {
 }
 
 void MainLoop() {
+	static std::chrono::high_resolution_clock::time_point tp = std::chrono::high_resolution_clock::now();
 	while (!quit) {
 		// Handle events on queue
 		while (SDL_PollEvent(&event) != 0) {
@@ -269,6 +272,8 @@ void MainLoop() {
 					break;
 			}
 		}
+		update((std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - tp)).count());
+		tp = std::chrono::high_resolution_clock::now();
 		Drawn();
 	}
 	CleanUp();

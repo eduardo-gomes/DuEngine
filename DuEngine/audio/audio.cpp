@@ -143,7 +143,7 @@ bool init(){
 		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
 		return false;
 	}
-	SDL_Log("Audio out Freq %d, Format %hu\n", output_spec.freq, output_spec.format);
+	printf("Audio out Freq %d, Format %hu, Sample Buffer Size %hu\n", output_spec.freq, output_spec.format, output_spec.samples);
 	//Unpause
 	SDL_PauseAudioDevice(deviceId, 0);
 	return true;

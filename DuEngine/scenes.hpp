@@ -21,7 +21,7 @@ class BaseScene {
 	BaseScene();
 	virtual ~BaseScene();
 
-	virtual void Update(double) {}
+	virtual void Update(int64_t) {}
 	//Function to call renderer functions
 	virtual void Render() {}
 	virtual void RenderGUI() {}

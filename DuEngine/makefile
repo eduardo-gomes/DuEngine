@@ -21,7 +21,7 @@ OBJ_SUB_DIRS=audio window graphics
 
 
 DuEngine.so: $(ENGINE_OBJ)
-	$(CXX) -o $@ -shared $(ENGINE_OBJ)
+	$(CXX) -o $@ -shared $(ENGINE_OBJ) $(OPTIMIZATION)
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp

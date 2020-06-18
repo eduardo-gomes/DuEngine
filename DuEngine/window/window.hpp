@@ -9,6 +9,8 @@ namespace window {
 
 //Drawn each frame
 extern void render();
+//update with delta in nanoseconds
+extern void update(int64_t delta);
 extern void Inicializa();
 //Exit MainLoop and close window
 extern bool quit;
