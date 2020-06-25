@@ -31,7 +31,7 @@ in float v_TexID;
 uniform sampler2D u_Texture[8];
 
 void main(){
-	int texID = int(v_TexID);
+	int texID = int(round(v_TexID));
 	switch(texID){
 		case 0: color = v_Color; break;
 		case 1: color = texture(u_Texture[0], v_TexCoord); break;

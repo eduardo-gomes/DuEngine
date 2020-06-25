@@ -114,7 +114,7 @@ namespace window {
 // Screen dimension constants
 const int dfwidth = 720 * 16 / 9, dfheight = 720;
 bool quit = false;
-bool OpenglDebugOutput = false;
+bool OpenglDebugOutput = true;
 // The window we'll be rendering to
 SDL_Window *window = NULL;
 // Event handler

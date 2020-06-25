@@ -11,9 +11,9 @@ __AUDIO_OBJ=audio.o #vorbis_ogg.o
 _AUDIO_OBJ=$(patsubst %,audio/%,$(__AUDIO_OBJ))
 __WINDOW_OBJ=window.o
 _WINDOW_OBJ=$(patsubst %,window/%,$(__WINDOW_OBJ))
-__RENDER_OBJ=GLClasses.o glmath.o Renderer.o
+__RENDER_OBJ=GLClasses.o glmath.o Renderer.o LoadTexture.o
 _RENDER_OBJ=$(patsubst %,graphics/%,$(__RENDER_OBJ))
-_ENGINE_OBJ=$(_AUDIO_OBJ) $(_WINDOW_OBJ) $(_RENDER_OBJ) loadfile.o random.o scenes.o Init.o
+_ENGINE_OBJ=$(_AUDIO_OBJ) $(_WINDOW_OBJ) $(_RENDER_OBJ) random.o scenes.o Init.o
 ENGINE_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_ENGINE_OBJ))
 
 OBJ_SUB_DIRS=audio window graphics

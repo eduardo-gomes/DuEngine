@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <DuEngine/loadfile.hpp>
+#include "LoadTexture.hpp"
 VertexBuffer::VertexBuffer(const void* data, unsigned int size) {
 	gltry(glGenBuffers(1, &RenderID));
 	gltry(glBindBuffer(GL_ARRAY_BUFFER, RenderID));

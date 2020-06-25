@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <DuEngine/graphics/glmath.hpp>
+#include <DuEngine/graphics/LoadTexture.hpp>
 #include <DuEngine/window/window.hpp>
 
 class VertexBuffer {

@@ -1,9 +1,7 @@
-#include "loadfile.hpp"
+#include "LoadTexture.hpp"
 
 #include <fstream>
 #include <iostream>
-
-#include <audio/audio.hpp>
 
 unsigned char *LoadTexture(const std::string &FilePath, int *Width, int *Height) {
 	std::ifstream file(FilePath, std::ios::binary | std::ios::ate);
@@ -61,14 +59,6 @@ unsigned char *LoadTexture(const std::string &FilePath, int *Width, int *Height)
 		return (unsigned char *)fdata;
 	}
 	free(fdata);
+	std::cout << "Failed to read " << FilePath << std::endl;
 	return nullptr;
 }
-
-//Removed fileptr now take filepath
-/*audio::sound &LoadSound(const std::string &FilePath) {
-	FILE *open = fopen(FilePath.c_str(), "r");
-	if (!open) {
-		std::cout << FilePath << " load fail" << std::endl;
-	}
-	return audio::create_sound(open);
-}*/

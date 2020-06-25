@@ -91,6 +91,7 @@ void Renderer::flush() {
 	shader.Bind();
 	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 	shader.SetUniformMat4f("u_MVP", MVP);
+	shader.SetUniform1iv("u_Texture", 2, u_Texture);//Sampler uniform
 	gltry(glDrawElements(GL_TRIANGLES, (int)QBuffer->indexies, GL_UNSIGNED_INT, NULL));	 //documentation
 	elementsThisFrame += QBuffer->vertexies;
 	indicesThisFrame += QBuffer->indexies;
@@ -128,6 +129,17 @@ void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f&
 		flush();
 	vertex quads[4];
 	GenQuads(quads, position, color, size);
+	unsigned int indexoffset = QBuffer->vertexies;
+	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
+	QBuffer->insert(quads, index.index);
+}
+void Renderer::DrawnQuadText(const vec3f& position, const vec4f& color, const vec2f& size, const Texture& Texture) {
+	if (QBuffer->elements == QUADS_MAX)
+		flush();
+	vertex quads[4];
+	Texture.Bind(0);
+	u_Texture[0] = 0;
+	GenQuads(quads, position, color, size, 2);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);

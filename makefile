@@ -1,5 +1,5 @@
-export CXX=g++
-export CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror
+export CXX?=g++
+export CXXFLAGS?=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror
 export LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
 export DBG?=-g
 export OPTIMIZATION?=-O3 -march=native -mfpmath=sse
@@ -14,7 +14,7 @@ LIBS_OBJ=libglad.so libimgui.so libDuEngine.so
 build: $(LIBS_OBJ)
 	cp DuEngine/graphics/basic.glsl basic.glsl
 
-.PHONY: clear Prepare clearAll DuEngine/DuEngine.so
+.PHONY: clear Prepare clearAll DuEngine/DuEngine.so test
 clear:
 	$(MAKE) -C DuEngine clear
 	rm -f basic.glsl
@@ -38,3 +38,10 @@ libimgui.so:
 
 libglad.so:
 	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC
+
+TEST_SRC=$(wildcard test/*.cpp)
+TEST_OBJ=$(patsubst %.cpp, %.o, $(TEST_SRC))
+	
+test: build $(TEST_OBJ)
+test/%.o: test/%.cpp
+	$(CXX) -o $@ $< $(CXXFLAGS) $(DBG) $(INCLUDE_F) -L. -lglad -lDuEngine -limgui -Wl,-rpath=DuEngine -Wl,-rpath=.. $(LIBS) $(OPTIMIZATION)
