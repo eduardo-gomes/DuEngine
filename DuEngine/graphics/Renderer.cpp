@@ -2,8 +2,8 @@
 #include <imgui.h>
 
 mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer::ModelMatrix;
-constexpr unsigned int QUADS_MAX = 5000, TEXTURES_MAX = 256, TEXTURES_MAX_BINDED = 32;
-constexpr unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6, Renderer::TEXTURES_MAX = 16;
+constexpr unsigned int QUADS_MAX = 5000;
+constexpr unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6;
 
 struct vertex {
 	float position[3];
@@ -185,7 +185,7 @@ mat4f& Renderer::Perspective(float fovy, float aspect, float zNear, float zFar) 
 
 
 //std::vector<int> Renderer::TextureBinder::u_texture;
-const unsigned int Renderer::TextureBinder::MAX_TEXTURES = 32;	 //hardcoded in vertex shader
+unsigned int Renderer::TextureBinder::MAX_TEXTURES = 16;	 //hardcoded minimum
 inline int Renderer::TextureBinder::Find(const Texture& tex) const {
 	std::map<unsigned int, int>::const_iterator search = TexturesIndexMap.find(tex.GetID());
 	if(search != TexturesIndexMap.end()) return search->second;
@@ -211,14 +211,17 @@ inline void Renderer::TextureBinder::Clear(){
 }
 inline void Renderer::TextureBinder::Push(Shader& shader) const{//not needed (the slot num is the slot pos)
 	//Create array with data;
-	unsigned int TexturesSlots[MAX_TEXTURES];
+	unsigned int *TexturesSlots = (unsigned int*)alloca(MAX_TEXTURES * sizeof(unsigned int));
 	for(unsigned int i = 0; i < MAX_TEXTURES; ++i)
 		TexturesSlots[i] = i;
 	shader.Bind();
 	shader.SetUniform1iv("u_Texture", UsedSlots(), (int*)TexturesSlots);
 }
 Renderer::TextureBinder::TextureBinder(){
-
+	int NewMax;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &NewMax);
+	if (NewMax < 0) throw std::range_error("GL_MAX_TEXTURE_IMAGE_UNITS less than zero :" + std::to_string(NewMax));
+	MAX_TEXTURES = (unsigned int)NewMax;
 }
 Renderer::TextureBinder::~TextureBinder(){
 

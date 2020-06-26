@@ -10,7 +10,7 @@ class Renderer {
 	Shader shader;
 	class TextureBinder{
 		std::map<unsigned int, int> TexturesIndexMap;
-		static const unsigned int MAX_TEXTURES;
+		static unsigned int MAX_TEXTURES;
 	   public:
 		int Find(const Texture& tex) const;
 		unsigned int UsedSlots() const;
@@ -21,7 +21,7 @@ class Renderer {
 		TextureBinder();
 		~TextureBinder();
 	} Textures;
-	static const unsigned int VB_MAX, IB_MAX, TEXTURES_MAX;
+	static const unsigned int VB_MAX, IB_MAX;
 	struct quadBuffer;
 	quadBuffer *QBuffer;
 

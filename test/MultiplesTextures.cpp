@@ -1,19 +1,18 @@
-#include <chrono>
-#include <future>
+#include <cstdint>
 
 #include <DuEngine/DuEngine.hpp>
 
 namespace scene {
-class TextureTest : public BaseScene {
+class MultiplesTextures : public BaseScene {
    private:
 	Texture* tex[32];
    public:
-	TextureTest(){
+	MultiplesTextures(){
 		TextureParameters param(GL_LINEAR, GL_LINEAR);
 		for(int i = 0; i < 32; ++i)
 			tex[i] = new Texture("test/" +std::to_string(i) + ".bmp", param);
 	}
-	~TextureTest(){
+	~MultiplesTextures(){
 		for (int i = 0; i < 32; ++i)
 			delete tex[i];
 	}
@@ -25,7 +24,7 @@ class TextureTest : public BaseScene {
 	};
 };
 
-void TextureTest::Render(){
+void MultiplesTextures::Render(){
 	for (int x = 0; x < 8; ++x)
 		for (int y = 0; y < 4; ++y) {
 			vec3f position{((float)x / 4 - 1.0f)*1.4f, ((float)y / 1.75f - 1.0f), 0.0f};
@@ -38,11 +37,13 @@ void TextureTest::Render(){
 
 }  // namespace scene
 
+#include <iostream>
 int main(){
 	//audio::musicReserve(1);
+	std::cout << sizeof(Renderer) << std::endl;
 	Start("DuTest");
 }
 
 void Setup(){
-	new scene::TextureTest;
+	new scene::MultiplesTextures;
 }
