@@ -83,7 +83,7 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("Du
 Renderer::~Renderer(){
 	delete QBuffer;
 }
-unsigned int elementsLastFrame = 0, elementsThisFrame, indicesLastFrame, indicesThisFrame, DrawnCalls, DrawnCallsLast;
+unsigned int elementsLastFrame = 0, elementsThisFrame, indicesLastFrame, indicesThisFrame, DrawnCalls, DrawnCallsLast, TexturesBindsThisFrame = 0, TexturesBindsLastFrame = 0;
 void Renderer::flush() {
 	VA.Bind();//contains VBL
 	VB.SendData(0, QBuffer->vertexies * sizeof(vertex), QBuffer->firstVertex);
@@ -91,12 +91,14 @@ void Renderer::flush() {
 	shader.Bind();
 	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 	shader.SetUniformMat4f("u_MVP", MVP);
-	shader.SetUniform1iv("u_Texture", 2, u_Texture);//Sampler uniform
+	Textures.Push(shader);	//Set u_Texture uniform
 	gltry(glDrawElements(GL_TRIANGLES, (int)QBuffer->indexies, GL_UNSIGNED_INT, NULL));	 //documentation
 	elementsThisFrame += QBuffer->vertexies;
 	indicesThisFrame += QBuffer->indexies;
+	TexturesBindsThisFrame += Textures.UsedSlots();
 	DrawnCalls++;
 	QBuffer->clear();
+	Textures.Clear();
 }
 
 void Renderer::DispInfo() {
@@ -113,8 +115,9 @@ void Renderer::DispInfo() {
 		ImGui::Text("Vertex last drawn %u", elementsLastFrame);
 		ImGui::Text("Indices last drawn %u", indicesLastFrame);
 		ImGui::Text("Drawn calls last frame %u", DrawnCallsLast);
+		ImGui::Text("TexturesBinded %u", TexturesBindsLastFrame);
 		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * elementsLastFrame);
-		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * indicesLastFrame);
+		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * indicesLastFrame);	 //TexturesBindsLastFrame
 		double totalSize = sizeof(vertex) * elementsLastFrame + sizeof(unsigned int) * indicesLastFrame;
 		if(totalSize > 1000000)
 			ImGui::Text("Buffer size: %lf MB", totalSize/1000000);
@@ -136,10 +139,14 @@ void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f&
 void Renderer::DrawnQuadText(const vec3f& position, const vec4f& color, const vec2f& size, const Texture& Texture) {
 	if (QBuffer->elements == QUADS_MAX)
 		flush();
+	int TextureIndex = Textures.FindBind(Texture);
+	if(TextureIndex < 0){
+		flush();
+		TextureIndex = Textures.FindBind(Texture);
+		if(TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
+	}
 	vertex quads[4];
-	Texture.Bind(0);
-	u_Texture[0] = 0;
-	GenQuads(quads, position, color, size, 2);
+	GenQuads(quads, position, color, size, ++TextureIndex);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
@@ -159,6 +166,8 @@ void Renderer::Drawn(){
 	indicesLastFrame = indicesThisFrame;
 	DrawnCallsLast = DrawnCalls;
 	DrawnCalls = indicesThisFrame = elementsThisFrame = 0;
+	TexturesBindsLastFrame = TexturesBindsThisFrame;
+	TexturesBindsThisFrame = 0;
 }
 void Renderer::Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
 	shader.Bind();
@@ -172,4 +181,45 @@ mat4f& Renderer::LookAt(float eyeX, float eyeY, float eyeZ, float centerX, float
 
 mat4f& Renderer::Perspective(float fovy, float aspect, float zNear, float zFar) {
 	return mat4f::GenPerspective(ProjectionMatrix, fovy, aspect, zNear, zFar);
+}
+
+
+//std::vector<int> Renderer::TextureBinder::u_texture;
+const unsigned int Renderer::TextureBinder::MAX_TEXTURES = 32;	 //hardcoded in vertex shader
+inline int Renderer::TextureBinder::Find(const Texture& tex) const {
+	std::map<unsigned int, int>::const_iterator search = TexturesIndexMap.find(tex.GetID());
+	if(search != TexturesIndexMap.end()) return search->second;
+	else return -1;
+}
+inline unsigned int Renderer::TextureBinder::UsedSlots() const{
+	return TexturesIndexMap.size();
+}
+inline int Renderer::TextureBinder::Bind(const Texture& tex){
+	const unsigned int NextIndex = UsedSlots();
+	if(UsedSlots() >= MAX_TEXTURES) return -1;
+	TexturesIndexMap.emplace(tex.GetID(), NextIndex);//TextureID, Slot
+	tex.Bind(NextIndex);
+	return (int)NextIndex;
+}
+inline int Renderer::TextureBinder::FindBind(const Texture& tex){
+	int Index = Find(tex);
+	if(Index < 0) return Bind(tex);
+	return Index;
+}
+inline void Renderer::TextureBinder::Clear(){
+	TexturesIndexMap.clear();
+}
+inline void Renderer::TextureBinder::Push(Shader& shader) const{//not needed (the slot num is the slot pos)
+	//Create array with data;
+	unsigned int TexturesSlots[MAX_TEXTURES];
+	for(unsigned int i = 0; i < MAX_TEXTURES; ++i)
+		TexturesSlots[i] = i;
+	shader.Bind();
+	shader.SetUniform1iv("u_Texture", UsedSlots(), (int*)TexturesSlots);
+}
+Renderer::TextureBinder::TextureBinder(){
+
+}
+Renderer::TextureBinder::~TextureBinder(){
+
 }

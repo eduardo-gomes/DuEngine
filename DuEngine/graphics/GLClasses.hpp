@@ -127,6 +127,7 @@ class Texture {
 
 	void Bind(unsigned int slot = 0) const;
 	void Unbind() const;
+	unsigned int GetID() const;
 
 	inline int GetWidth() const { return Width; }
 	inline int GetHeight() const { return Height; }

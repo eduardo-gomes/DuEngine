@@ -1,5 +1,6 @@
 #include "GLClasses.hpp"
 #include <memory>
+#include <map>
 
 class Renderer {
    private:
@@ -7,7 +8,19 @@ class Renderer {
 	VertexBuffer VB;
 	IndexBuffer IB;
 	Shader shader;
-	int u_Texture[8] = {};//hardcoded size in shader;
+	class TextureBinder{
+		std::map<unsigned int, int> TexturesIndexMap;
+		static const unsigned int MAX_TEXTURES;
+	   public:
+		int Find(const Texture& tex) const;
+		unsigned int UsedSlots() const;
+		int Bind(const Texture& tex);
+		int FindBind(const Texture& tex);
+		void Clear();
+		void Push(Shader& shader) const;
+		TextureBinder();
+		~TextureBinder();
+	} Textures;
 	static const unsigned int VB_MAX, IB_MAX, TEXTURES_MAX;
 	struct quadBuffer;
 	quadBuffer *QBuffer;

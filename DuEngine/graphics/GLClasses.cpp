@@ -243,3 +243,6 @@ void Texture::Bind(unsigned int slot) const {
 void Texture::Unbind() const {
 	gltry(glBindTexture(GL_TEXTURE_2D, 0));
 }
+unsigned int Texture::GetID() const {
+	return RenderID;
+}
