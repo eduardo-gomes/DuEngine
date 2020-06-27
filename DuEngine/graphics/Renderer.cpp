@@ -5,6 +5,17 @@ mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer:
 constexpr unsigned int QUADS_MAX = 5000;
 constexpr unsigned int Renderer::VB_MAX = QUADS_MAX * 4, Renderer::IB_MAX = QUADS_MAX * 6;
 
+struct Renderer::StatsData {
+	unsigned int elementsLastFrame = 0;
+	unsigned int elementsThisFrame;
+	unsigned int indicesLastFrame;
+	unsigned int indicesThisFrame;
+	unsigned int DrawnCalls;
+	unsigned int DrawnCallsLast;
+	unsigned int TexturesBindsThisFrame = 0;
+	unsigned int TexturesBindsLastFrame = 0;
+};
+
 struct vertex {
 	float position[3];
 	float color[4];
@@ -76,14 +87,15 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("Du
 	VBL.Size(sizeof(vertex));
 	VA.AddBuffer(VB, VBL);
 	QBuffer = new quadBuffer(VB_MAX, IB_MAX);
+	Stats = new StatsData();
 	Perspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
 	LookAt(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
 	mat4f::GenRotate(ModelMatrix,0.0, 0.0, 0.0);
 }
 Renderer::~Renderer(){
 	delete QBuffer;
+	delete Stats;
 }
-unsigned int elementsLastFrame = 0, elementsThisFrame, indicesLastFrame, indicesThisFrame, DrawnCalls, DrawnCallsLast, TexturesBindsThisFrame = 0, TexturesBindsLastFrame = 0;
 void Renderer::flush() {
 	VA.Bind();//contains VBL
 	VB.SendData(0, QBuffer->vertexies * sizeof(vertex), QBuffer->firstVertex);
@@ -93,10 +105,10 @@ void Renderer::flush() {
 	shader.SetUniformMat4f("u_MVP", MVP);
 	Textures.Push(shader);	//Set u_Texture uniform
 	gltry(glDrawElements(GL_TRIANGLES, (int)QBuffer->indexies, GL_UNSIGNED_INT, NULL));	 //documentation
-	elementsThisFrame += QBuffer->vertexies;
-	indicesThisFrame += QBuffer->indexies;
-	TexturesBindsThisFrame += Textures.UsedSlots();
-	DrawnCalls++;
+	Stats->elementsThisFrame += QBuffer->vertexies;
+	Stats->indicesThisFrame += QBuffer->indexies;
+	Stats->TexturesBindsThisFrame += Textures.UsedSlots();
+	Stats->DrawnCalls++;
 	QBuffer->clear();
 	Textures.Clear();
 }
@@ -108,17 +120,18 @@ void Renderer::DispInfo() {
 	if (ImGui::Checkbox("Vsync", &vsync))
 		SDL_GL_SetSwapInterval(vsync);
 	ImGui::Checkbox("elementsInfo", &drawnDetail);
-	ImGui::Text("Quads last drawn %u", elementsLastFrame/4);
+	ImGui::Text("Quads last drawn %u", Stats->elementsLastFrame/4);
 	ImGui::End();
 	if (drawnDetail){
 		ImGui::Begin("Elements Drawn Info", &drawnDetail);
-		ImGui::Text("Vertex last drawn %u", elementsLastFrame);
-		ImGui::Text("Indices last drawn %u", indicesLastFrame);
-		ImGui::Text("Drawn calls last frame %u", DrawnCallsLast);
-		ImGui::Text("TexturesBinded %u", TexturesBindsLastFrame);
-		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * elementsLastFrame);
-		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * indicesLastFrame);	 //TexturesBindsLastFrame
-		double totalSize = sizeof(vertex) * elementsLastFrame + sizeof(unsigned int) * indicesLastFrame;
+		ImGui::Text("Max Binded Textures %u", Textures.getMaxTexturesBinded());
+		ImGui::Text("Vertex last drawn %u", Stats->elementsLastFrame);
+		ImGui::Text("Indices last drawn %u", Stats->indicesLastFrame);
+		ImGui::Text("Drawn calls last frame %u", Stats->DrawnCallsLast);
+		ImGui::Text("Textures Binded last frame %u", Stats->TexturesBindsLastFrame);
+		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * Stats->elementsLastFrame);
+		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * Stats->indicesLastFrame);	 //TexturesBindsLastFrame
+		double totalSize = sizeof(vertex) * Stats->elementsLastFrame + sizeof(unsigned int) * Stats->indicesLastFrame;
 		if(totalSize > 1000000)
 			ImGui::Text("Buffer size: %lf MB", totalSize/1000000);
 		else
@@ -162,12 +175,12 @@ void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const 
 }
 void Renderer::Drawn(){
 	flush();
-	elementsLastFrame = elementsThisFrame;
-	indicesLastFrame = indicesThisFrame;
-	DrawnCallsLast = DrawnCalls;
-	DrawnCalls = indicesThisFrame = elementsThisFrame = 0;
-	TexturesBindsLastFrame = TexturesBindsThisFrame;
-	TexturesBindsThisFrame = 0;
+	Stats->elementsLastFrame = Stats->elementsThisFrame;
+	Stats->indicesLastFrame = Stats->indicesThisFrame;
+	Stats->DrawnCallsLast = Stats->DrawnCalls;
+	Stats->DrawnCalls = Stats->indicesThisFrame = Stats->elementsThisFrame = 0;
+	Stats->TexturesBindsLastFrame = Stats->TexturesBindsThisFrame;
+	Stats->TexturesBindsThisFrame = 0;
 }
 void Renderer::Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
 	shader.Bind();
@@ -185,7 +198,7 @@ mat4f& Renderer::Perspective(float fovy, float aspect, float zNear, float zFar) 
 
 
 //std::vector<int> Renderer::TextureBinder::u_texture;
-unsigned int Renderer::TextureBinder::MAX_TEXTURES = 16;	 //hardcoded minimum
+unsigned int Renderer::TextureBinder::MaxTexturesBinded = 16;	 //hardcoded minimum
 inline int Renderer::TextureBinder::Find(const Texture& tex) const {
 	std::map<unsigned int, int>::const_iterator search = TexturesIndexMap.find(tex.GetID());
 	if(search != TexturesIndexMap.end()) return search->second;
@@ -196,7 +209,7 @@ inline unsigned int Renderer::TextureBinder::UsedSlots() const{
 }
 inline int Renderer::TextureBinder::Bind(const Texture& tex){
 	const unsigned int NextIndex = UsedSlots();
-	if(UsedSlots() >= MAX_TEXTURES) return -1;
+	if(UsedSlots() >= MaxTexturesBinded) return -1;
 	TexturesIndexMap.emplace(tex.GetID(), NextIndex);//TextureID, Slot
 	tex.Bind(NextIndex);
 	return (int)NextIndex;
@@ -211,8 +224,8 @@ inline void Renderer::TextureBinder::Clear(){
 }
 inline void Renderer::TextureBinder::Push(Shader& shader) const{//not needed (the slot num is the slot pos)
 	//Create array with data;
-	unsigned int *TexturesSlots = (unsigned int*)alloca(MAX_TEXTURES * sizeof(unsigned int));
-	for(unsigned int i = 0; i < MAX_TEXTURES; ++i)
+	unsigned int *TexturesSlots = (unsigned int*)alloca(MaxTexturesBinded * sizeof(unsigned int));
+	for(unsigned int i = 0; i < MaxTexturesBinded; ++i)
 		TexturesSlots[i] = i;
 	shader.Bind();
 	shader.SetUniform1iv("u_Texture", UsedSlots(), (int*)TexturesSlots);
@@ -221,8 +234,11 @@ Renderer::TextureBinder::TextureBinder(){
 	int NewMax;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &NewMax);
 	if (NewMax < 0) throw std::range_error("GL_MAX_TEXTURE_IMAGE_UNITS less than zero :" + std::to_string(NewMax));
-	MAX_TEXTURES = (unsigned int)NewMax;
+	MaxTexturesBinded = (unsigned int)NewMax;
 }
 Renderer::TextureBinder::~TextureBinder(){
 
+}
+unsigned int Renderer::TextureBinder::getMaxTexturesBinded() const {
+	return MaxTexturesBinded;
 }

@@ -40,7 +40,6 @@ void MultiplesTextures::Render(){
 #include <iostream>
 int main(){
 	//audio::musicReserve(1);
-	std::cout << sizeof(Renderer) << std::endl;
 	Start("DuTest");
 }
 
