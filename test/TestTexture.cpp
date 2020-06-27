@@ -34,7 +34,7 @@ void TextureTest::Render(){
 		vec3f position{0.0f, 0.5f, 0.0f};
 		vec4f color{0.0f, 1.0f, 1.0f, 1.0f};
 		vec2f size{1.0f, 1.0f};
-		renderer->DrawnQuadText(position, color, size, *tex);
+		renderer->DrawnQuad(position, color, size, *tex);
 	}
 	renderer->Drawn();
 }

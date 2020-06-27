@@ -53,7 +53,7 @@ struct Renderer::quadBuffer {
 		delete[] firstIndex;
 	}
 };
-void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, int textid = 0) {
+void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, int textid = -1) {
 	float xsize = size.v0/2;
 	float ysize = size.v1/2;
 	ret[0] = {position.v0 +-xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 0.0f, (float)textid};
@@ -62,7 +62,7 @@ void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2
 	ret[3] = {position.v0 +-xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
 	return;
 }
-void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, float anglex, int textid = 0) {
+void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, float anglex, int textid = -1) {
 	mat4f rotate;
 	mat4f::GenRotate(rotate, anglex, 0.0f, 0.0f);
 	float xsize = size.v0 / 2;
@@ -149,7 +149,7 @@ void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f&
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
 }
-void Renderer::DrawnQuadText(const vec3f& position, const vec4f& color, const vec2f& size, const Texture& Texture) {
+void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size, const Texture& Texture) {
 	if (QBuffer->elements == QUADS_MAX)
 		flush();
 	int TextureIndex = Textures.FindBind(Texture);
@@ -159,7 +159,7 @@ void Renderer::DrawnQuadText(const vec3f& position, const vec4f& color, const ve
 		if(TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
 	}
 	vertex quads[4];
-	GenQuads(quads, position, color, size, ++TextureIndex);
+	GenQuads(quads, position, color, size, TextureIndex);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
@@ -169,6 +169,21 @@ void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const 
 		flush();
 	vertex quads[4];
 	GenRotateQuads(quads, position, color, size, rotatex);
+	unsigned int indexoffset = QBuffer->vertexies;
+	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
+	QBuffer->insert(quads, index.index);
+}
+void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex, const Texture& Texture) {
+	if (QBuffer->elements == QUADS_MAX)
+		flush();
+	int TextureIndex = Textures.FindBind(Texture);
+	if (TextureIndex < 0) {
+		flush();
+		TextureIndex = Textures.FindBind(Texture);
+		if (TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
+	}
+	vertex quads[4];
+	GenRotateQuads(quads, position, color, size, rotatex, TextureIndex);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
