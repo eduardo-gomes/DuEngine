@@ -293,7 +293,7 @@ bool ClearErrors() {
 }
 void PrintAllErrors(const char *fun, const char *file, int line) {
 	while (GLenum error = glGetError()) {
-		printf("[GL Error]: %0X from: %s on file: %s on line %d\n", error, fun, file, line);
+		printf("[GL Error]: 0x%0X from: %s on file: %s on line %d\n", error, fun, file, line);
 		raise(SIGTRAP);
 	}
 }

@@ -1,5 +1,8 @@
 #include "Renderer.hpp"
+
 #include <imgui.h>
+
+#include <stdexcept>
 
 mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer::ModelMatrix;
 constexpr unsigned int QUADS_MAX = 5000;
@@ -26,13 +29,13 @@ struct quadIndex {
 	unsigned int index[6];
 };
 struct Renderer::quadBuffer {
-	const vertex *firstVertex;
-	vertex *endVertex;
-	const unsigned int *firstIndex;
-	unsigned int *endIndex;
+	const vertex* firstVertex;
+	vertex* endVertex;
+	const unsigned int* firstIndex;
+	unsigned int* endIndex;
 	unsigned int elements, indexies, vertexies;
-	inline void insert(vertex *vertexPtr, unsigned int *index){
-		memcpy(endVertex, vertexPtr, sizeof(vertex)*4);
+	inline void insert(vertex* vertexPtr, unsigned int* index) {
+		memcpy(endVertex, vertexPtr, sizeof(vertex) * 4);
 		memcpy(endIndex, index, sizeof(unsigned int) * 6);
 		endVertex += 4;
 		endIndex += 6;
@@ -40,29 +43,50 @@ struct Renderer::quadBuffer {
 		indexies += 6;
 		vertexies += 4;
 	}
-	inline void clear(){
+	inline void clear() {
 		endVertex = (vertex*)firstVertex;
 		endIndex = (unsigned int*)firstIndex;
 		indexies = vertexies = elements = 0;
 	}
-	quadBuffer(unsigned int vertexSize, unsigned int indexSize) : firstVertex(new vertex[vertexSize]), firstIndex(new unsigned int[indexSize]), elements(0){
+	quadBuffer(unsigned int vertexSize, unsigned int indexSize) : firstVertex(new vertex[vertexSize]), firstIndex(new unsigned int[indexSize]), elements(0) {
 		clear();
 	}
-	~quadBuffer(){
+	~quadBuffer() {
 		delete[] firstVertex;
 		delete[] firstIndex;
 	}
 };
-void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, int textid = -1) {
-	float xsize = size.v0/2;
-	float ysize = size.v1/2;
-	ret[0] = {position.v0 +-xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 0.0f, (float)textid};
-	ret[1] = {position.v0 + xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 0.0f, (float)textid};
-	ret[2] = {position.v0 + xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 1.0f, (float)textid};
-	ret[3] = {position.v0 +-xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
+void GenQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, int textid = -1, const SubTexture* tex = NULL) {
+	float THst, TVst, THed, TVed;
+	if (tex) {
+		THst = tex->getHpos();
+		TVst = tex->getVpos();
+		THed = tex->getHsize() + THst;
+		TVed = tex->getVsize() + TVst;
+	} else {
+		THst = TVst = 0.0f;
+		THed = TVed = 1.0f;
+	}
+	float xsize = size.v0 / 2;
+	float ysize = size.v1 / 2;
+	ret[0] = {position.v0 +-xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, THst, TVst, (float)textid};
+	ret[1] = {position.v0 + xsize, position.v1 + -ysize, position.v2, color.v0, color.v1, color.v2, color.v3, THed, TVst, (float)textid};
+	ret[2] = {position.v0 + xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, THed, TVed, (float)textid};
+	ret[3] = {position.v0 +-xsize, position.v1 +  ysize, position.v2, color.v0, color.v1, color.v2, color.v3, THst, TVed, (float)textid};
 	return;
 }
-void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, float anglex, int textid = -1) {
+
+void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, const vec2f& size, float anglex, int textid = -1, const SubTexture* tex = NULL) {
+	float THst, TVst, THed, TVed;
+	if (tex) {
+		THst = tex->getHpos();
+		TVst = tex->getVpos();
+		THed = tex->getHsize() + THst;
+		TVed = tex->getVsize() + TVst;
+	} else {
+		THst = TVst = 0.0f;
+		THed = TVed = 1.0f;
+	}
 	mat4f rotate;
 	mat4f::GenRotate(rotate, anglex, 0.0f, 0.0f);
 	float xsize = size.v0 / 2;
@@ -72,10 +96,10 @@ void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, cons
 	positions[1] = rotate * positions[1];
 	positions[2] = rotate * positions[2];
 	positions[3] = rotate * positions[3];
-	ret[0] = {position.v0 + positions[0].v0, position.v1 + positions[0].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 0.0f, (float)textid};
-	ret[1] = {position.v0 + positions[1].v0, position.v1 + positions[1].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 0.0f, (float)textid};
-	ret[2] = {position.v0 + positions[2].v0, position.v1 + positions[2].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 1.0f, 1.0f, (float)textid};
-	ret[3] = {position.v0 + positions[3].v0, position.v1 + positions[3].v1, position.v2, color.v0, color.v1, color.v2, color.v3, 0.0f, 1.0f, (float)textid};
+	ret[0] = {position.v0 + positions[0].v0, position.v1 + positions[0].v1, position.v2, color.v0, color.v1, color.v2, color.v3, THst, TVst, (float)textid};
+	ret[1] = {position.v0 + positions[1].v0, position.v1 + positions[1].v1, position.v2, color.v0, color.v1, color.v2, color.v3, THed, TVst, (float)textid};
+	ret[2] = {position.v0 + positions[2].v0, position.v1 + positions[2].v1, position.v2, color.v0, color.v1, color.v2, color.v3, THed, TVed, (float)textid};
+	ret[3] = {position.v0 + positions[3].v0, position.v1 + positions[3].v1, position.v2, color.v0, color.v1, color.v2, color.v3, THst, TVed, (float)textid};
 	return;
 }
 Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("DuEngine/basic.glsl") {
@@ -90,9 +114,9 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("Du
 	Stats = new StatsData();
 	Perspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
 	LookAt(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
-	mat4f::GenRotate(ModelMatrix,0.0, 0.0, 0.0);
+	mat4f::GenRotate(ModelMatrix, 0.0, 0.0, 0.0);
 }
-Renderer::~Renderer(){
+Renderer::~Renderer() {
 	delete QBuffer;
 	delete Stats;
 }
@@ -120,9 +144,9 @@ void Renderer::DispInfo() {
 	if (ImGui::Checkbox("Vsync", &vsync))
 		SDL_GL_SetSwapInterval(vsync);
 	ImGui::Checkbox("elementsInfo", &drawnDetail);
-	ImGui::Text("Quads last drawn %u", Stats->elementsLastFrame/4);
+	ImGui::Text("Quads last drawn %u", Stats->elementsLastFrame / 4);
 	ImGui::End();
-	if (drawnDetail){
+	if (drawnDetail) {
 		ImGui::Begin("Elements Drawn Info", &drawnDetail);
 		ImGui::Text("Max Binded Textures %u", Textures.getMaxTexturesBinded());
 		ImGui::Text("Vertex last drawn %u", Stats->elementsLastFrame);
@@ -130,13 +154,13 @@ void Renderer::DispInfo() {
 		ImGui::Text("Drawn calls last frame %u", Stats->DrawnCallsLast);
 		ImGui::Text("Textures Binded last frame %u", Stats->TexturesBindsLastFrame);
 		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * Stats->elementsLastFrame);
-		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * Stats->indicesLastFrame);	 //TexturesBindsLastFrame
+		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * Stats->indicesLastFrame);	//TexturesBindsLastFrame
 		double totalSize = sizeof(vertex) * Stats->elementsLastFrame + sizeof(unsigned int) * Stats->indicesLastFrame;
-		if(totalSize > 1000000)
-			ImGui::Text("Buffer size: %lf MB", totalSize/1000000);
+		if (totalSize > 1000000)
+			ImGui::Text("Buffer size: %lf MB", totalSize / 1000000);
 		else
 			ImGui::Text("Buffer size: %.0lf b", totalSize);
-		ImGui::Text("Data transfer: %lf MB/s", totalSize/1000000*ImGui::GetIO().Framerate);
+		ImGui::Text("Data transfer: %lf MB/s", totalSize / 1000000 * ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
 }
@@ -153,13 +177,28 @@ void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f&
 	if (QBuffer->elements == QUADS_MAX)
 		flush();
 	int TextureIndex = Textures.FindBind(Texture);
-	if(TextureIndex < 0){
+	if (TextureIndex < 0) {
 		flush();
 		TextureIndex = Textures.FindBind(Texture);
-		if(TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
+		if (TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
 	}
 	vertex quads[4];
 	GenQuads(quads, position, color, size, TextureIndex);
+	unsigned int indexoffset = QBuffer->vertexies;
+	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
+	QBuffer->insert(quads, index.index);
+}
+void Renderer::DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size, const SubTexture& SubTex) {
+	if (QBuffer->elements == QUADS_MAX)
+		flush();
+	int TextureIndex = Textures.FindBind(SubTex.getTexture());
+	if (TextureIndex < 0) {
+		flush();
+		TextureIndex = Textures.FindBind(SubTex.getTexture());
+		if (TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
+	}
+	vertex quads[4];
+	GenQuads(quads, position, color, size, TextureIndex, &SubTex);
 	unsigned int indexoffset = QBuffer->vertexies;
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
@@ -188,7 +227,22 @@ void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const 
 	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
 	QBuffer->insert(quads, index.index);
 }
-void Renderer::Drawn(){
+void Renderer::DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex, const SubTexture& SubTex) {
+	if (QBuffer->elements == QUADS_MAX)
+		flush();
+	int TextureIndex = Textures.FindBind(SubTex.getTexture());
+	if (TextureIndex < 0) {
+		flush();
+		TextureIndex = Textures.FindBind(SubTex.getTexture());
+		if (TextureIndex < 0) throw std::runtime_error("Negative Texture Index after flush");
+	}
+	vertex quads[4];
+	GenRotateQuads(quads, position, color, size, rotatex, TextureIndex, &SubTex);
+	unsigned int indexoffset = QBuffer->vertexies;
+	quadIndex index = {0 + indexoffset, 1 + indexoffset, 2 + indexoffset, 2 + indexoffset, 3 + indexoffset, 0 + indexoffset};
+	QBuffer->insert(quads, index.index);
+}
+void Renderer::Drawn() {
 	flush();
 	Stats->elementsLastFrame = Stats->elementsThisFrame;
 	Stats->indicesLastFrame = Stats->indicesThisFrame;
@@ -203,7 +257,7 @@ void Renderer::Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader&
 	ib.Bind();
 	gltry(glDrawElements(GL_TRIANGLES, (int)ib.GetCount(), GL_UNSIGNED_INT, NULL));	 //documentation
 }
-mat4f& Renderer::LookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ){
+mat4f& Renderer::LookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ) {
 	return mat4f::GenView(ViewMatrix, eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
 }
 
@@ -211,48 +265,48 @@ mat4f& Renderer::Perspective(float fovy, float aspect, float zNear, float zFar) 
 	return mat4f::GenPerspective(ProjectionMatrix, fovy, aspect, zNear, zFar);
 }
 
-
 //std::vector<int> Renderer::TextureBinder::u_texture;
-unsigned int Renderer::TextureBinder::MaxTexturesBinded = 16;	 //hardcoded minimum
+unsigned int Renderer::TextureBinder::MaxTexturesBinded = 16;  //hardcoded minimum
 inline int Renderer::TextureBinder::Find(const Texture& tex) const {
 	std::map<unsigned int, int>::const_iterator search = TexturesIndexMap.find(tex.GetID());
-	if(search != TexturesIndexMap.end()) return search->second;
-	else return -1;
+	if (search != TexturesIndexMap.end())
+		return search->second;
+	else
+		return -1;
 }
-inline unsigned int Renderer::TextureBinder::UsedSlots() const{
+inline unsigned int Renderer::TextureBinder::UsedSlots() const {
 	return TexturesIndexMap.size();
 }
-inline int Renderer::TextureBinder::Bind(const Texture& tex){
+inline int Renderer::TextureBinder::Bind(const Texture& tex) {
 	const unsigned int NextIndex = UsedSlots();
-	if(UsedSlots() >= MaxTexturesBinded) return -1;
-	TexturesIndexMap.emplace(tex.GetID(), NextIndex);//TextureID, Slot
+	if (UsedSlots() >= MaxTexturesBinded) return -1;
+	TexturesIndexMap.emplace(tex.GetID(), NextIndex);  //TextureID, Slot
 	tex.Bind(NextIndex);
 	return (int)NextIndex;
 }
-inline int Renderer::TextureBinder::FindBind(const Texture& tex){
+inline int Renderer::TextureBinder::FindBind(const Texture& tex) {
 	int Index = Find(tex);
-	if(Index < 0) return Bind(tex);
+	if (Index < 0) return Bind(tex);
 	return Index;
 }
-inline void Renderer::TextureBinder::Clear(){
+inline void Renderer::TextureBinder::Clear() {
 	TexturesIndexMap.clear();
 }
-inline void Renderer::TextureBinder::Push(Shader& shader) const{//not needed (the slot num is the slot pos)
+inline void Renderer::TextureBinder::Push(Shader& shader) const {  //not needed (the slot num is the slot pos)
 	//Create array with data;
-	unsigned int *TexturesSlots = (unsigned int*)alloca(MaxTexturesBinded * sizeof(unsigned int));
-	for(unsigned int i = 0; i < MaxTexturesBinded; ++i)
+	unsigned int* TexturesSlots = (unsigned int*)alloca(MaxTexturesBinded * sizeof(unsigned int));
+	for (unsigned int i = 0; i < MaxTexturesBinded; ++i)
 		TexturesSlots[i] = i;
 	shader.Bind();
 	shader.SetUniform1iv("u_Texture", UsedSlots(), (int*)TexturesSlots);
 }
-Renderer::TextureBinder::TextureBinder(){
+Renderer::TextureBinder::TextureBinder() {
 	int NewMax;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &NewMax);
 	if (NewMax < 0) throw std::range_error("GL_MAX_TEXTURE_IMAGE_UNITS less than zero :" + std::to_string(NewMax));
 	MaxTexturesBinded = (unsigned int)NewMax;
 }
-Renderer::TextureBinder::~TextureBinder(){
-
+Renderer::TextureBinder::~TextureBinder() {
 }
 unsigned int Renderer::TextureBinder::getMaxTexturesBinded() const {
 	return MaxTexturesBinded;

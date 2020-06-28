@@ -39,7 +39,7 @@ IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count) : m_count
 
 	gltry(glGenBuffers(1, &RenderID));
 	gltry(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderID));
-	gltry(glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long int)(count * sizeof(unsigned int)), data, GL_STATIC_DRAW)); 
+	gltry(glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long int)(count * sizeof(unsigned int)), data, GL_STATIC_DRAW));
 }
 IndexBuffer::IndexBuffer(unsigned int count) : m_count(count) {
 	ASSERT(sizeof(unsigned int) == sizeof(GLuint));
@@ -133,7 +133,7 @@ void Shader::Unbind() const {
 }
 Shader::ShaderProgramSource Shader::ParseShader(const std::string& filepath) {
 	std::ifstream stream(filepath);
-	if(!stream.good()) throw std::runtime_error("Shader file not good");
+	if (!stream.good()) throw std::runtime_error("Shader file not good");
 	enum class ShaderType {
 		NONE = -1,
 		VERTEX = 0,
@@ -190,16 +190,16 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 void Shader::SetUniform1i(const std::string& name, int value) {
 	gltry(glUniform1i(GetUniformLocation(name), value));
 }
-void Shader::SetUniform1iv(const std::string& name, unsigned int count, int * data) {
+void Shader::SetUniform1iv(const std::string& name, unsigned int count, int* data) {
 	gltry(glUniform1iv(GetUniformLocation(name), (int)count, data));
 }
-void Shader::SetUniform2f(const std::string& name, const vec2f &v) {
+void Shader::SetUniform2f(const std::string& name, const vec2f& v) {
 	gltry(glUniform2f(GetUniformLocation(name), v.v0, v.v1));
 }
-void Shader::SetUniform3f(const std::string& name, const vec3f &v) {
+void Shader::SetUniform3f(const std::string& name, const vec3f& v) {
 	gltry(glUniform3f(GetUniformLocation(name), v.v0, v.v1, v.v2));
 }
-void Shader::SetUniform4f(const std::string& name, const vec4f &v) {
+void Shader::SetUniform4f(const std::string& name, const vec4f& v) {
 	gltry(glUniform4f(GetUniformLocation(name), v.v0, v.v1, v.v2, v.v3));
 }
 void Shader::SetUniformMat4f(const std::string& name, const mat4f& mat) {
@@ -246,3 +246,19 @@ void Texture::Unbind() const {
 unsigned int Texture::GetID() const {
 	return RenderID;
 }
+
+Texture& SubTexture::getTexture() const {
+	return *MainTexture;
+}
+SubTexture::SubTexture(const std::shared_ptr<Texture>& Texture) : MainTexture(Texture) {
+	Hpos = Vpos = 0.0f;
+	Hsize = Vsize = 1.0f;
+}
+SubTexture::SubTexture(const std::shared_ptr<Texture>& Texture, int Hindex, int Vindex, int Hnum, int Vnum) : MainTexture(Texture) {
+	Vindex = Vnum - Vindex - 1;	 //image is upside down
+	Hsize = 1.0f / Hnum;
+	Vsize = 1.0f / Vnum;
+	Hpos = Hindex * Hsize;
+	Vpos = Vindex * Vsize;
+}
+SubTexture::~SubTexture() {}

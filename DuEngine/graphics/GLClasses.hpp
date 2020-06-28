@@ -1,10 +1,10 @@
+#include <DuEngine/graphics/LoadTexture.hpp>
+#include <DuEngine/graphics/glmath.hpp>
+#include <DuEngine/window/window.hpp>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <DuEngine/graphics/glmath.hpp>
-#include <DuEngine/graphics/LoadTexture.hpp>
-#include <DuEngine/window/window.hpp>
 
 class VertexBuffer {
    private:
@@ -13,7 +13,7 @@ class VertexBuffer {
 
    public:
 	VertexBuffer(const void* data, unsigned int size);
-	VertexBuffer(unsigned int size);//Create dynamic buffer
+	VertexBuffer(unsigned int size);  //Create dynamic buffer
 	~VertexBuffer();
 
 	void SendData(unsigned int offset, unsigned int size, const void* data);
@@ -37,11 +37,11 @@ class VertexBufferLayout {
 		Elements.push_back({type, count, normalized, Stride});
 		ASSERT(Stride += VertexBufferElement::GetSizeOfType(type) * count);
 	}
-	void Push(unsigned int type, unsigned int count, size_t offset,unsigned char normalized = GL_FALSE) {
+	void Push(unsigned int type, unsigned int count, size_t offset, unsigned char normalized = GL_FALSE) {
 		Elements.push_back({type, count, normalized, offset});
 		ASSERT(Stride += VertexBufferElement::GetSizeOfType(type) * count);
 	}
-	void Size (unsigned int size){
+	void Size(unsigned int size) {
 		Stride = size;
 	}
 	inline const std::vector<VertexBufferElement>& GetElements() const { return Elements; }
@@ -131,4 +131,19 @@ class Texture {
 
 	inline int GetWidth() const { return Width; }
 	inline int GetHeight() const { return Height; }
+};
+
+class SubTexture {
+	std::shared_ptr<Texture> MainTexture;
+	float Hpos, Vpos, Hsize, Vsize;
+
+   public:
+	inline float getHpos() const { return Hpos; };
+	inline float getVpos() const { return Vpos; };
+	inline float getHsize() const { return Hsize; };
+	inline float getVsize() const { return Vsize; };
+	Texture& getTexture() const;
+	SubTexture(const std::shared_ptr<Texture>& Texture);
+	SubTexture(const std::shared_ptr<Texture>& Texture, int Hindex, int Vindex, int Hnum, int Vnum);
+	~SubTexture();
 };

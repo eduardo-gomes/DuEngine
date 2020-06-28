@@ -1,6 +1,7 @@
-#include "GLClasses.hpp"
-#include <memory>
 #include <map>
+#include <memory>
+
+#include "GLClasses.hpp"
 
 class Renderer {
    private:
@@ -8,9 +9,10 @@ class Renderer {
 	VertexBuffer VB;
 	IndexBuffer IB;
 	Shader shader;
-	class TextureBinder{
+	class TextureBinder {
 		std::map<unsigned int, int> TexturesIndexMap;
 		static unsigned int MaxTexturesBinded;
+
 	   public:
 		unsigned int getMaxTexturesBinded() const;
 		int Find(const Texture& tex) const;
@@ -26,7 +28,7 @@ class Renderer {
 	StatsData* Stats;
 	static const unsigned int VB_MAX, IB_MAX;
 	struct quadBuffer;
-	quadBuffer *QBuffer;
+	quadBuffer* QBuffer;
 
    public:
 	static mat4f MVP, ProjectionMatrix, ViewMatrix, ModelMatrix;
@@ -38,8 +40,10 @@ class Renderer {
 	void Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
 	void DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size);
 	void DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size, const Texture& Texture);
+	void DrawnQuad(const vec3f& position, const vec4f& color, const vec2f& size, const SubTexture& Texture);
 	void DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex);
 	void DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex, const Texture& Texture);
+	void DrawnQuadRotate(const vec3f& position, const vec4f& color, const vec2f& size, float rotatex, const SubTexture& SubTex);
 	static mat4f& LookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ);
 	static mat4f& Perspective(float fovy, float aspect, float zNear, float zFar);
 };
