@@ -10,7 +10,7 @@ class SubTextures : public BaseScene {
    public:
 	SubTextures() {
 		TextureParameters param(GL_LINEAR, GL_LINEAR);
-		tex = std::make_shared<Texture>("test/sheet.bmp");
+		tex = std::make_shared<Texture>("test/textures/sheet.bmp", param);
 		for (int x = 0; x < 16; ++x)
 			for (int y = 0; y < 16; ++y)
 				subtex[x + y * 16] = new SubTexture(tex, x, y, 16, 16);

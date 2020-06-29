@@ -118,8 +118,8 @@ class Texture {
    private:
 	unsigned int RenderID;
 	std::string File;
-	unsigned char* LocalBuffer;
 	int Width, Height, size;
+	static int MaxTextureSize;
 
    public:
 	Texture(const std::string& path, const TextureParameters& params = TextureParametersDefault);
@@ -131,6 +131,8 @@ class Texture {
 
 	inline int GetWidth() const { return Width; }
 	inline int GetHeight() const { return Height; }
+
+	static void GetMaxTextureSize();
 };
 
 class SubTexture {

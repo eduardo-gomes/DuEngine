@@ -115,6 +115,7 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("Du
 	Perspective(screen::fovy, screen::aspect, 0.01f, 100.0f);
 	LookAt(screen::camx, screen::camy, 3.0f, screen::camx, screen::camy, -1.0f, 0.0f, 1.0f, 0.0f);
 	mat4f::GenRotate(ModelMatrix, 0.0, 0.0, 0.0);
+	Texture::GetMaxTextureSize();
 }
 Renderer::~Renderer() {
 	delete QBuffer;

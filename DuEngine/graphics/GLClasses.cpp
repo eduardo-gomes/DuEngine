@@ -219,8 +219,9 @@ int Shader::GetUniformLocation(const std::string& name) {
 TextureParameters::TextureParameters(GLint mag_filter, GLint min_filter, GLint warp_s, GLint warp_t) : mag_filter(mag_filter), min_filter(min_filter), warp_s(warp_s), warp_t(warp_t) {
 	//std::cout << "TextureParameters constructor" << std::endl;
 }
-Texture::Texture(const std::string& path, const TextureParameters& params) : File(path), LocalBuffer(nullptr), Width(0), Height(0) {
-	LocalBuffer = LoadTexture(path, &Width, &Height);
+Texture::Texture(const std::string& path, const TextureParameters& params) : File(path), Width(0), Height(0) {
+	unsigned char* LocalBuffer = LoadTexture(path, &Width, &Height);
+	if (Width >= MaxTextureSize || Height >= MaxTextureSize) throw std::length_error("Image bigger than GL_MAX_TEXTURE_SIZE :" + std::to_string(MaxTextureSize));
 	gltry(glGenTextures(1, &RenderID));
 	gltry(glBindTexture(GL_TEXTURE_2D, RenderID));
 
@@ -231,6 +232,7 @@ Texture::Texture(const std::string& path, const TextureParameters& params) : Fil
 
 	gltry(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, LocalBuffer));
 	gltry(glBindTexture(GL_TEXTURE_2D, 0));
+	free(LocalBuffer);
 }
 Texture::~Texture() {
 	gltry(glDeleteTextures(1, &RenderID));
@@ -245,6 +247,10 @@ void Texture::Unbind() const {
 }
 unsigned int Texture::GetID() const {
 	return RenderID;
+}
+int Texture::MaxTextureSize = 16384;//At least 16384
+void Texture::GetMaxTextureSize() {
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
 }
 
 Texture& SubTexture::getTexture() const {
