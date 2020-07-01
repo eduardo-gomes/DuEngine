@@ -61,7 +61,7 @@ void button_event(const SDL_Event &e) {
 }  // namespace mouse
 void test_sound();
 namespace keyboard {
-bool w = 0, a = 0, s = 0, d = 0, backslash = 0, space = 0, F1 = 0;
+bool w = 0, a = 0, s = 0, d = 0, backslash = 0, space = 0, F1 = 0, Repeat = 0, UP = 0, DOWN = 0;
 uint16_t mod = KMOD_NONE;
 void event(const SDL_Event &e) {  // Keyboard event handler
 								  /*
@@ -79,7 +79,7 @@ void event(const SDL_Event &e) {  // Keyboard event handler
 	//printf("KEY type %u, timestamp %u, windowID %u, state %hhu, repeat %hhu, keycode %d, mod %hu\n", key.type, key.timestamp, key.windowID, key.state, key.repeat, key.keysym.sym, key.keysym.mod);
 	bool state = key.state == SDL_PRESSED;
 	mod = key.keysym.mod;
-	if (!key.repeat) switch (key.keysym.sym) {
+	if (!key.repeat || (Repeat)) switch (key.keysym.sym) {
 			case SDLK_ESCAPE:
 				window::quit = true;
 				break;
@@ -103,6 +103,12 @@ void event(const SDL_Event &e) {  // Keyboard event handler
 				break;
 			case SDLK_F1:
 				F1 = state;
+				break;
+			case SDLK_UP:
+				UP = state;
+				break;
+			case SDLK_DOWN:
+				DOWN = state;
 				break;
 			case SDLK_F11:
 				if (state) window::toggle_fullscreen();
@@ -210,19 +216,11 @@ bool init_window(const char *windowName) {
 			glDebugMessageCallback(MessageCallback, 0);
 		}
 		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
-
-		/*if (GLAD_GL_EXT_framebuffer_multisample) {
-			// GL_EXT_framebuffer_multisample is supported
-		}
-		if (GLAD_GL_VERSION_3_0) {
-			// We support at least OpenGL version 3
-		}*/
-
-		//SDL_GL_SetSwapInterval(0);
+		
 		glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
 		glEnable(GL_BLEND);									// to use transparency
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
-		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 		Inicializa();
 	}
 	return !fail;

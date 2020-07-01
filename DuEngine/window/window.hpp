@@ -45,7 +45,7 @@ void button_event(const SDL_Event& e);
 void test_sound();
 namespace keyboard {
 //keys
-extern bool w, a, s, d, backslash, space, F1;
+extern bool w, a, s, d, backslash, space, F1, UP, DOWN, Repeat;
 //mod keys bits
 extern uint16_t mod;
 void event(const SDL_Event& e);
