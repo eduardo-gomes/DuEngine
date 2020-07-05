@@ -35,6 +35,8 @@ class Renderer {
 	void DispInfo();
 	Renderer();
 	~Renderer();
+	void EnableDepth() const;
+	void DisableDepth() const;
 	void flush();
 	void Drawn();
 	void Drawn(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;

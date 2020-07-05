@@ -312,3 +312,10 @@ Renderer::TextureBinder::~TextureBinder() {
 unsigned int Renderer::TextureBinder::getMaxTexturesBinded() const {
 	return MaxTexturesBinded;
 }
+
+void Renderer::EnableDepth() const{
+	glEnable(GL_DEPTH_TEST);
+}
+void Renderer::DisableDepth() const{
+	glDisable(GL_DEPTH_TEST);
+}

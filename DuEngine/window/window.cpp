@@ -220,7 +220,7 @@ bool init_window(const char *windowName) {
 		glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
 		glEnable(GL_BLEND);									// to use transparency
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);//Enabled/disabled by renderer;
 		Inicializa();
 	}
 	return !fail;
