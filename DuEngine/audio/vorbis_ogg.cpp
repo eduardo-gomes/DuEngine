@@ -1,20 +1,23 @@
-#include <cstring>
+#include "vorbis_ogg.hpp"
+
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
-#include "manager/logger.hpp"
-#include "vorbis_ogg.hpp"
-namespace audio{
 
-ogg_read::ogg_read(std::ifstream &&SrcFile) : sourceFile(std::move(SrcFile)) {
+#include <cstring>
+
+#include "manager/logger.hpp"
+namespace audio {
+
+ogg_read::ogg_read(std::ifstream&& SrcFile) : sourceFile(std::move(SrcFile)) {
 	valid = !ov_open_callbacks(&sourceFile, &file, nullptr, 0, ogg_callbacks::callbacks);
 	if (!valid)
 		fprintf(stderr, "Input does not appear to be an Ogg bitstream.\n");
 	info = ov_info(&file, -1);
 	auto ret = ov_pcm_total(&file, -1);
-	if(ret < 0) throw std::runtime_error("ov_pcm_total < 0");
+	if (ret < 0) throw std::runtime_error("ov_pcm_total < 0");
 	samples = static_cast<size_t>(ret);
 }
-void ogg_read::disp_info(){
+void ogg_read::disp_info() {
 	// DISPLAY
 	//coments
 	/*fprintf(stderr, "user_comments\n");
@@ -33,7 +36,7 @@ void ogg_read::disp_info(){
 	logger::info(std::string(string));
 	// END DISPLAY
 }
-int ogg_read::read(char *to, int len) {
+int ogg_read::read(char* to, int len) {
 	return ov_read(&file, to, len, 0, 2, 1,
 				   &current_section);  // little endian signed 16bit pcm
 }
@@ -44,10 +47,10 @@ SDL_AudioSpec ogg_read::getSpec() {
 	Spec.channels = info->channels;
 	return Spec;
 }
-ogg_read::~ogg_read() { ov_clear(&file); /*fclose((FILE*)file.datasource);*/}
+ogg_read::~ogg_read() { ov_clear(&file); /*fclose((FILE*)file.datasource);*/ }
 
 size_t ogg_read::ogg_callbacks::read(void* buffer, size_t size, size_t elementCount, void* dataSource) {
-	if(size != 1) logger::erro("in ogg read callback size != 1");
+	if (size != 1) logger::erro("in ogg read callback size != 1");
 	std::ifstream& stream = *static_cast<std::ifstream*>(dataSource);
 	stream.read(static_cast<char*>(buffer), static_cast<std::streamsize>(elementCount));
 	const std::streamsize bytesRead = stream.gcount();
@@ -68,7 +71,7 @@ int ogg_read::ogg_callbacks::seek(void* dataSource, ogg_int64_t offset, int orig
 long ogg_read::ogg_callbacks::tell(void* dataSource) {
 	std::ifstream& stream = *static_cast<std::ifstream*>(dataSource);
 	const auto position = stream.tellg();
-	if(position < 0) throw std::out_of_range("in ogg tell callback position < 0");
+	if (position < 0) throw std::out_of_range("in ogg tell callback position < 0");
 	return static_cast<long>(position);
 }
-}
+}  // namespace audio

@@ -19,22 +19,22 @@ void logger(const std::string& msg, int type) {
 
 	std::strftime(timestr, 80, "[%F %T %Z] ", &time);
 	log += timestr;
-	switch (type){
-	case EXCP:
-		log += "Exception: ";
-		break;
-	case ERRO:
-		log += "Error: ";
-		break;
-	case WARN:
-		log += "Warning: ";
-		break;
-	case INFO:
-		log += "Info: ";
-		break;
-	default:
-		log += "Log: ";
-		break;
+	switch (type) {
+		case EXCP:
+			log += "Exception: ";
+			break;
+		case ERRO:
+			log += "Error: ";
+			break;
+		case WARN:
+			log += "Warning: ";
+			break;
+		case INFO:
+			log += "Info: ";
+			break;
+		default:
+			log += "Log: ";
+			break;
 	}
 	log += msg;
 
@@ -54,4 +54,4 @@ void excp(const std::string& msg) {
 	logger(msg, EXCP);
 }
 
-}  // namespace log
+}  // namespace logger

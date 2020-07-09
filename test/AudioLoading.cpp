@@ -5,9 +5,8 @@
 namespace scene {
 class AudioLoading : public BaseScene {
    private:
-
    public:
-   std::shared_ptr<audio::WAVE> sound;
+	std::shared_ptr<audio::WAVE> sound;
 	AudioLoading() {
 		sound = Manager::Insatance->LoadOGG("test/effect.ogg");
 	}
@@ -16,9 +15,9 @@ class AudioLoading : public BaseScene {
 
 	void Update(int64_t){};
 	void Render();
-	void RenderGUI(){
+	void RenderGUI() {
 		ImGui::Begin("effect");
-		if(ImGui::Button("enqueue")) audio::audioOut->EnqueueSound(sound);
+		if (ImGui::Button("enqueue")) audio::audioOut->EnqueueSound(sound);
 		ImGui::End();
 	};
 };
@@ -33,7 +32,7 @@ int main() {
 	Start("DuTest");
 }
 
-void LoadAudio(){
+void LoadAudio() {
 	auto &korobe = Manager::Insatance->LoadOGG("test/music.ogg");
 	auto &music = audio::audioOut->EnqueueMusic(korobe);
 	(void)music;

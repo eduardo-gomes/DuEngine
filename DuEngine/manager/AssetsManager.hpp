@@ -1,11 +1,12 @@
 #include <fstream>
-#include <thread>
-#include <mutex>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
-#include "logger.hpp"
+#include <thread>
+
 #include "../audio/audio.hpp"
+#include "logger.hpp"
 
 namespace Manager {
 class Manager {
@@ -26,8 +27,8 @@ class Manager {
 	std::list<std::pair<std::unique_ptr<audio::converter>, std::unique_ptr<audio::ogg_read>>> loadingOgg;
 	std::map<std::string, std::shared_ptr<audio::WAVE>> waves;
 	void OggLoader();
-	
-	public:
+
+   public:
 	Manager();
 	~Manager();
 	const std::shared_ptr<audio::WAVE>& LoadOGG(std::string filePath);

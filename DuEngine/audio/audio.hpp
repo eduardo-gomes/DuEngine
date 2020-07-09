@@ -8,11 +8,12 @@
 
 #include "vorbis_ogg.hpp"
 
-namespace audio{
-class WAVE{
-	protected:
+namespace audio {
+class WAVE {
+   protected:
 	size_t length;
-	public:
+
+   public:
 	std::atomic<size_t> avaliable;
 	WAVE(size_t);
 	~WAVE();
@@ -20,47 +21,51 @@ class WAVE{
 	friend class converter;
 	friend void audio_callback(void* userdata, Uint8* stream, int out);
 };
-class converter{
+class converter {
 	std::shared_ptr<WAVE> wave;
-	SDL_AudioStream *stream;
-	public:
+	SDL_AudioStream* stream;
+
+   public:
 	int put(void* from, size_t len);
 	int getAvaliable();
 	int flush();
 	const std::shared_ptr<WAVE>& getWAVE() const;
-	converter(const SDL_AudioSpec & from, size_t samples, const SDL_AudioSpec &to);
+	converter(const SDL_AudioSpec& from, size_t samples, const SDL_AudioSpec& to);
 	~converter();
 };
-class audio{
+class audio {
 	SDL_AudioSpec outputSpec;
 	SDL_AudioDeviceID dev;
+
    public:
-	class sound{
+	class sound {
 		std::shared_ptr<WAVE> wave;
 		size_t played;
 		void* pos;
-		public:
+
+	   public:
 		sound(const std::shared_ptr<WAVE>&);
 		friend void audio_callback(void* userdata, Uint8* stream, int out);
-
 	};
-	class music{
+	class music {
 		std::shared_ptr<WAVE> wave;
 		size_t played;
 		void* pos;
 		int status;
-		public:
+
+	   public:
 		void SetStatus(int status);
 		music(const std::shared_ptr<WAVE>&);
 		friend void audio_callback(void* userdata, Uint8* stream, int out);
-
 	};
-	private:
+
+   private:
 	std::list<sound> SoundsQueue;
 	std::list<music> MusicQueue;
-	public:
-	void EnqueueSound(const std::shared_ptr<WAVE> &);
-	music& EnqueueMusic(const std::shared_ptr<WAVE> &);
+
+   public:
+	void EnqueueSound(const std::shared_ptr<WAVE>&);
+	music& EnqueueMusic(const std::shared_ptr<WAVE>&);
 	const SDL_AudioSpec getSpec() const;
 	audio();
 	~audio();
@@ -68,5 +73,5 @@ class audio{
 };
 extern std::unique_ptr<audio> audioOut;
 // audio callback function fill stream with to_out bytes
-void audio_callback(void *audioClass, Uint8 *stream, int len);
-}
+void audio_callback(void* audioClass, Uint8* stream, int len);
+}  // namespace audio

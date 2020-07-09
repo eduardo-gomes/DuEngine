@@ -1,6 +1,8 @@
 #include "window.hpp"
 
 #include <chrono>
+
+#include "manager/logger.hpp"
 #define PI 3.1415926535897932
 //Init.cpp used before delete OpenGL context
 //Clear Renderer and scene
@@ -12,18 +14,19 @@ void GLAPIENTRY MessageCallback(GLenum source,
 								GLsizei length,
 								const GLchar *message,
 								const void *userParam) {
-	(void) source;
+	(void)source;
 	(void)id;
 	(void)length;
 	(void)userParam;
-	if(type == GL_DEBUG_TYPE_ERROR){
-		fprintf(stderr, "[GL CALLBACK]: %s type = 0x%x, severity = 0x%x, message = %s\n",
-				(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-				type, severity, message);
+	if (type == GL_DEBUG_TYPE_ERROR) {
+		char errstr[256];
+		snprintf(errstr, sizeof(errstr), "[GL CALLBACK]: %s type = 0x%x, severity = 0x%x, message = ",
+				 (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+				 type, severity);
+		logger::erro(errstr + std::string(message));
 		ASSERT(0);
 	}
 }
-
 
 namespace screen {
 int width, height;
@@ -35,7 +38,7 @@ double viewx, viewy;
 void calcview() {
 	viewy = camz * tan(fovy / 2 * PI / 180);
 	viewx = aspect * viewy;
-	bcgViewy = (camz - bcgDist) * tan(fovy / 2 * PI / 180);  // the bcg will be at z = bcgDist
+	bcgViewy = (camz - bcgDist) * tan(fovy / 2 * PI / 180);	 // the bcg will be at z = bcgDist
 	bcgViewx = aspect * bcgViewy;
 	bcg2Viewy = (camz - bcg2Dist) * tan(fovy / 2 * PI / 180);  // the bcg2 will be at z = bcg2Dist
 	bcg2Viewx = aspect * bcg2Viewy;
@@ -152,23 +155,23 @@ void toggle_fullscreen() {
 		screen::width = dfwidth;
 		screen::height = dfwidth;
 		if (SDL_SetWindowFullscreen(window, 0))
-			printf("Window could not be resized! SDL_Error: %s\n", SDL_GetError());
+			logger::erro("Window could not be resized! SDL_Error: " + std::string(SDL_GetError()));
 	} else {
 		SDL_Rect j;
 		SDL_GetDisplayBounds(i, &j);
 		screen::width = j.w;
 		screen::height = j.h;
 		if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP))
-			printf("Window could not be resized! SDL_Error: %s\n", SDL_GetError());
+			logger::erro("Window could not be resized! SDL_Error: " + std::string(SDL_GetError()));
 	}
 	// glinit_reshape();
 }
 
 bool init_window(const char *windowName) {
-	bool fail = false;//return false if fail
+	bool fail = false;	//return false if fail
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+		logger::erro("SDL could not initialize! SDL_Error: " + std::string(SDL_GetError()));
 	} else {
 		SDL_GL_LoadLibrary(NULL);
 		// OpenGL 4.1
@@ -179,18 +182,18 @@ bool init_window(const char *windowName) {
 		// Create window
 		window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, dfwidth, dfheight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 		if (window == NULL) {
-			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+			logger::erro("Window could not be created! SDL_Error: " + std::string(SDL_GetError()));
 			return fail;
 		}
 
 		// Create context
 		glcontext = SDL_GL_CreateContext(window);
 		if (glcontext == NULL) {
-			printf("OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
+			logger::erro("OpenGL context could not be created! SDL Error: " + std::string(SDL_GetError()));
 			return fail;
 		}
 		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-			printf("Failed to initialize OpenGL context");
+			logger::erro("Failed to initialize OpenGL context");
 			return fail;
 		}
 		/*//Use Vsync
@@ -202,21 +205,21 @@ bool init_window(const char *windowName) {
 		reshapeWindow(dfwidth, dfheight);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
-			printf("Error initializing OpenGL! 0x%0X\n", error);
+			logger::info("Error initializing OpenGL! (int): " + std::to_string(error));
 			return fail;
 		}
 		// printf("OpenGL %s\n", glGetString(GL_VERSION));
-		printf("GPU Vendor: %s\n", glGetString(GL_VENDOR));
-		printf("GPU       : %s\n", glGetString(GL_RENDERER));
-		printf("GL Version: %s\n", glGetString(GL_VERSION));
+		logger::info("GPU Vendor: " + std::string((const char *)glGetString(GL_VENDOR)));
+		logger::info("GPU       : " + std::string((const char *)glGetString(GL_RENDERER)));
+		logger::info("GL Version: " + std::string((const char *)glGetString(GL_VERSION)));
 		//printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
 		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
-		if(OpenglDebugOutput){
+		if (OpenglDebugOutput) {
 			glEnable(GL_DEBUG_OUTPUT);
 			glDebugMessageCallback(MessageCallback, 0);
 		}
 		// During init, enable debug output ////////////////////////////////DEBUG OPENGL
-		
+
 		glClearColor(0.1f, 0.0f, 0.3f, 1.0f);
 		glEnable(GL_BLEND);									// to use transparency
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// to use transparency
@@ -291,7 +294,9 @@ bool ClearErrors() {
 }
 void PrintAllErrors(const char *fun, const char *file, int line) {
 	while (GLenum error = glGetError()) {
-		printf("[GL Error]: 0x%0X from: %s on file: %s on line %d\n", error, fun, file, line);
+		char errstr[256];
+		snprintf(errstr, sizeof(errstr), "[GL Error]: 0x%0X from: %s on file: %s on line %d\n", error, fun, file, line);
+		logger::erro(errstr);
 		raise(SIGTRAP);
 	}
 }
