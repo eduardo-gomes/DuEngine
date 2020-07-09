@@ -9,7 +9,7 @@ class TextureTest : public BaseScene {
 	Texture* tex;
    public:
 	TextureTest(){
-		tex = new Texture("test/bloco.bmp");
+		tex = new Texture("test/textures/bloco.bmp");
 	}
 	~TextureTest(){
 		delete tex;

@@ -10,7 +10,7 @@ class MultiplesTextures : public BaseScene {
 	MultiplesTextures() {
 		TextureParameters param(GL_LINEAR, GL_LINEAR);
 		for (int i = 0; i < 32; ++i)
-			tex[i] = new Texture("test/" + std::to_string(i) + ".bmp", param);
+			tex[i] = new Texture("test/textures/" + std::to_string(i) + ".bmp", param);
 	}
 	~MultiplesTextures() {
 		for (int i = 0; i < 32; ++i)

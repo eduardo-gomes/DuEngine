@@ -15,6 +15,7 @@ class SubTextures : public BaseScene {
 		for (int x = 0; x < 16; ++x)
 			for (int y = 0; y < 16; ++y)
 				subtex[x + y * 16] = new SubTexture(tex, x, y, 16, 16);
+		renderer->EnableDepth();
 	}
 	~SubTextures() {}
 
