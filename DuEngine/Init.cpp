@@ -1,4 +1,5 @@
 #include "Init.hpp"
+#include "manager/AssetsManager.hpp"
 #include "audio/audio.hpp"
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
@@ -26,9 +27,10 @@ void window::render() {//called by MainLoop
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 bool Start(const std::string &WindowName){
+	Manager::Insatance = std::make_unique<Manager::Manager>();
 	window::OpenglDebugOutput = false;
 	if (window::init_window(WindowName.c_str())) {
-		if(!audio::init()) printf("Cant initializate audio\n");
+		audio::audioOut = std::make_unique<audio::audio>();
 		Setup();
 		window::MainLoop();
 	}else return 0;
@@ -39,6 +41,9 @@ void CleanUp(){//MainLoop CallBack
 	scene::StopImGui();
 	delete renderer;
 	window::close_window();
+	audio::audioOut.reset();
+	Manager::Insatance.reset();
+	Manager::log::close();
 }
 void Stop(){
 	window::quit = true;

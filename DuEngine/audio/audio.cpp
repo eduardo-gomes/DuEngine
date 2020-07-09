@@ -1,235 +1,171 @@
-#include <list>
-#include <mutex>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
 #include "audio.hpp"
-#include "vorbis_ogg.cpp"
+
+#include "manager/logger.hpp"
+//#include "vorbis_ogg.cpp"
 
 namespace audio{
-//Struct with soundptr and status of music
-struct soundMusic{
-	sound* musicSound;
-	int status;
-	//rewind music to start
-	void rewind(){
-		if(musicSound){
-			musicSound->play_pos = *musicSound->pcm.get();
-			musicSound->play_len = musicSound->length;
-		}
+std::unique_ptr<audio> audioOut;
+audio::audio(){
+	SDL_AudioSpec want;
+	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+		logger::erro("Couldn't open audio: " + std::string(SDL_GetError()));
 	}
-	soundMusic(sound *ms) : musicSound(ms), status(1) {}
-	soundMusic() : musicSound(nullptr), status(0){};
-};
-std::vector<soundMusic> playing_music;
-//playing_sound max
-unsigned int playing_music_max = 0;
-musicIndex music(unsigned int loaded_index){
-	musicIndex posi = 0;
-	if(playing_music.size() >= playing_music_max)
-		throw std::out_of_range("playing_music_full");
-	playing_music.emplace_back(&loaded_sounds[loaded_index]);
-	return posi;
-}
-void musicPlay(int state, musicIndex I){
-	soundMusic &toChange =playing_music[I];
-	if(state != -1)
-		toChange.status = state;
-	else 
-		toChange.status = 0;
-}
-void musicReserve(unsigned int reserve){
-	playing_music.reserve(reserve);
-	playing_music_max = reserve;
-}
 
-SDL_AudioSpec output_spec;
-SDL_AudioDeviceID deviceId;
-//list with playind sounds, they get removed when reach end
-std::list<sound> playing_sound;
-std::mutex playing_sound_mtx;
-std::vector<sound> loaded_sounds;
-void queue(long unsigned index){
-	playing_sound_mtx.lock();
-	if(index < loaded_sounds.size())
-	playing_sound.emplace_back(loaded_sounds[index]);
-	playing_sound_mtx.unlock();
-	SDL_PauseAudioDevice(deviceId, 0);
+	SDL_memset(&want, 0, sizeof(want));
+	want.freq = 48000;
+	want.format = AUDIO_S16LSB;
+	want.channels = 2;
+	want.samples = 4096;
+	want.callback = audio_callback;
+	want.userdata = this;
+
+	int DevCount = SDL_GetNumAudioDevices(0);
+	for (int i = 0; i < DevCount; ++i) {
+		std::string DevName;
+		DevName = SDL_GetAudioDeviceName(i, 0);
+		logger::info("Audio device Avaliable " + std::to_string(i) + " : " + DevName);
+	}
+
+	dev = SDL_OpenAudioDevice(NULL, 0, &want, &outputSpec, SDL_AUDIO_ALLOW_ANY_CHANGE);
+	if (dev == 0) {
+		std::string err("Failed to open audio: ");
+		err += SDL_GetError();
+		logger::erro(err);
+	} else {
+		SDL_PauseAudioDevice(dev, 0); /* start audio playing. */
+		logger::info("Opened Audio Device");
+		logger::info("Audio Info: freq " + std::to_string(outputSpec.freq));
+		logger::info("Audio Info: format " + std::to_string(outputSpec.format));
+		logger::info("Audio Info: channels " + std::to_string(outputSpec.channels));
+		logger::info("Audio Info: samples " + std::to_string(outputSpec.samples));
+	}
+}
+audio::~audio(){
+	SDL_CloseAudioDevice(dev);
+	logger::info("Closed Audio Device");
+}
+const SDL_AudioSpec audio::getSpec() const{
+	return outputSpec;
+}
+WAVE::WAVE(size_t length) : length(length){
+	avaliable.store(0, std::memory_order_relaxed);
+	PCM = malloc(length);
 }
 WAVE::~WAVE(){
-		if(need_free)
-			SDL_FreeWAV(buffer);
+	free((void*)PCM);
 }
-WAVE::WAVE(){need_free = 0;}
-
-converter::converter(SDL_AudioSpec &from, SDL_AudioSpec &outp = output_spec) {
-	out_spec = outp;
-	stream = SDL_NewAudioStream(from.format, from.channels, from.freq,
-								outp.format, outp.channels, outp.freq);
+const std::shared_ptr<WAVE>& converter::getWAVE() const{
+	return wave;
+}
+converter::converter(const SDL_AudioSpec& from, size_t samples, const SDL_AudioSpec& to) {
+	stream = SDL_NewAudioStream(from.format, from.channels, from.freq, to.format, to.channels, to.freq);
 	if (stream == NULL) {
-		printf("Uhoh, stream failed to create: %s\n", SDL_GetError());
+		logger::erro(std::string("Uhoh, stream failed to create: ") += SDL_GetError());
+	}
+	size_t size = static_cast<size_t>(to.channels) * (to.format & SDL_AUDIO_MASK_BITSIZE)/8 * samples;
+	wave = std::make_shared<WAVE>(size);
+}
+inline int converter::getAvaliable(){
+	int avail = SDL_AudioStreamAvailable(stream);
+	size_t avaliable = wave->avaliable.load(std::memory_order_relaxed);//////////mudar o nome disso
+	int64_t canStore = static_cast<int64_t>(wave->length - avaliable);
+	if (avail > canStore) {
+		//logger::info("More Avaliable Than can store");
+		avail = canStore;
+	}
+	void* out = (wave->PCM + avaliable);
+	int gotten = SDL_AudioStreamGet(stream, out, avail);
+	if (gotten == -1) {
+		logger::erro(std::string("Uhoh, failed to get converted data: ") += SDL_GetError());
+	}else{
+		wave->avaliable.fetch_add(static_cast<size_t>(gotten), std::memory_order_release);
+	}
+	return gotten;
+}
+int converter::flush(){
+	int fl = SDL_AudioStreamFlush(stream);
+	if (fl == -1) {
+		logger::erro(std::string("Uhoh, failed to flush data: ") += SDL_GetError());
+		return fl;
+	}else{
+		return getAvaliable();
 	}
 }
-int converter::put(const void *buffer, int len) {  // Add len bytes from buffer
-	int rc = SDL_AudioStreamPut(stream, buffer, len);
-	if (rc) {
-		printf("Uhoh, failed to put samples in stream: %s\n", SDL_GetError());
+int converter::put(void* from, size_t len = 4096){
+	// you tell it the number of _bytes_, not samples, you're putting!
+	int rc = SDL_AudioStreamPut(stream, from, len);
+	if (rc == -1) {
+		logger::erro(std::string("Uhoh, failed to put samples in stream: ") += SDL_GetError());
+		return rc;
 	}
+	getAvaliable();
+	(void)len;
 	return rc;
 }
-int converter::avaliable() { return SDL_AudioStreamAvailable(stream); }
-WAVE *converter::getall() {
-	if (SDL_AudioStreamFlush(stream)) return new WAVE();
-	return new WAVE(stream, out_spec);
+converter::~converter(){
+	SDL_FreeAudioStream(stream);
 }
-converter::~converter() { SDL_FreeAudioStream(stream); }
-
-sound::~sound() {
-	//pcm.reset();
+void audio::EnqueueSound(const std::shared_ptr<WAVE>&src){
+	SoundsQueue.emplace_back(sound(src));
 }
-sound::sound(const WAVE &copy) {
-	Uint8 *alloc;
-	if (!(alloc = (Uint8 *)malloc(copy.length) )){
-		fprintf(stderr, "Can't malloc\n");
-	}
-	pcm = std::make_shared<Uint8*>(alloc);
-
-	length = copy.length;
-	memcpy(*pcm, copy.buffer, copy.length);
-	play_pos = *pcm;
-	if (!(copy.spec.channels == output_spec.channels &&
-		  copy.spec.format == output_spec.format &&
-		  copy.spec.channels == output_spec.channels)) {
-		fprintf(stderr, "Create sound with format different tham output_spec\n");
-	}
-	//printf("Copyed pcm to %p\n", *pcm);
+audio::music& audio::EnqueueMusic(const std::shared_ptr<WAVE>&src){
+	MusicQueue.emplace_back(music(src));
+	return MusicQueue.back();
 }
-sound::sound(const sound &cp) {
-	pcm = cp.pcm;
-	play_pos = *pcm;
-	play_len = length = cp.length;
+audio::sound::sound(const std::shared_ptr<WAVE>& src) : wave(src), played(0){
+	pos = wave->PCM;
 }
-void sound::to_start() {
-	play_len = length;
-	play_pos = *pcm;
+audio::music::music(const std::shared_ptr<WAVE>& src) : wave(src), played(0){
+	pos = wave->PCM;
+	status = 1;
 }
-
-bool init(){
-	// Initialize SDL.
-	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return false;
-	}
-	SDL_AudioSpec want_spec;
-	SDL_memset(&want_spec, 0, sizeof(want_spec));
-	want_spec.freq = 48000;
-	want_spec.format = AUDIO_S16LSB;
-	want_spec.channels = 2;
-	want_spec.samples = 4096;
-	want_spec.callback = audio_callback;
-	want_spec.userdata = NULL;
-
-	//Log info
-	/*int i = 1, count = SDL_GetNumAudioDevices(0);
-	SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
-	for (i = 0; i < count; ++i) {
-		SDL_Log("Audio device %d: %s", i, SDL_GetAudioDeviceName(i, 0));
-	}*/
-
-	int i = 0;//open default device
-	output_spec = want_spec;
-	deviceId = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(i, 0), 0, &want_spec, &output_spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	//SDL_Log("Using audio device: %s\n", SDL_GetAudioDeviceName(i, 0));
-	if (deviceId <= 0) {
-		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return false;
-	}
-	printf("Audio out Freq %d, Format %hu, Sample Buffer Size %hu\n", output_spec.freq, output_spec.format, output_spec.samples);
-	//Unpause
-	SDL_PauseAudioDevice(deviceId, 0);
-	return true;
-}
-void close(){
-	// shut everything down
-	SDL_CloseAudioDevice(deviceId);
-}
-
-audio::WAVE::WAVE(converter&& converted){
-	*this = *converted.getall();
-}
-WAVE::WAVE(const void *mem, int len){
-	success = SDL_LoadWAV_RW(SDL_RWFromConstMem(mem, len), 1, &this->spec, &this->buffer, &this->length) != NULL;
-	if(!success)
-		fprintf(stderr, "Could not open wav from %p : %s\n", mem, SDL_GetError());
-	if(!(spec.channels == output_spec.channels && spec.format == output_spec.format && spec.channels == output_spec.channels)){
-		converter conv(spec, output_spec);
-		conv.put(buffer, (int)length);
-		*this = *conv.getall();
-	}
-}
-WAVE::WAVE(SDL_AudioStream *stream, SDL_AudioSpec &stream_spec){
-	spec = stream_spec;
-	length = (Uint32)SDL_AudioStreamAvailable(stream);
-	success = 0;
-	if((buffer = (Uint8*)malloc(length))){
-		if (SDL_AudioStreamGet(stream, buffer, (int)length) == -1) {
-			printf("Uhoh, failed to get converted data: %s\n", SDL_GetError());
-		}else success = 1;
-	}
+void audio::music::SetStatus(int toStatus){
+	if (toStatus < 0) status = -1;
+	else status = toStatus;
 }
 
 // audio callback function fill stream with to_out bytes
-void audio_callback(void *userdata, Uint8 *stream, int out) {
-	(void) userdata;
-	Uint32 to_out = (Uint32)out;
+void audio_callback(void* userdata, Uint8* stream, int outlen) {
+	audio &out = *(static_cast<audio*>(userdata));
+	uint32_t to_out = static_cast<uint32_t>(outlen);
 	memset(stream, 0, (size_t)to_out);
-	Uint32 len = to_out;//length to copy of atual audio
-	for(std::vector<soundMusic>::iterator it = playing_music.begin(); it != playing_music.end(); ++it){
-		if(it->status != 1) continue;
-		Uint32 &play_len = it->musicSound->play_len;  // remaining len of *it audio
-		Uint8 *&play_pos = it->musicSound->play_pos;  // reference to atual pos of *it audio
+	uint32_t len = to_out;	//length to copy of atual audio
+	for (std::list<audio::music>::iterator it = out.MusicQueue.begin(); it != out.MusicQueue.end(); ++it) {
+		if (it->status != 1) continue;
+		size_t& played = it->played;						   // played len of *it audio
+		const uint32_t play_len = static_cast<uint32_t>(it->wave->avaliable.load(std::memory_order_relaxed) - played);	 // remaining len of *it audio
+		void*& play_pos = it->pos;					   // reference to atual pos of *it audio
 		//set len
 		len = (to_out > play_len ? play_len : to_out);
 		//mix the audio
-		SDL_MixAudioFormat(stream, play_pos, output_spec.format, len, SDL_MIX_MAXVOLUME);
+		SDL_MixAudioFormat(stream, (Uint8*)play_pos, out.outputSpec.format, len, SDL_MIX_MAXVOLUME);
 
-		play_pos += len;  // increment actual pos by len
-		play_len -= len;  // decrement remaining time by len
+		play_pos = play_pos + len;  // increment actual pos by len
+		played += len;	  // increment played time by len
 
 		//rewind if ends
-		if (to_out > play_len)
-			it->rewind();
+		if (to_out > play_len){
+			it->played = 0;
+			it->pos = it->wave->PCM;
+		}
 	}
-	playing_sound_mtx.lock();
-	for(std::list<sound>::iterator it = playing_sound.begin(); it != playing_sound.end(); ++it){
-		Uint32 &play_len = it->play_len;	 // remaining len of *it audio
-		Uint8 *&play_pos = it->play_pos;	 // reference to atual pos of *it audio
+	for (std::list<audio::sound>::iterator it = out.SoundsQueue.begin(); it != out.SoundsQueue.end(); ++it) {
+		size_t& played = it->played;						   // played len of *it audio
+		const uint32_t play_len = static_cast<uint32_t>(it->wave->avaliable.load(std::memory_order_relaxed) - played);	// remaining len of *it audio
+		void*& play_pos = it->pos;					   // reference to atual pos of *it audio
 		//set len
 		len = (to_out > play_len ? play_len : to_out);
 
 		//mix the audio
-		SDL_MixAudioFormat(stream, play_pos, output_spec.format, len, SDL_MIX_MAXVOLUME);
+		SDL_MixAudioFormat(stream, (Uint8*)play_pos, out.outputSpec.format, len, SDL_MIX_MAXVOLUME);
 
-		play_pos += len;  // increment actual pos by len
-		play_len -= len;  // decrement remaining time by len
+		play_pos = play_pos + len;	// increment actual pos by len
+		played += len;				// increment played time by len
 
 		//remove from queue if ends
 		if (to_out > play_len)
-			it = playing_sound.erase(it);
+			it = out.SoundsQueue.erase(it);
 	}
-	playing_sound_mtx.unlock();
 }
-/*sound &create_sound(FILE * load){
-	return *(new sound(WAVE(converter(ogg_read(load)))));
-}*/
-sound &create_sound(const std::string &filePath) {
-	FILE *fl = fopen(filePath.c_str(), "r");
-	if(!fl) throw std::runtime_error("Can't open audio file: " + filePath);
-	return *(new sound(WAVE(converter(ogg_read(fl)))));
-}
-}
-/*int play_sound() {
-	if (audio::init()) return 1;
-	// Queue sound
-	audio::playing_sound.emplace_back(audio::sound(audio::WAVE(audio::converter(fopen("assets/audio/sfx_coin_double1.ogg", "r")))));
-	return 0;
-}*/
+
+} // namespace audio

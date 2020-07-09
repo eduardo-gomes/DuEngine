@@ -1,3 +1,4 @@
+#include <stdint.h>
 namespace Random{
 //Gen random uint;
 uint_fast32_t get();

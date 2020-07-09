@@ -1,11 +1,11 @@
-#include "log.hpp"
+#include "logger.hpp"
 
 #include <chrono>
 #include <ctime>
 #include <iostream>
 
 #include "AssetsManager.hpp"
-namespace log {
+namespace logger {
 
 enum type { EXCP,
 			ERRO,

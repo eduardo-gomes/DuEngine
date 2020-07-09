@@ -1,85 +1,18 @@
 #include <cstring>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
+#include "manager/logger.hpp"
 #include "vorbis_ogg.hpp"
-struct ogg_read {
-	OggVorbis_File file;
-	vorbis_info *info;
-	ogg_int64_t samples;
-	int current_section;
-	bool valid;
-	ogg_read(const ogg_file &open);	 // Create reader from ogg_file
-	ogg_read(FILE * from_disk);	//Create reader from ogg_file in disk
-	int read(char *to, int len); //try to read len bytes, return bytes readed
-	long readall(char *to);	//read all data
-	void disp_info();
-	~ogg_read();
-};
+namespace audio{
 
-#ifdef _WIN32
-ov_callbacks ovcallback = {
-	/*read_func =*/ [](void *ptr, size_t size, size_t nmemb, void *datasource) -> size_t {
-		ogg_file* of = reinterpret_cast<ogg_file*>(datasource);
-		size_t len = size * nmemb;
-		if (of->curPtr + len > of->filePtr + of->fileSize) {
-			len = (size_t)(of->filePtr + of->fileSize - of->curPtr);
-		}
-		memcpy(ptr, of->curPtr, len);
-		of->curPtr += len;
-		return len;
-	},
-	/*seek_func =*/ [](void *datasource, ogg_int64_t offset, int whence) -> int {
-		ogg_file *of = reinterpret_cast<ogg_file *>(datasource);
-
-		switch (whence) {
-			case SEEK_CUR:
-				of->curPtr += offset;
-				break;
-			case SEEK_END:
-				of->curPtr = of->filePtr + of->fileSize - offset;
-				break;
-			case SEEK_SET:
-				of->curPtr = of->filePtr + offset;
-				break;
-			default:
-				return -1;
-		}
-		if (of->curPtr < of->filePtr) {
-			of->curPtr = of->filePtr;
-			return -1;
-		}
-		if (of->curPtr > of->filePtr + of->fileSize) {
-			of->curPtr = of->filePtr + of->fileSize;
-			return -1;
-		}
-		return 0;
-	},
-	/*close_func =*/ [](void *) -> int { return 0; },
-	/*tell_func =*/ [](void *datasource) -> long {
-		ogg_file *of = reinterpret_cast<ogg_file *>(datasource);
-		return (of->curPtr - of->filePtr);
-	},
-};
-#endif
-ogg_read::ogg_read(const ogg_file &open) {
-#ifdef _WIN32
-	valid = !ov_open_callbacks(&open, &file, NULL, -1, ovcallback);
-#else
-	FILE *openedfile = fmemopen(open.filePtr, open.fileSize, "r");
-	valid = !ov_open(openedfile, &file, NULL, -1);
-#endif
-
+ogg_read::ogg_read(std::ifstream &&SrcFile) : sourceFile(std::move(SrcFile)) {
+	valid = !ov_open_callbacks(&sourceFile, &file, nullptr, 0, ogg_callbacks::callbacks);
 	if (!valid)
 		fprintf(stderr, "Input does not appear to be an Ogg bitstream.\n");
 	info = ov_info(&file, -1);
-	samples = ov_pcm_total(&file, -1);
-}
-ogg_read::ogg_read(FILE* to_open) {
-	valid = !ov_open(to_open, &file, NULL, -1);
-	if (!valid)
-		fprintf(stderr, "Input does not appear to be an Ogg bitstream.\n");
-	info = ov_info(&file, -1);
-	samples = ov_pcm_total(&file, -1);
+	auto ret = ov_pcm_total(&file, -1);
+	if(ret < 0) throw std::runtime_error("ov_pcm_total < 0");
+	samples = static_cast<size_t>(ret);
 }
 void ogg_read::disp_info(){
 	// DISPLAY
@@ -91,42 +24,51 @@ void ogg_read::disp_info(){
 		++ptr;
 	}*/
 	//info
-	fprintf(stderr, "\nBitstream is %d channel, %ldHz\n", info->channels, info->rate);
-	fprintf(stderr, "\nDecoded length: %ld samples\n", (long)samples);
-	fprintf(stderr, "Encoded by: %s\n\n", ov_comment(&file, -1)->vendor);
+	char string[256];
+	snprintf(string, sizeof(string), "\nBitstream is %d channel, %ldHz\n", info->channels, info->rate);
+	logger::info(std::string(string));
+	snprintf(string, sizeof(string), "\nDecoded length: %ld samples\n", (int64_t)samples);
+	logger::info(std::string(string));
+	snprintf(string, sizeof(string), "Encoded by: %s\n\n", ov_comment(&file, -1)->vendor);
+	logger::info(std::string(string));
 	// END DISPLAY
 }
 int ogg_read::read(char *to, int len) {
 	return ov_read(&file, to, len, 0, 2, 1,
 				   &current_section);  // little endian signed 16bit pcm
 }
-long ogg_read::readall(char *to) {
-	int ret = -1;
-	long readed = 0;
-	while (ret) {
-		ret = ov_read(&file, to + readed, 4096, 0, 2, 1, &current_section);  // little endian signed 16bit pcm
-		if(ret > 0)
-			readed += ret;
-		//printf("readed %d\n", ret);
-	}
-	return readed;
+SDL_AudioSpec ogg_read::getSpec() {
+	SDL_AudioSpec Spec;
+	Spec.freq = info->rate;
+	Spec.format = AUDIO_S16LSB;
+	Spec.channels = info->channels;
+	return Spec;
 }
 ogg_read::~ogg_read() { ov_clear(&file); /*fclose((FILE*)file.datasource);*/}
 
-#ifdef _DU_AUDIO
-audio::converter::converter(ogg_read&& read){
-	out_spec = output_spec;
-	stream = SDL_NewAudioStream(AUDIO_S16LSB, read.info->channels, read.info->rate,
-								out_spec.format, out_spec.channels, out_spec.freq);
-	if (stream == NULL) {
-		printf("Uhoh, stream failed to create: %s\n", SDL_GetError());
-	}
-	int ogg_rd = -1;
-	char bufferl[4096];
-	while (ogg_rd) {
-		ogg_rd = read.read(bufferl, 4096);
-		if (ogg_rd > 0) put(bufferl, ogg_rd);
-	}
-
+size_t ogg_read::ogg_callbacks::read(void* buffer, size_t size, size_t elementCount, void* dataSource) {
+	if(size != 1) logger::erro("in ogg read callback size != 1");
+	std::ifstream& stream = *static_cast<std::ifstream*>(dataSource);
+	stream.read(static_cast<char*>(buffer), static_cast<std::streamsize>(elementCount));
+	const std::streamsize bytesRead = stream.gcount();
+	stream.clear();	 // In case we read past EOF
+	return static_cast<size_t>(bytesRead);
 }
-#endif
+
+int ogg_read::ogg_callbacks::seek(void* dataSource, ogg_int64_t offset, int origin) {
+	static constexpr std::array<std::ios_base::seekdir, 3> seekDirections{
+		std::ios_base::beg, std::ios_base::cur, std::ios_base::end};
+
+	std::ifstream& stream = *static_cast<std::ifstream*>(dataSource);
+	stream.seekg(offset, seekDirections.at(static_cast<size_t>(origin)));
+	stream.clear();	 // In case we seeked to EOF
+	return 0;
+}
+
+long ogg_read::ogg_callbacks::tell(void* dataSource) {
+	std::ifstream& stream = *static_cast<std::ifstream*>(dataSource);
+	const auto position = stream.tellg();
+	if(position < 0) throw std::out_of_range("in ogg tell callback position < 0");
+	return static_cast<long>(position);
+}
+}

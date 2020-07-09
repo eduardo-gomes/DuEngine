@@ -7,16 +7,18 @@ _INLCUDE_F=dependencies/include dependencies/imgui .
 INCLUDE_F=$(patsubst %, -I../%, $(_INLCUDE_F)) -I.
 
 OBJS_DIR=objects
-__AUDIO_OBJ=audio.o #vorbis_ogg.o
+__AUDIO_OBJ=audio.o vorbis_ogg.o
 _AUDIO_OBJ=$(patsubst %,audio/%,$(__AUDIO_OBJ))
 __WINDOW_OBJ=window.o
 _WINDOW_OBJ=$(patsubst %,window/%,$(__WINDOW_OBJ))
 __RENDER_OBJ=GLClasses.o glmath.o Renderer.o LoadTexture.o
 _RENDER_OBJ=$(patsubst %,graphics/%,$(__RENDER_OBJ))
-_ENGINE_OBJ=$(_AUDIO_OBJ) $(_WINDOW_OBJ) $(_RENDER_OBJ) random.o scenes.o Init.o
+__MANAGER_OBJ=AssetsManager.o logger.o
+_MANAGER_OBJ=$(patsubst %,manager/%,$(__MANAGER_OBJ))
+_ENGINE_OBJ=$(_AUDIO_OBJ) $(_WINDOW_OBJ) $(_RENDER_OBJ) $(_MANAGER_OBJ) random.o scenes.o Init.o
 ENGINE_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_ENGINE_OBJ))
 
-OBJ_SUB_DIRS=audio window graphics
+OBJ_SUB_DIRS=audio window graphics manager
 
 
 
@@ -25,7 +27,7 @@ DuEngine.so: $(ENGINE_OBJ)
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp
-	$(CXX) $< -c -o $@ $(CXXFLAGS) $(DBG) $(OPTIMIZATION) -fPIC
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-pointer-arith
 
 objects/%.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC
