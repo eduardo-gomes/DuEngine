@@ -38,7 +38,7 @@ void logger(const std::string& msg, int type) {
 	}
 	log += msg;
 
-	Manager::log::write(log);
+	Man::log::write(log);
 	std::cout << log << std::endl;
 }
 void info(const std::string& msg) {

@@ -8,8 +8,8 @@
 #include "../audio/audio.hpp"
 #include "logger.hpp"
 
-namespace Manager {
-class Manager {
+namespace Man {
+class DUENGEXT Manager {
 	enum AssetType { BITMAP,
 					 OGG,
 					 SAVEFILE };
@@ -32,10 +32,10 @@ class Manager {
 	Manager();
 	~Manager();
 	const std::shared_ptr<audio::WAVE>& LoadOGG(std::string filePath);
+	static std::unique_ptr<Manager> Insatance;
 	//audio::WAVE& GetOGG(std::string filePath) const;
 };
-extern std::unique_ptr<Manager> Insatance;
-class log {
+class DUENGINT log {
 	std::fstream logFile;
 	static log* logger;
 	log();

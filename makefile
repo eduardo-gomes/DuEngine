@@ -1,5 +1,5 @@
 export CXX?=g++
-export CXXFLAGS?=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror
+export CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror -fvisibility=hidden -DDUENG_DLL -DDUENG_DLL_BUILD
 export LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
 export DBG?=-g
 export OPTIMIZATION?=-O3 -march=native -mfpmath=sse

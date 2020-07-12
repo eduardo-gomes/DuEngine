@@ -1,15 +1,16 @@
+#include <DuEngine/visibility.hpp>
 #ifndef _GLMATH
 #define _GLMATH
-struct vec2f {
+struct DUENGEXT vec2f {
 	float v0, v1;
 };
-struct vec3f {
+struct DUENGEXT vec3f {
 	float v0, v1, v2;
 };
-struct vec4f {
+struct DUENGEXT vec4f {
 	float v0, v1, v2, v3;
 };
-struct mat4f {
+struct DUENGEXT mat4f {
 	float matrix[4][4];	 //colun row
 	mat4f operator*(const mat4f&);
 	static mat4f GenPerspective(float fovy, float aspect, float zNear, float zFar);

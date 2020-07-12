@@ -3,23 +3,23 @@
 #include <chrono>
 
 #include "graphics/GLClasses.hpp"
-namespace Manager {
-std::unique_ptr<Manager> Insatance;
+namespace Man {
+std::unique_ptr<Manager> Man::Manager::Insatance;
 }
-Manager::Manager::Manager() : OggLoaderContinue(1) {
+Man::Manager::Manager() : OggLoaderContinue(1) {
 }
-Manager::Manager::~Manager() {
+Man::Manager::~Manager() {
 	OggLoaderContinue = false;
 	logger::info("Waiting OggLoader Thread to finish");
 	if (OggLoaderThread.joinable()) OggLoaderThread.join();
 	logger::info("OggLoader Thread to finished");
 }
-inline void Manager::Manager::SpawnOggLoaderThread() {
+inline void Man::Manager::SpawnOggLoaderThread() {
 	OggLoaderContinue = true;
 	if (!OggLoaderThread.joinable())
 		OggLoaderThread = std::thread(&Manager::OggLoader, this);
 }
-void Manager::Manager::OggLoader() {
+void Man::Manager::OggLoader() {
 	while (OggLoaderContinue) {
 		if (!loadingOgg.size()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -47,7 +47,7 @@ void Manager::Manager::OggLoader() {
 		}
 	}
 }
-const std::shared_ptr<audio::WAVE> &Manager::Manager::LoadOGG(std::string filePath) {
+const std::shared_ptr<audio::WAVE> &Man::Manager::LoadOGG(std::string filePath) {
 	std::lock_guard<std::mutex> lg(map);
 	auto find = waves.find(filePath);
 	if (find != waves.end()) {
@@ -68,7 +68,7 @@ const std::shared_ptr<audio::WAVE> &Manager::Manager::LoadOGG(std::string filePa
 	}
 }
 
-Manager::log::log() {
+Man::log::log() {
 	std::string filename("log-");
 	std::time_t t = std::time(nullptr);
 	std::tm time = *std::localtime(&t);
@@ -76,20 +76,20 @@ Manager::log::log() {
 	logFile.open(filename, (std::fstream::out | std::fstream::app));
 	printf("Start Log\n");
 }
-Manager::log *Manager::log::logger = nullptr;
-Manager::log::~log() {
+Man::log *Man::log::logger = nullptr;
+Man::log::~log() {
 	logFile.close();
 	printf("End Log\n");
 }
-inline int Manager::log::writeToFile(const std::string &toWrite) {
+inline int Man::log::writeToFile(const std::string &toWrite) {
 	logFile << toWrite << std::endl;
 	return 0;
 }
-int Manager::log::write(const std::string &toWrite) {
+int Man::log::write(const std::string &toWrite) {
 	if (logger == nullptr) logger = new log();
 	return logger->writeToFile(toWrite);
 }
-void Manager::log::close() {
+void Man::log::close() {
 	if (logger != nullptr) delete logger;
 	logger = nullptr;
 }

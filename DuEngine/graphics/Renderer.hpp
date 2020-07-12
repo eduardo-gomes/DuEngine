@@ -3,7 +3,7 @@
 
 #include "GLClasses.hpp"
 
-class Renderer {
+class DUENGEXT Renderer {
    private:
 	VertexArray VA;
 	VertexBuffer VB;

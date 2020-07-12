@@ -6,10 +6,11 @@
 #include <list>
 #include <memory>
 
+#include <DuEngine/visibility.hpp>
 #include "vorbis_ogg.hpp"
 
 namespace audio {
-class WAVE {
+class DUENGINT WAVE {
    protected:
 	size_t length;
 
@@ -21,7 +22,7 @@ class WAVE {
 	friend class converter;
 	friend void audio_callback(void* userdata, Uint8* stream, int out);
 };
-class converter {
+class DUENGINT converter {
 	std::shared_ptr<WAVE> wave;
 	SDL_AudioStream* stream;
 
@@ -33,7 +34,7 @@ class converter {
 	converter(const SDL_AudioSpec& from, size_t samples, const SDL_AudioSpec& to);
 	~converter();
 };
-class audio {
+class DUENGEXT audio {
 	SDL_AudioSpec outputSpec;
 	SDL_AudioDeviceID dev;
 
@@ -71,7 +72,7 @@ class audio {
 	~audio();
 	friend void audio_callback(void* userdata, Uint8* stream, int out);
 };
-extern std::unique_ptr<audio> audioOut;
+extern DUENGEXT std::unique_ptr<audio> audioOut;
 // audio callback function fill stream with to_out bytes
-void audio_callback(void* audioClass, Uint8* stream, int len);
+void DUENGINT audio_callback(void* audioClass, Uint8* stream, int len);
 }  // namespace audio

@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-class VertexBuffer {
+class DUENGINT VertexBuffer {
    private:
 	unsigned int RenderID;
 	static unsigned int BindedRenderID;
@@ -20,14 +20,14 @@ class VertexBuffer {
 	void Bind() const;
 	void Unbind() const;
 };
-struct VertexBufferElement {
+struct DUENGINT VertexBufferElement {
 	unsigned int type;
 	unsigned int count;
 	unsigned char normalized;
 	size_t offset;
 	static unsigned int GetSizeOfType(unsigned int type);
 };
-class VertexBufferLayout {
+class DUENGINT VertexBufferLayout {
    private:
 	std::vector<VertexBufferElement> Elements;
 	unsigned int Stride = 0;
@@ -48,7 +48,7 @@ class VertexBufferLayout {
 	inline unsigned int GetStride() const { return Stride; }
 };
 
-class IndexBuffer {
+class DUENGINT IndexBuffer {
    private:
 	unsigned int RenderID, m_count;
 	static unsigned int BindedRenderID;
@@ -65,7 +65,7 @@ class IndexBuffer {
 	inline unsigned int GetCount() const { return m_count; }
 };
 
-class VertexArray {
+class DUENGINT VertexArray {
    private:
 	unsigned int RenderID;
 	static unsigned int BindedRenderID;
@@ -80,7 +80,7 @@ class VertexArray {
 	void Unbind() const;
 };
 
-class Shader {
+class DUENGINT Shader {
    private:
 	std::string File;
 	unsigned int RenderID;
@@ -108,13 +108,13 @@ class Shader {
 	ShaderProgramSource ParseShader(const std::string& filepath);
 };
 
-struct TextureParameters {
+struct DUENGEXT TextureParameters {
 	GLint mag_filter, min_filter, warp_s, warp_t;
 	TextureParameters(GLint mag_filter = GL_NEAREST, GLint min_filter = GL_LINEAR, GLint warp_s = GL_REPEAT, GLint warp_t = GL_REPEAT);
 };
 const TextureParameters TextureParametersDefault;
 
-class Texture {
+class DUENGEXT Texture {
    private:
 	unsigned int RenderID;
 	std::string File;
@@ -135,7 +135,7 @@ class Texture {
 	static void GetMaxTextureSize();
 };
 
-class SubTexture {
+class DUENGEXT SubTexture {
 	std::shared_ptr<Texture> MainTexture;
 	float Hpos, Vpos, Hsize, Vsize;
 

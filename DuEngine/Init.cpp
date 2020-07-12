@@ -28,7 +28,7 @@ void window::render() {	 //called by MainLoop
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 bool Start(const std::string &WindowName) {
-	Manager::Insatance = std::make_unique<Manager::Manager>();
+	Man::Manager::Insatance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
 	if (window::init_window(WindowName.c_str())) {
 		audio::audioOut = std::make_unique<audio::audio>();
@@ -44,8 +44,8 @@ void CleanUp() {  //MainLoop CallBack
 	delete renderer;
 	window::close_window();
 	audio::audioOut.reset();
-	Manager::Insatance.reset();
-	Manager::log::close();
+	Man::Manager::Insatance.reset();
+	Man::log::close();
 }
 void Stop() {
 	window::quit = true;

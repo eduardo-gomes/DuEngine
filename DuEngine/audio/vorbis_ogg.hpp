@@ -6,7 +6,7 @@
 #pragma once
 #include "audio.hpp"
 namespace audio {
-struct ogg_read {
+struct DUENGINT ogg_read {
 	std::ifstream sourceFile;
 	OggVorbis_File file;
 	vorbis_info* info;
