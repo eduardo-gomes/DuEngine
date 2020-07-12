@@ -21,9 +21,8 @@ ENGINE_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_ENGINE_OBJ))
 OBJ_SUB_DIRS=audio window graphics manager
 
 
-
-DuEngine.so: $(ENGINE_OBJ)
-	$(CXX) -o $@ -shared $(ENGINE_OBJ) $(OPTIMIZATION)
+DuEngine.o: $(ENGINE_OBJ)
+	ld -E -r $^ -o $@
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp
@@ -34,9 +33,9 @@ objects/%.o: %.cpp
 
 
 .PHONY: clear Prepare all build
-build: Prepare DuEngine.so
+build: Prepare DuEngine.o
 clear:
-	rm $(ENGINE_OBJ) DuEngine.so -f
+	rm $(ENGINE_OBJ) DuEngine.o -f
 	-rmdir objects/* objects
 Prepare:
 	mkdir -p objects

@@ -6,6 +6,9 @@
 namespace audio {
 std::unique_ptr<audio> audioOut;
 audio::audio() {
+	if (LoadVorbis() < 0) {
+		throw std::runtime_error("Falied LoadVorbis");
+	}
 	SDL_AudioSpec want;
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		logger::erro("Couldn't open audio: " + std::string(SDL_GetError()));
@@ -43,6 +46,7 @@ audio::audio() {
 audio::~audio() {
 	SDL_CloseAudioDevice(dev);
 	logger::info("Closed Audio Device");
+	CloseVorbis();
 }
 const SDL_AudioSpec audio::getSpec() const {
 	return outputSpec;

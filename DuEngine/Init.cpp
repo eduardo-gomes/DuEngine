@@ -27,11 +27,11 @@ void window::render() {	 //called by MainLoop
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
-bool Start(const std::string &WindowName) {
+bool Start(const std::string &WindowName, int AUDIO) {
 	Man::Manager::Insatance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
 	if (window::init_window(WindowName.c_str())) {
-		audio::audioOut = std::make_unique<audio::audio>();
+		if (AUDIO) audio::audioOut = std::make_unique<audio::audio>();
 		Setup();
 		window::MainLoop();
 	} else

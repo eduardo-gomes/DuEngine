@@ -6,6 +6,8 @@
 #pragma once
 #include "audio.hpp"
 namespace audio {
+int DUENGINT LoadVorbis();
+void DUENGINT CloseVorbis();
 struct DUENGINT ogg_read {
 	std::ifstream sourceFile;
 	OggVorbis_File file;

@@ -10,7 +10,7 @@ namespace window {
 //Drawn each frame
 extern DUENGINT void render();
 //update with delta in nanoseconds
-extern DUENGINT void update(int64_t delta);//defined in scenes.cpp
+extern DUENGINT void update(int64_t delta);  //defined in scenes.cpp
 extern DUENGEXT void Inicializa();
 //Exit MainLoop and close window
 extern DUENGEXT bool quit;
@@ -28,7 +28,7 @@ extern DUENGINT double aspect, &x, y;
 extern DUENGINT double camx, camy, camz;
 //extern double bcgDist, bcgViewy, bcgViewx, bcg2Dist, bcg2Viewy, bcg2Viewx, bcg3Dist, bcg3Viewy, bcg3Viewx;
 //cam FOV
-extern DUENGINT double fovy;
+extern DUENGEXT double fovy;  //should use a function to return copy
 //Cord size at z = 0.0
 extern DUENGINT double viewx, viewy;
 //Calc views cords

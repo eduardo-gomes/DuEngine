@@ -1,10 +1,10 @@
 export CXX?=g++
 export CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror -fvisibility=hidden -DDUENG_DLL -DDUENG_DLL_BUILD
-export LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
+export LIBS=-lSDL2 -lGL -lm -ldl -lpthread
 export DBG?=-g
 export OPTIMIZATION?=-O3 -march=native -mfpmath=sse
 
-LIBS=-lSDL2 -lGL -lm -lvorbis -lvorbisfile -ldl -lpthread
+LIBS=-lSDL2 -lGL -lm -ldl -lpthread
 
 
 _INLCUDE_F=dependencies/include dependencies/imgui .
@@ -14,7 +14,7 @@ LIBS_OBJ=libglad.so libimgui.so libDuEngine.so
 build: $(LIBS_OBJ)
 	cp DuEngine/graphics/basic.glsl basic.glsl
 
-.PHONY: clear Prepare clearAll DuEngine/DuEngine.so test
+.PHONY: clear Prepare clearAll DuEngine/DuEngine.o test
 clear:
 	$(MAKE) -C DuEngine clear
 	rm -f basic.glsl
@@ -26,10 +26,10 @@ Prepare:
 	mkdir -p objects
 
 
-DuEngine/DuEngine.so:
-	$(MAKE) -C DuEngine build
-libDuEngine.so: DuEngine/DuEngine.so
-	cp $< $@
+DuEngine/DuEngine.o:
+	$(MAKE) -C DuEngine build 
+libDuEngine.so: DuEngine/DuEngine.o
+	$(CXX) -o $@ -shared $<
 
 
 libimgui.so:

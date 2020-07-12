@@ -1,12 +1,65 @@
 #include "vorbis_ogg.hpp"
 
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
+//#include <vorbis/codec.h>
+//#include <vorbis/vorbisfile.h>
 
+#include <dlfcn.h>
 #include <cstring>
 
 #include "manager/logger.hpp"
 namespace audio {
+DUENGINT int (*ov_open_callbacks)(void* datasource, OggVorbis_File* vf, const char* initial, long ibytes, ov_callbacks callbacks);
+DUENGINT vorbis_info* (*ov_info)(OggVorbis_File* vf, int link);
+DUENGINT ogg_int64_t (*ov_pcm_total)(OggVorbis_File* vf, int i);
+DUENGINT vorbis_comment* (*ov_comment)(OggVorbis_File* vf, int link);
+DUENGINT long (*ov_read)(OggVorbis_File* vf, char* buffer, int length, int bigendianp, int word, int sgned, int* bitstream);
+DUENGINT int (*ov_clear)(OggVorbis_File* vf);
+void* handler;
+int LoadVorbis() {
+	//libvorbis is loaded by SDL
+	handler = dlopen("libvorbisfile.so", RTLD_LAZY);
+	if (!handler) {
+		logger::erro("Can't open libvorbisfile.so" + std::string(dlerror()));
+		return -1;
+	}
+	char* error;
+	ov_open_callbacks = reinterpret_cast<int (*)(void*, OggVorbis_File*, const char*, long, ov_callbacks)>(dlsym(handler, "ov_open_callbacks"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	ov_info = reinterpret_cast<vorbis_info(*(*)(OggVorbis_File*, int))>(dlsym(handler, "ov_info"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	ov_pcm_total = reinterpret_cast<ogg_int64_t (*)(OggVorbis_File*, int)>(dlsym(handler, "ov_pcm_total"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	ov_comment = reinterpret_cast<vorbis_comment* (*)(OggVorbis_File*, int)>(dlsym(handler, "ov_comment"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	ov_read = reinterpret_cast<long (*)(OggVorbis_File*, char*, int, int, int, int, int*)>(dlsym(handler, "ov_read"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	ov_clear = reinterpret_cast<int (*)(OggVorbis_File * vf)>(dlsym(handler, "ov_clear"));
+	if ((error = dlerror()) != NULL) {
+		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		return -1;
+	}
+	logger::info("Loaded libvorbisfile");
+	return 0;
+}
+void CloseVorbis() {
+	dlclose(handler);
+	handler = nullptr;
+}
 
 ogg_read::ogg_read(std::ifstream&& SrcFile) : sourceFile(std::move(SrcFile)) {
 	valid = !ov_open_callbacks(&sourceFile, &file, nullptr, 0, ogg_callbacks::callbacks);

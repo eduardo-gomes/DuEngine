@@ -29,7 +29,7 @@ void AudioLoading::Render() {
 }  // namespace scene
 
 int main() {
-	Start("DuTest");
+	Start("DuTest", 1);
 }
 
 void LoadAudio() {
