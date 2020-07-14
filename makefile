@@ -42,7 +42,7 @@ libDuEngine.dll: DuEngine/DuEngine.o libglad.dll libimgui.dll
 libimgui.so:
 	$(MAKE) -C dependencies/imgui libimgui.so
 	cp dependencies/imgui/libimgui.so $@
-libimgui.dll:
+libimgui.dll: libglad.dll
 	$(MAKE) -C dependencies/imgui libimgui.dll
 	cp dependencies/imgui/libimgui.dll $@
 

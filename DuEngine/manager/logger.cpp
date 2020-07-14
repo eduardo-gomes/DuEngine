@@ -21,11 +21,8 @@ void logger(const std::string& msg, int type) {
 	enum COLOR_INDEX{DEFAULT, RED, YELLOW, CYAN};
 	int color;
 
-	std::strftime(timestr, 80, "[%F %T %Z] ", &time);
+	std::strftime(timestr, 80, "[%Y-%m-%d %H:%M:%S %Z] ", &time);
 	log += timestr;
-	/*log += "[";
-	log += std::to_string(time.tm_year + 1900) + "-" + std::to_string(time.tm_mon + 1) + "-" + std::to_string(time.tm_mday) + "-" + std::to_string(time.tm_hour) + "-" + std::to_string(time.tm_min) + "-" + std::to_string(time.tm_sec);
-	log += "]";*/
 	switch (type) {
 		case EXCP:
 			log += "Exception: ";

@@ -27,13 +27,9 @@ DuEngine.o: $(ENGINE_OBJ)
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp
-<<<<<<< HEAD
 	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC -Wno-pointer-arith
-=======
-	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-pointer-arith
 objects/audio/vorbis_ogg.o:audio/vorbis_ogg.cpp audio/vorbis_ogg.hpp
-	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-format
->>>>>>> WIP dont send
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC -Wno-format
 
 objects/%.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC

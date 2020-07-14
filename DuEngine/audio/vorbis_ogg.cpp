@@ -140,7 +140,7 @@ void DUENGINT DLLCLOSE(void*& handler){
 int LoadVorbis() {
 	//libvorbis is loaded by SDL
 	try{
-		handler = DLLOPEN("libvorbisfile.so");
+		handler = DLLOPEN("vorbisfile.dll");
 		ov_open_callbacks = reinterpret_cast<int (*)(void*, OggVorbis_File*, const char*, long, ov_callbacks)>(DLLLOADFUNC(handler, "ov_open_callbacks"));
 		ov_info = reinterpret_cast<vorbis_info(*(*)(OggVorbis_File*, int))>(DLLLOADFUNC(handler, "ov_info"));
 		ov_pcm_total = reinterpret_cast<ogg_int64_t (*)(OggVorbis_File*, int)>(DLLLOADFUNC(handler, "ov_pcm_total"));
