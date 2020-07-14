@@ -13,11 +13,13 @@ INCLUDE_F=$(patsubst %, -I%, $(_INLCUDE_F))
 LIBS_OBJ=libglad.so libimgui.so libDuEngine.so
 build: $(LIBS_OBJ)
 	cp DuEngine/graphics/basic.glsl basic.glsl
+	cp DuEngine/graphics/basic.glsl DuEngine/basic.glsl
+
 
 .PHONY: clear Prepare clearAll DuEngine/DuEngine.o test
 clear:
 	$(MAKE) -C DuEngine clear
-	rm -f basic.glsl
+	rm -f basic.glsl DuEngine/basic.glsl
 clearAll: clear
 	rm -f $(LIBS_OBJ)
 	$(MAKE) -C dependencies/imgui clear
@@ -37,7 +39,7 @@ libimgui.so:
 	cp dependencies/imgui/imgui.so $@
 
 libglad.so:
-	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC
+	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC -fvisibility=default
 
 TEST_SRC=$(wildcard test/*.cpp)
 TEST_OBJ=$(patsubst %.cpp, %.o, $(TEST_SRC))
