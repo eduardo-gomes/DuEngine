@@ -12,7 +12,7 @@ struct DUENGINT ogg_read {
 	std::ifstream sourceFile;
 	OggVorbis_File file;
 	vorbis_info* info;
-	size_t samples;
+	uint64_t samples;
 	int current_section;
 	bool valid;
 	ogg_read(std::ifstream&& file);	 //Create reader from ogg_file in disk

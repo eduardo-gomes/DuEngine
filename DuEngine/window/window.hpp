@@ -79,4 +79,9 @@ bool DUENGINT ClearErrors();
 void DUENGINT PrintAllErrors(const char*, const char*, int);
 #define gltry(X) X;PrintAllErrors(#X, __FILE__, __LINE__);
 #include <csignal>
+#ifdef _WIN32
+#include <windows.h>
+#define ASSERT(X) if (!(X)) DebugBreak();
+#else
 #define ASSERT(X) if (!(X)) raise(SIGTRAP);
+#endif

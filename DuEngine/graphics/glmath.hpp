@@ -1,4 +1,6 @@
 #include <DuEngine/visibility.hpp>
+#include <cmath>
+
 #ifndef _GLMATH
 #define _GLMATH
 struct DUENGEXT vec2f {

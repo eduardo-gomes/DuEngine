@@ -157,8 +157,8 @@ void Renderer::DispInfo() {
 		ImGui::Text("Indices last drawn %u", Stats->indicesLastFrame);
 		ImGui::Text("Drawn calls last frame %u", Stats->DrawnCallsLast);
 		ImGui::Text("Textures Binded last frame %u", Stats->TexturesBindsLastFrame);
-		ImGui::Text("Vertex Buffer used size %lu", sizeof(vertex) * Stats->elementsLastFrame);
-		ImGui::Text("Index Buffer used size %lu", sizeof(unsigned int) * Stats->indicesLastFrame);	//TexturesBindsLastFrame
+		ImGui::Text("Vertex Buffer used size %I64u", sizeof(vertex) * Stats->elementsLastFrame);
+		ImGui::Text("Index Buffer used size %I64u", sizeof(unsigned int) * Stats->indicesLastFrame);	//TexturesBindsLastFrame
 		double totalSize = sizeof(vertex) * Stats->elementsLastFrame + sizeof(unsigned int) * Stats->indicesLastFrame;
 		if (totalSize > 1000000)
 			ImGui::Text("Buffer size: %lf MB", totalSize / 1000000);

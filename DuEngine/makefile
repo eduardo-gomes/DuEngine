@@ -1,4 +1,5 @@
 CXX?=g++
+LINKER?=ld
 CXXFLAGS?=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror -fPIC
 DBG?=-g
 OPTIMIZATION?=-O3 -march=native -mfpmath=sse
@@ -22,11 +23,17 @@ OBJ_SUB_DIRS=audio window graphics manager
 
 
 DuEngine.o: $(ENGINE_OBJ)
-	ld -E -r $^ -o $@
+	$(LINKER) -E -r $^ -o $@
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp
+<<<<<<< HEAD
 	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC -Wno-pointer-arith
+=======
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-pointer-arith
+objects/audio/vorbis_ogg.o:audio/vorbis_ogg.cpp audio/vorbis_ogg.hpp
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-format
+>>>>>>> WIP dont send
 
 objects/%.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC

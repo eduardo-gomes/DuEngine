@@ -1,6 +1,8 @@
 #include "glmath.hpp"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
 
-#include <cmath>
 mat4f mat4f::operator*(const mat4f& right) {
 	mat4f ret, &left = *this;
 

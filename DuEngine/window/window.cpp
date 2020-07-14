@@ -298,6 +298,10 @@ void PrintAllErrors(const char *fun, const char *file, int line) {
 		char errstr[256];
 		snprintf(errstr, sizeof(errstr), "[GL Error]: 0x%0X from: %s on file: %s on line %d\n", error, fun, file, line);
 		logger::erro(errstr);
+		#ifdef _WIN32
+		DebugBreak();
+		#else
 		raise(SIGTRAP);
+		#endif
 	}
 }

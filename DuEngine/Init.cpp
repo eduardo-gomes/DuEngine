@@ -5,6 +5,7 @@
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
 Renderer *renderer;
+void (*Setup)();
 //called when window is created
 void window::Inicializa() {
 	scene::StartImGui();
