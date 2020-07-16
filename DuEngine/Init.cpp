@@ -7,7 +7,9 @@
 Renderer *renderer;
 //called when window is created
 void window::Inicializa() {
+	logger::info("StartImGui");
 	scene::StartImGui();
+	logger::info("StartedImGui");
 	renderer = new Renderer;
 }
 //update with delta in nanoseconds

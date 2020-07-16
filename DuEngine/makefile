@@ -26,10 +26,10 @@ DuEngine.o: $(ENGINE_OBJ)
 
 
 objects/audio/audio.o: audio/audio.cpp audio/audio.hpp audio/vorbis_ogg.hpp audio/vorbis_ogg.cpp
-	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC -Wno-pointer-arith
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC -Wno-pointer-arith
 
 objects/%.o: %.cpp
-	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(DBG) $(OPTIMIZATION) -fPIC
+	$(CXX) $< -c -o $@ $(CXXFLAGS) $(INCLUDE_F) $(OPTIMIZATION) $(DBG) -fPIC
 
 
 .PHONY: clear Prepare all build

@@ -46,4 +46,4 @@ TEST_OBJ=$(patsubst %.cpp, %.o, $(TEST_SRC))
 	
 test: build $(TEST_OBJ)
 test/%.o: test/%.cpp
-	$(CXX) -o $@ $< $(CXXFLAGS) $(DBG) $(INCLUDE_F) -L. -lglad -lDuEngine -limgui -Wl,-rpath=DuEngine -Wl,-rpath=. $(LIBS) $(OPTIMIZATION)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(OPTIMIZATION) $(DBG) $(INCLUDE_F) -L. -lglad -lDuEngine -limgui -Wl,-rpath=DuEngine -Wl,-rpath=. $(LIBS)

@@ -10,7 +10,8 @@ namespace logger {
 enum type { EXCP,
 			ERRO,
 			WARN,
-			INFO };
+			INFO,
+			DEBUG };
 void logger(const std::string& msg, int type) {
 	std::string log;
 	std::time_t t = std::time(nullptr);
@@ -32,6 +33,9 @@ void logger(const std::string& msg, int type) {
 		case INFO:
 			log += "Info: ";
 			break;
+		case DEBUG:
+			log += "DEBUG: ";
+			break;
 		default:
 			log += "Log: ";
 			break;
@@ -40,6 +44,9 @@ void logger(const std::string& msg, int type) {
 
 	Man::log::write(log);
 	std::cout << log << std::endl;
+}
+void dbug(const std::string& msg) {
+	logger(msg, DEBUG);
 }
 void info(const std::string& msg) {
 	logger(msg, INFO);
