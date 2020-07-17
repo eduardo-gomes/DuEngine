@@ -6,6 +6,7 @@
 namespace audio {
 std::unique_ptr<audio> audioOut;
 audio::audio() {
+	LOGDEBUG("AUDIO Constructor");
 	if (LoadVorbis() < 0) {
 		throw std::runtime_error("Falied LoadVorbis");
 	}

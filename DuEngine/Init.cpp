@@ -7,9 +7,7 @@
 Renderer *renderer;
 //called when window is created
 void window::Inicializa() {
-	logger::info("StartImGui");
 	scene::StartImGui();
-	logger::info("StartedImGui");
 	renderer = new Renderer;
 }
 //update with delta in nanoseconds
@@ -32,12 +30,16 @@ void window::render() {	 //called by MainLoop
 bool Start(const std::string &WindowName, int AUDIO) {
 	Man::Manager::Insatance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
+	LOGPTDEBUG();
 	if (window::init_window(WindowName.c_str())) {
 		if (AUDIO) audio::audioOut = std::make_unique<audio::audio>();
+		LOGDEBUG("CALL Setup");
 		Setup();
+		LOGDEBUG("ENTERING window::MainLoop");
 		window::MainLoop();
 	} else
-		return 0;
+		logger::erro("Falied to init window");
+	Man::log::close();
 	return 1;
 }
 void CleanUp() {  //MainLoop CallBack
@@ -47,7 +49,6 @@ void CleanUp() {  //MainLoop CallBack
 	window::close_window();
 	audio::audioOut.reset();
 	Man::Manager::Insatance.reset();
-	Man::log::close();
 }
 void Stop() {
 	window::quit = true;

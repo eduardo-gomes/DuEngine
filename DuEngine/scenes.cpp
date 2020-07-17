@@ -1,14 +1,17 @@
 #include "scenes.hpp"
+#include "manager/logger.hpp"
 
 namespace scene {
 ImGuiIO* io;
 void StartImGui() {
+	LOGDEBUG("Start ImGui");
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 	ImGui_ImplSDL2_InitForOpenGL(window::window, window::glcontext);
 	ImGui_ImplOpenGL3_Init("#version 330");
 }
 void StopImGui() {
+	LOGDEBUG("Stop ImGui");
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();

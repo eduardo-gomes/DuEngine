@@ -74,12 +74,13 @@ Man::log::log() {
 	std::tm time = *std::localtime(&t);
 	filename += std::to_string(time.tm_year + 1900) + "-" + std::to_string(time.tm_mon + 1) + "-" + std::to_string(time.tm_mday) + "-" + std::to_string(time.tm_hour) + "-" + std::to_string(time.tm_min) + "-" + std::to_string(time.tm_sec) + ".txt";
 	logFile.open(filename, (std::fstream::out | std::fstream::app));
-	printf("Start Log\n");
+	printf("Opened Log\n");
 }
 Man::log *Man::log::logger = nullptr;
 Man::log::~log() {
+	logger::info("Closing Log");
 	logFile.close();
-	printf("End Log\n");
+	//printf("Closed Log\n");
 }
 inline int Man::log::writeToFile(const std::string &toWrite) {
 	logFile << toWrite << std::endl;

@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "manager/logger.hpp"
 
 #include <imgui.h>
 
@@ -103,6 +104,7 @@ void GenRotateQuads(vertex* ret, const vec3f& position, const vec4f& color, cons
 	return;
 }
 Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("DuEngine/basic.glsl") {
+	LOGDEBUG("Renderer Constructor");
 	VertexBufferLayout VBL;
 	VBL.Push(GL_FLOAT, 3, offsetof(vertex, position));
 	VBL.Push(GL_FLOAT, 4, offsetof(vertex, color));
@@ -118,6 +120,7 @@ Renderer::Renderer() : VA(), VB(sizeof(vertex) * VB_MAX), IB(IB_MAX), shader("Du
 	Texture::GetMaxTextureSize();
 }
 Renderer::~Renderer() {
+	LOGDEBUG("Renderer Destructor");
 	delete QBuffer;
 	delete Stats;
 }

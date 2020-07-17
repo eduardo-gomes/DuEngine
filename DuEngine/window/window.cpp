@@ -276,8 +276,10 @@ void MainLoop() {
 		tp = std::chrono::high_resolution_clock::now();
 		Drawn();
 	}
+	LOGDEBUG("CleanUp");
 	CleanUp();
 	close_window();
+	LOGDEBUG("EXITING MainLoop");
 }
 
 }  // namespace window

@@ -1,6 +1,13 @@
+#ifndef DUENG_RELEASE
+#define LOGDEBUG(X) logger::dbug(X)
+#define LOGPTDEBUG() LOGDEBUG(std::string(__PRETTY_FUNCTION__) + std::string(" at " __FILE__ ":") + std::to_string(__LINE__))
+#else
+#endif
+
+
 #ifndef DUENG_DLL_MACROS
 #define DUENG_DLL_MACROS
-#if defined _WIN32
+#ifdef _WIN32
 	#define DUENG_DLL_IMPORT __declspec(dllimport)
 	#define DUENG_DLL_EXPORT __declspec(dllexport)
 	#define DUENG_DLL_LOCAL
