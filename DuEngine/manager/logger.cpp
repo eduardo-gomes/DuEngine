@@ -18,10 +18,13 @@ void logger(const std::string& msg, int type) {
 	std::tm time = *std::localtime(&t);
 	char timestr[80];
 	const char* COLOR_STR[4] = {"\x1b[0m", "\x1b[33m", "\x1b[31m", "\x1b[36m"};
-	enum COLOR_INDEX{DEFAULT, RED, YELLOW, CYAN};
+	enum COLOR_INDEX { DEFAULT,
+					   RED,
+					   YELLOW,
+					   CYAN };
 	int color;
 
-	std::strftime(timestr, 80, "[%Y-%m-%d %H:%M:%S %Z] ", &time);
+	std::strftime(timestr, 80, "[%Y-%m-%d %H:%M:%S %z] ", &time);
 	log += timestr;
 	switch (type) {
 		case EXCP:

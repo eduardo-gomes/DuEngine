@@ -53,7 +53,7 @@ const std::shared_ptr<audio::WAVE> &Man::Manager::LoadOGG(std::string filePath) 
 	if (find != waves.end()) {
 		return find->second;
 	} else {
-		std::ifstream file(filePath);
+		std::ifstream file(filePath, std::ios_base::binary);
 		if (!file.good()) throw std::runtime_error("Cant open file: " + filePath);
 		auto read = std::make_unique<audio::ogg_read>(std::move(file));
 		auto from = read->getSpec(), to = audio::audioOut->getSpec();

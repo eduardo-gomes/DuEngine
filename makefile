@@ -35,21 +35,21 @@ DuEngine/DuEngine.o:
 	$(MAKE) -C DuEngine build 
 libDuEngine.so: DuEngine/DuEngine.o
 	$(CXX) -o $@ -shared $< $(DUENGLIBS)
-libDuEngine.dll: DuEngine/DuEngine.o libglad.dll libimgui.dll
-	$(CXX) -o $@ -shared $< $(DUENGLIBSW32) -Wl,--output-def,DuEngine.def,--out-implib,libDuEngine.a -L. -llibglad -llibimgui
+libDuEngine.dll: DuEngine/DuEngine.o libglad.dll libimgui.o
+	$(CXX) -o $@ -shared $< libimgui.o $(DUENGLIBSW32) -Wl,--output-def,libDuEngine.def,--out-implib,libDuEngine.a -L. -llibglad
 
 
 libimgui.so:
 	$(MAKE) -C dependencies/imgui libimgui.so
 	cp dependencies/imgui/libimgui.so $@
-libimgui.dll: libglad.dll
-	$(MAKE) -C dependencies/imgui libimgui.dll
-	cp dependencies/imgui/libimgui.dll $@
+libimgui.o:
+	$(MAKE) -C dependencies/imgui libimgui.o
+	cp dependencies/imgui/libimgui.o $@
 
 libglad.so:
 	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC -fvisibility=default
 libglad.dll:
-	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -shared -fPIC -fvisibility=default
+	$(CXX) dependencies/include/glad.c -c  -O3 -o $@ $(INCLUDE_F) -shared -fPIC -fvisibility=default -DGLAD_GLAPI_EXPORT -DGLAD_GLAPI_EXPORT_BUILD -Wl,--output-def,libDuEngine.def,--out-implib,libDuEngine.a
 
 TEST_SRC=$(wildcard test/*.cpp)
 TEST_OBJ=$(patsubst %.cpp, %.o, $(TEST_SRC))

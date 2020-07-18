@@ -24,7 +24,7 @@ ogg_read::ogg_read(std::ifstream&& SrcFile) : sourceFile(std::move(SrcFile)) {
 		fprintf(stderr, "Input does not appear to be an Ogg bitstream.\n");
 	info = ov_info(&file, -1);
 	auto ret = ov_pcm_total(&file, -1);
-	if (ret < 0) throw std::runtime_error("ov_pcm_total < 0");
+	if (ret == OV_EINVAL) throw std::runtime_error("ov_pcm_total = OV_EINVAL");
 	samples = static_cast<uint64_t>(ret);
 }
 void ogg_read::disp_info() {
@@ -92,16 +92,17 @@ void DUENGINT* DLLOPEN(const char* filename) {
 	void* handler = LoadLibraryA(filename);
 	if (!handler) {
 		DWORD error = GetLastError();
-		logger::erro("Can't open libvorbisfile.so" + std::to_string(error));
-		throw std::runtime_error("Can't load function : " + std::to_string(error));
+		logger::erro("Can't open " + std::string(filename) + " " + std::to_string(error));
+		throw std::runtime_error("Can't open library : " + std::to_string(error));
 	}
 	return handler;
 }
 void DUENGINT* DLLLOADFUNC(void* handler, const char* name) {
 	DWORD error;
 	void* func = (void*)GetProcAddress((HMODULE)handler, name);
-	if ((error = GetLastError()) != 0) {
-		logger::erro("Can't resolve symbol libvorbisfile.so" + std::to_string(error));
+	if (!func) {
+		error = GetLastError();
+		logger::erro("Can't resolve symbol " + std::string(name) + " " + std::to_string(error));
 		throw std::runtime_error("Can't load function : " + std::to_string(error));
 	}
 	return func;
@@ -113,16 +114,16 @@ void DUENGINT DLLCLOSE(void*& handler) {
 }
 
 #else
-void DUENGINT* DLLOPEN(const char * filename){
+void DUENGINT* DLLOPEN(const char* filename) {
 	void* handler = dlopen(filename, RTLD_LAZY);
 	if (!handler) {
 		char* error = dlerror();
-		logger::erro("Can't open libvorbisfile.so" + std::string(error));
-		throw std::runtime_error("Can't load function : " + std::string(error));
+		logger::erro("Can't open " + std::string(filename) + " " + std::string(error));
+		throw std::runtime_error("Can't open library : " + std::string(error));
 	}
 	return handler;
 }
-void DUENGINT* DLLLOADFUNC(void* handler, const char * name){
+void DUENGINT* DLLLOADFUNC(void* handler, const char* name) {
 	char* error;
 	void* func = dlsym(handler, name);
 	if ((error = dlerror()) != NULL) {
@@ -131,24 +132,23 @@ void DUENGINT* DLLLOADFUNC(void* handler, const char * name){
 	}
 	return func;
 }
-void DUENGINT DLLCLOSE(void*& handler){
-	if(handler)
+void DUENGINT DLLCLOSE(void*& handler) {
+	if (handler)
 		dlclose(handler);
 	handler = nullptr;
 }
 #endif
 int LoadVorbis() {
 	//libvorbis is loaded by SDL
-	try{
-		handler = DLLOPEN("vorbisfile.dll");
+	try {
+		handler = DLLOPEN("libvorbisfile-3.dll");
 		ov_open_callbacks = reinterpret_cast<int (*)(void*, OggVorbis_File*, const char*, long, ov_callbacks)>(DLLLOADFUNC(handler, "ov_open_callbacks"));
 		ov_info = reinterpret_cast<vorbis_info(*(*)(OggVorbis_File*, int))>(DLLLOADFUNC(handler, "ov_info"));
 		ov_pcm_total = reinterpret_cast<ogg_int64_t (*)(OggVorbis_File*, int)>(DLLLOADFUNC(handler, "ov_pcm_total"));
 		ov_comment = reinterpret_cast<vorbis_comment* (*)(OggVorbis_File*, int)>(DLLLOADFUNC(handler, "ov_comment"));
 		ov_read = reinterpret_cast<long (*)(OggVorbis_File*, char*, int, int, int, int, int*)>(DLLLOADFUNC(handler, "ov_read"));
 		ov_clear = reinterpret_cast<int (*)(OggVorbis_File * vf)>(DLLLOADFUNC(handler, "ov_clear"));
-	}
-	catch(const std::runtime_error& e){
+	} catch (const std::runtime_error& e) {
 		logger::excp(e.what());
 		return -1;
 	}
