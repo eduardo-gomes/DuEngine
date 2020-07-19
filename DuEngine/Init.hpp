@@ -10,4 +10,4 @@ bool DUENGEXT Start(const std::string &WindowName, int AUDIO = 0);
 void DUENGEXT Stop();
 
 //External init callback run after window creation and before enter mainloop
-extern DUENGEXT void (*Setup)();
+void DUENGEXT SetSetup(void (*Setup)());

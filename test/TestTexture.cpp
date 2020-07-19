@@ -1,17 +1,17 @@
+#include <DuEngine/DuEngine.hpp>
 #include <chrono>
 #include <future>
-
-#include <DuEngine/DuEngine.hpp>
 
 namespace scene {
 class TextureTest : public BaseScene {
    private:
 	Texture* tex;
+
    public:
-	TextureTest(){
+	TextureTest() {
 		tex = new Texture("test/textures/bloco.bmp");
 	}
-	~TextureTest(){
+	~TextureTest() {
 		delete tex;
 	}
 
@@ -20,10 +20,10 @@ class TextureTest : public BaseScene {
 	void RenderGUI(){};
 };
 
-void TextureTest::Render(){
+void TextureTest::Render() {
 	static float x = 0.0;
 	x += 0.01f;
-	if(x >= 0.9) x = -x;
+	if (x >= 0.9) x = -x;
 	{
 		vec3f position{x, 0.0f, 0.0f};
 		vec4f color{0.0f, 0.35f, 1.0f, 1.0f};
@@ -41,11 +41,8 @@ void TextureTest::Render(){
 
 }  // namespace scene
 
-int main(){
+int main() {
 	//audio::musicReserve(1);
+	SetSetup([]() { new scene::TextureTest; });
 	Start("DuTest");
-}
-
-void Setup(){
-	new scene::TextureTest;
 }

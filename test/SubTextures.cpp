@@ -1,5 +1,5 @@
-#include <cstdint>
 #include <DuEngine/DuEngine.hpp>
+#include <cstdint>
 
 namespace scene {
 class SubTextures : public BaseScene {
@@ -25,7 +25,7 @@ class SubTextures : public BaseScene {
 		renderer->DispInfo();
 	};
 };
-void SubTextures::Update(int64_t delta){
+void SubTextures::Update(int64_t delta) {
 	static float x = 0.0f, y = 0.0f, z = 2.95f;
 		if (keyboard::w) y += 0.2f * (delta / 10e6);
 		if (keyboard::s) y -= 0.2f * (delta / 10e6);
@@ -45,7 +45,7 @@ void SubTextures::Render() {
 	renderer->DrawnQuadRotate(position, color, size, (frame % 360), *subtex[frame % 256]);
 	for (int x = 0; x < 16; ++x)
 		for (int y = 0; y < 16; ++y) {
-			vec3f position{(float)x, (float)y , 0.0f};
+			vec3f position{(float)x, (float)y, 0.0f};
 			vec4f color{1.0f, 1.0f, 1.0f, 1.0f};
 			vec2f size{0.75f, 0.75f};
 			renderer->DrawnQuad(position, color, size, *subtex[x + y * 16]);
@@ -58,9 +58,6 @@ void SubTextures::Render() {
 #include <iostream>
 int main() {
 	//audio::musicReserve(1);
+	SetSetup([]() { new scene::SubTextures; });
 	Start("DuTest");
-}
-
-void Setup() {
-	new scene::SubTextures;
 }

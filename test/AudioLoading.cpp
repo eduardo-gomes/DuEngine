@@ -9,6 +9,7 @@ class AudioLoading : public BaseScene {
 	std::shared_ptr<audio::WAVE> sound;
 	AudioLoading() {
 		sound = Man::Manager::Insatance->LoadOGG("test/effect.ogg");
+		printf("See music.txt for copyright info\n");
 	}
 	~AudioLoading() {
 	}
@@ -27,8 +28,9 @@ void AudioLoading::Render() {
 }
 
 }  // namespace scene
-
+void Setup();
 int main() {
+	SetSetup(Setup);
 	Start("DuTest", 1);
 }
 

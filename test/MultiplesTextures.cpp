@@ -1,5 +1,5 @@
-#include <cstdint>
 #include <DuEngine/DuEngine.hpp>
+#include <cstdint>
 
 namespace scene {
 class MultiplesTextures : public BaseScene {
@@ -40,9 +40,6 @@ void MultiplesTextures::Render() {
 #include <iostream>
 int main() {
 	//audio::musicReserve(1);
+	SetSetup([]() { new scene::MultiplesTextures; });
 	Start("DuTest");
-}
-
-void Setup() {
-	new scene::MultiplesTextures;
 }

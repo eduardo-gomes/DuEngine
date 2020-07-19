@@ -5,7 +5,11 @@
 #include "scenes.hpp"
 //void OnWindowResize(double fovy, double aspect){} //constant fov
 Renderer *renderer;
-void (*Setup)();
+void (*Setup)() = nullptr;
+void SetSetup(void (*SetupFunc)()){
+	Setup = SetupFunc;
+}
+
 //called when window is created
 void window::Inicializa() {
 	scene::StartImGui();
@@ -29,6 +33,7 @@ void window::render() {	 //called by MainLoop
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 bool Start(const std::string &WindowName, int AUDIO) {
+	if(!Setup) throw std::runtime_error("Setup not defined. Define using SetSetup(void (*)())");
 	Man::Manager::Insatance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
 	LOGDEBUG("DuEngine Version: " DUENG_VERSION);
