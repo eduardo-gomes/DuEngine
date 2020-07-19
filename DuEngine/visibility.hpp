@@ -1,7 +1,15 @@
 #ifndef DUENG_RELEASE
-#define LOGDEBUG(X) logger::dbug(X)
-#define LOGPTDEBUG() LOGDEBUG(std::string(__PRETTY_FUNCTION__) + std::string(" at " __FILE__ ":") + std::to_string(__LINE__))
-#else
+	#define LOGDEBUG(X) logger::dbug(X)
+	#define LOGPTDEBUG() LOGDEBUG(std::string(__PRETTY_FUNCTION__) + std::string(" at " __FILE__ ":") + std::to_string(__LINE__))
+	#else
+#endif
+
+#ifndef PRTUINT64
+	#ifdef _WIN32
+		#define PRTUINT64 "%I64u"
+	#else
+		#define PRTUINT64 "%lu"
+	#endif
 #endif
 
 

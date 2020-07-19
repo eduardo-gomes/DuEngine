@@ -7,9 +7,8 @@
 #else
 #include <dlfcn.h>
 #endif
+#include <DuEngine/manager/logger.hpp>
 #include <cstring>
-
-#include "manager/logger.hpp"
 namespace audio {
 DUENGINT int (*ov_open_callbacks)(void* datasource, OggVorbis_File* vf, const char* initial, long ibytes, ov_callbacks callbacks);
 DUENGINT vorbis_info* (*ov_info)(OggVorbis_File* vf, int link);
@@ -88,6 +87,7 @@ long ogg_read::ogg_callbacks::tell(void* dataSource) {
 //load vorbisfile
 void* handler;
 #ifdef _WIN32
+#define LIBVORBISFILEDLL "libvorbisfile-3.dll"
 void DUENGINT* DLLOPEN(const char* filename) {
 	void* handler = LoadLibraryA(filename);
 	if (!handler) {
@@ -114,6 +114,7 @@ void DUENGINT DLLCLOSE(void*& handler) {
 }
 
 #else
+#define LIBVORBISFILEDLL "libvorbisfile.so"
 void DUENGINT* DLLOPEN(const char* filename) {
 	void* handler = dlopen(filename, RTLD_LAZY);
 	if (!handler) {
@@ -127,7 +128,7 @@ void DUENGINT* DLLLOADFUNC(void* handler, const char* name) {
 	char* error;
 	void* func = dlsym(handler, name);
 	if ((error = dlerror()) != NULL) {
-		logger::erro("Can't resolve symbol libvorbisfile.so" + std::string(error));
+		logger::erro("Can't resolve symbol " + std::string(name) + " " + std::string(error));
 		throw std::runtime_error("Can't load function : " + std::string(error));
 	}
 	return func;
@@ -141,7 +142,7 @@ void DUENGINT DLLCLOSE(void*& handler) {
 int LoadVorbis() {
 	//libvorbis is loaded by SDL
 	try {
-		handler = DLLOPEN("libvorbisfile-3.dll");
+		handler = DLLOPEN(LIBVORBISFILEDLL);
 		ov_open_callbacks = reinterpret_cast<int (*)(void*, OggVorbis_File*, const char*, long, ov_callbacks)>(DLLLOADFUNC(handler, "ov_open_callbacks"));
 		ov_info = reinterpret_cast<vorbis_info(*(*)(OggVorbis_File*, int))>(DLLLOADFUNC(handler, "ov_info"));
 		ov_pcm_total = reinterpret_cast<ogg_int64_t (*)(OggVorbis_File*, int)>(DLLLOADFUNC(handler, "ov_pcm_total"));

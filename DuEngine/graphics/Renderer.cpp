@@ -1,8 +1,8 @@
 #include "Renderer.hpp"
-#include "manager/logger.hpp"
 
 #include <imgui.h>
 
+#include <DuEngine/manager/logger.hpp>
 #include <stdexcept>
 
 mat4f Renderer::MVP, Renderer::ProjectionMatrix, Renderer::ViewMatrix, Renderer::ModelMatrix;
@@ -125,13 +125,13 @@ Renderer::~Renderer() {
 	delete Stats;
 }
 void Renderer::flush() {
-	VA.Bind();//contains VBL
+	VA.Bind();	//contains VBL
 	VB.SendData(0, QBuffer->vertexies * sizeof(vertex), QBuffer->firstVertex);
 	IB.SendData(0, QBuffer->indexies, QBuffer->firstIndex);
 	shader.Bind();
 	MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 	shader.SetUniformMat4f("u_MVP", MVP);
-	Textures.Push(shader);	//Set u_Texture uniform
+	Textures.Push(shader);																 //Set u_Texture uniform
 	gltry(glDrawElements(GL_TRIANGLES, (int)QBuffer->indexies, GL_UNSIGNED_INT, NULL));	 //documentation
 	Stats->elementsThisFrame += QBuffer->vertexies;
 	Stats->indicesThisFrame += QBuffer->indexies;
@@ -157,8 +157,8 @@ void Renderer::DispInfo() {
 		ImGui::Text("Indices last drawn %u", Stats->indicesLastFrame);
 		ImGui::Text("Drawn calls last frame %u", Stats->DrawnCallsLast);
 		ImGui::Text("Textures Binded last frame %u", Stats->TexturesBindsLastFrame);
-		ImGui::Text("Vertex Buffer used size %I64u", sizeof(vertex) * Stats->elementsLastFrame);
-		ImGui::Text("Index Buffer used size %I64u", sizeof(unsigned int) * Stats->indicesLastFrame);	//TexturesBindsLastFrame
+		ImGui::Text("Vertex Buffer used size " PRTUINT64, sizeof(vertex) * Stats->elementsLastFrame);
+		ImGui::Text("Index Buffer used size " PRTUINT64, sizeof(unsigned int) * Stats->indicesLastFrame);  //TexturesBindsLastFrame
 		double totalSize = sizeof(vertex) * Stats->elementsLastFrame + sizeof(unsigned int) * Stats->indicesLastFrame;
 		if (totalSize > 1000000)
 			ImGui::Text("Buffer size: %lf MB", totalSize / 1000000);
@@ -316,9 +316,9 @@ unsigned int Renderer::TextureBinder::getMaxTexturesBinded() const {
 	return MaxTexturesBinded;
 }
 
-void Renderer::EnableDepth() const{
+void Renderer::EnableDepth() const {
 	glEnable(GL_DEPTH_TEST);
 }
-void Renderer::DisableDepth() const{
+void Renderer::DisableDepth() const {
 	glDisable(GL_DEPTH_TEST);
 }
