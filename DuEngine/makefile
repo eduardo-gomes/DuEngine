@@ -21,6 +21,9 @@ ENGINE_OBJ=$(patsubst %,$(OBJS_DIR)/%,$(_ENGINE_OBJ))
 
 OBJ_SUB_DIRS=audio window graphics manager
 
+DUENG_VERSION:=$(shell git describe --always --dirty)
+CXXFLAGS+=-DDUENG_VERSION=\"$(DUENG_VERSION)\"
+
 
 DuEngine.o: $(ENGINE_OBJ)
 	$(LINKER) -E -r $^ -o $@

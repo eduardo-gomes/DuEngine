@@ -149,6 +149,8 @@ void Renderer::DispInfo() {
 		SDL_GL_SetSwapInterval(vsync);
 	ImGui::Checkbox("elementsInfo", &drawnDetail);
 	ImGui::Text("Quads last drawn %u", Stats->elementsLastFrame / 4);
+	ImGui::Text("DuEngine Version: " DUENG_VERSION);
+	ImGui::Text("Dear ImGui Version: " IMGUI_VERSION);
 	ImGui::End();
 	if (drawnDetail) {
 		ImGui::Begin("Elements Drawn Info", &drawnDetail);

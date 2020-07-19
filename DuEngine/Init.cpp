@@ -31,6 +31,8 @@ void window::render() {	 //called by MainLoop
 bool Start(const std::string &WindowName, int AUDIO) {
 	Man::Manager::Insatance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
+	LOGDEBUG("DuEngine Version: " DUENG_VERSION);
+	LOGDEBUG("Dear ImGui Version: " IMGUI_VERSION);
 	LOGPTDEBUG();
 	if (window::init_window(WindowName.c_str())) {
 		if (AUDIO) audio::audioOut = std::make_unique<audio::audio>();

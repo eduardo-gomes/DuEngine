@@ -1,6 +1,6 @@
 #include "audio.hpp"
 
-#include "manager/logger.hpp"
+#include <DuEngine/manager/logger.hpp>
 //#include "vorbis_ogg.cpp"
 
 namespace audio {
@@ -46,6 +46,7 @@ audio::audio() {
 }
 audio::~audio() {
 	SDL_CloseAudioDevice(dev);
+	SDL_AudioQuit();
 	logger::info("Closed Audio Device");
 	CloseVorbis();
 }

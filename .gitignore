@@ -40,3 +40,9 @@ dependencies
 *.xcf
 *.bmp
 *.wav
+
+
+/basic.glsl
+/DuEngine/basic.glsl
+*.def
+log*.txt

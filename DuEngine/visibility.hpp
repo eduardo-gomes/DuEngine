@@ -12,6 +12,9 @@
 	#endif
 #endif
 
+#ifndef DUENG_VERSION
+	#define DUENG_VERSION "UNDEFINED"
+#endif
 
 #ifndef DUENG_DLL_MACROS
 #define DUENG_DLL_MACROS
