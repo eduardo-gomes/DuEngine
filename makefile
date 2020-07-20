@@ -2,6 +2,7 @@ export CXX?=g++ #x86_64-w64-mingw32-g++-posix
 export LINKER?=ld #x86_64-w64-mingw32-ld
 export CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Werror -fvisibility=hidden -DDUENG_DLL -DDUENG_DLL_BUILD -Wno-pedantic-ms-format
 export LIBS=-lSDL2 -lGL -lm -ldl -lpthread
+export LIBSW64?=-lSDL2 -lopengl32 -lm -lpthread
 export DBG?=-g
 export OPTIMIZATION?=-O3 -march=native -mfpmath=sse
 
@@ -24,7 +25,7 @@ buildwin: $(LIBS_OBJW64) copyshader
 .PHONY: clear Prepare clearAll test build buildwin copyshader libimgui.o DuEngine/DuEngine.o
 clear:
 	$(MAKE) -C DuEngine clear
-	rm -f basic.glsl DuEngine/basic.glsl $(LIBS_OBJ) $(LIBS_OBJW64)
+	rm -f basic.glsl DuEngine/basic.glsl $(LIBS_OBJ) $(LIBS_OBJW64) $(TEST_OBJ) $(TEST_EXE)
 clearAll: clear
 	$(MAKE) -C dependencies/imgui clear
 Prepare:
@@ -36,9 +37,8 @@ DuEngine/DuEngine.o:
 	$(MAKE) -C DuEngine build 
 libDuEngine.so: DuEngine/DuEngine.o libimgui.o libglad.o
 	$(CXX) -o $@ -shared $^ $(DUENGLIBS)
-libDuEngine.dll: DuEngine/DuEngine.o libglad.o libimgui.o
-	$(CXX) -o $@ -shared $^ $(DUENGLIBSW32) -Wl,--output-def,libDuEngine.def
-
+libDuEngine.dll: DuEngine/DuEngine.o libimgui.o libglad.o
+	$(CXX) -o $@ -shared $^ $(DUENGLIBSW32) -Wl,--output-def,libDuEngine.def -v
 
 libimgui.o:
 	$(MAKE) -C dependencies/imgui libimgui.o
@@ -51,7 +51,11 @@ libglad.o:
 
 TEST_SRC=$(wildcard test/*.cpp)
 TEST_OBJ=$(patsubst %.cpp, %.o, $(TEST_SRC))
+TEST_EXE=$(patsubst %.cpp, %.exe, $(TEST_SRC))
 	
 test: build $(TEST_OBJ)
+testwin: buildwin $(TEST_EXE)
 test/%.o: test/%.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(OPTIMIZATION) $(DBG) $(INCLUDE_F) -L. -lDuEngine -Wl,-rpath=DuEngine -Wl,-rpath=. $(LIBS)
+test/%.exe: test/%.cpp
+	$(CXX) -o $@ $< $(CXXFLAGS) $(OPTIMIZATION) $(DBG) $(INCLUDE_F) -L. -llibDuEngine -Wl,-rpath=DuEngine -Wl,-rpath=. $(LIBSW64)

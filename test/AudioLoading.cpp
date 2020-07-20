@@ -32,6 +32,7 @@ void Setup();
 int main() {
 	SetSetup(Setup);
 	Start("DuTest", 1);
+	return 0;
 }
 
 void LoadAudio() {
@@ -44,3 +45,12 @@ void Setup() {
 	LoadAudio();
 	new scene::AudioLoading;
 }
+#ifdef _WIN32
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+	(void)hInstance;
+	(void)hPrevInstance;
+	(void)lpCmdLine;
+	(void)nShowCmd;
+	return main();
+}
+#endif

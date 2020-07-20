@@ -42,4 +42,14 @@ int main() {
 	//audio::musicReserve(1);
 	SetSetup([]() { new scene::MultiplesTextures; });
 	Start("DuTest");
+	return 0;
 }
+#ifdef _WIN32
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+	(void)hInstance;
+	(void)hPrevInstance;
+	(void)lpCmdLine;
+	(void)nShowCmd;
+	return main();
+}
+#endif
