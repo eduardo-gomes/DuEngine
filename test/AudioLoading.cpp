@@ -8,7 +8,7 @@ class AudioLoading : public BaseScene {
    public:
 	std::shared_ptr<audio::WAVE> sound;
 	AudioLoading() {
-		sound = Man::Manager::Insatance->LoadOGG("test/effect.ogg");
+		sound = Man::Manager::Instance->LoadOGG("test/effect.ogg");
 		printf("See music.txt for copyright info\n");
 	}
 	~AudioLoading() {
@@ -36,7 +36,7 @@ int main() {
 }
 
 void LoadAudio() {
-	auto &korobe = Man::Manager::Insatance->LoadOGG("test/music.ogg");
+	auto &korobe = Man::Manager::Instance->LoadOGG("test/music.ogg");
 	auto &music = audio::audioOut->EnqueueMusic(korobe);
 	(void)music;
 }

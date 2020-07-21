@@ -2,17 +2,22 @@
 
 #include <chrono>
 
-#include "graphics/GLClasses.hpp"
+#include <DuEngine/graphics/GLClasses.hpp>
 namespace Man {
-std::unique_ptr<Manager> Man::Manager::Insatance;
+std::unique_ptr<Manager> Man::Manager::Instance;
 }
 Man::Manager::Manager() : OggLoaderContinue(1) {
 }
 Man::Manager::~Manager() {
+	CloseOggLoaderThread();
+}
+inline void Man::Manager::CloseOggLoaderThread() {
 	OggLoaderContinue = false;
-	logger::info("Waiting OggLoader Thread to finish");
-	if (OggLoaderThread.joinable()) OggLoaderThread.join();
-	logger::info("OggLoader Thread to finished");
+	if (OggLoaderThread.joinable()) {
+		OggLoaderThread.join();
+		logger::info("OggLoader Thread finished");
+	}
+	loadingOgg.clear();
 }
 inline void Man::Manager::SpawnOggLoaderThread() {
 	OggLoaderContinue = true;
@@ -20,11 +25,15 @@ inline void Man::Manager::SpawnOggLoaderThread() {
 		OggLoaderThread = std::thread(&Manager::OggLoader, this);
 }
 void Man::Manager::OggLoader() {
+	int EmptyTries = 0;
 	while (OggLoaderContinue) {
 		if (!loadingOgg.size()) {
+			if (EmptyTries > (15 * 1000 / 250)) break;	//Exit thread after 15s without new ogg;
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
+			EmptyTries++;
 			continue;
 		}
+		EmptyTries = 0;
 		std::lock_guard<std::mutex> lg(list);
 		for (auto it = loadingOgg.begin(); it != loadingOgg.end(); ++it) {
 			audio::ogg_read &read = *it->second;

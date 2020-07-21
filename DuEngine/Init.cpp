@@ -6,7 +6,7 @@
 //void OnWindowResize(double fovy, double aspect){} //constant fov
 Renderer *renderer;
 void (*Setup)() = nullptr;
-DUENGEXT void SetSetup(void (*SetupFunc)()){
+DUENGEXT void SetSetup(void (*SetupFunc)()) {
 	Setup = SetupFunc;
 }
 
@@ -33,8 +33,8 @@ void window::render() {	 //called by MainLoop
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 DUENGEXT bool Start(const std::string &WindowName, int AUDIO) {
-	if(!Setup) throw std::runtime_error("Setup not defined. Define using SetSetup(void (*)())");
-	Man::Manager::Insatance = std::make_unique<Man::Manager>();
+	if (!Setup) throw std::runtime_error("Setup not defined. Define using SetSetup(void (*)())");
+	Man::Manager::Instance = std::make_unique<Man::Manager>();
 	window::OpenglDebugOutput = false;
 	LOGDEBUG("DuEngine Version: " DUENG_VERSION);
 	LOGDEBUG("Dear ImGui Version: " IMGUI_VERSION);
@@ -56,7 +56,7 @@ void CleanUp() {  //MainLoop CallBack
 	delete renderer;
 	window::close_window();
 	audio::audioOut.reset();
-	Man::Manager::Insatance.reset();
+	Man::Manager::Instance.reset();
 }
 void Stop() {
 	window::quit = true;
