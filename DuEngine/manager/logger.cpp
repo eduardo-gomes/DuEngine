@@ -11,17 +11,19 @@ enum type { EXCP,
 			ERRO,
 			WARN,
 			INFO,
+			USER,
 			DEBUG };
 void logger(const std::string& msg, int type) {
 	std::string log;
 	std::time_t t = std::time(nullptr);
 	std::tm time = *std::localtime(&t);
 	char timestr[80];
-	const char* COLOR_STR[4] = {"\x1b[0m", "\x1b[33m", "\x1b[31m", "\x1b[36m"};
+	const char* COLOR_STR[5] = {"\x1b[0m", "\x1b[33m", "\x1b[31m", "\x1b[36m", "\x1b[1m"};
 	enum COLOR_INDEX { DEFAULT,
 					   RED,
 					   YELLOW,
-					   CYAN };
+					   CYAN,
+					   BOLD };
 	int color;
 
 	std::strftime(timestr, 80, "[%Y-%m-%d %H:%M:%S %z] ", &time);
@@ -43,6 +45,10 @@ void logger(const std::string& msg, int type) {
 			log += "Info: ";
 			color = DEFAULT;
 			break;
+		case USER:
+			log += "User: ";
+			color = BOLD;
+			break;
 		case DEBUG:
 			log += "DEBUG: ";
 			color = CYAN;
@@ -58,6 +64,9 @@ void logger(const std::string& msg, int type) {
 }
 void dbug(const std::string& msg) {
 	logger(msg, DEBUG);
+}
+void user(const std::string& msg) {
+	logger(msg, USER);
 }
 void info(const std::string& msg) {
 	logger(msg, INFO);
