@@ -151,7 +151,7 @@ int LoadVorbis() {
 		ov_clear = reinterpret_cast<int (*)(OggVorbis_File * vf)>(DLLLOADFUNC(handler, "ov_clear"));
 	} catch (const std::runtime_error& e) {
 		logger::excp(e.what());
-		return -1;
+		throw;
 	}
 	logger::info("Loaded libvorbisfile");
 	return 0;

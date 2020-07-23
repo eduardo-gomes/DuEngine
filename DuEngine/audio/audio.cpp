@@ -8,8 +8,10 @@ namespace audio {
 std::unique_ptr<audio> audioOut;
 audio::audio() {
 	LOGDEBUG("AUDIO Constructor");
-	if (LoadVorbis() < 0) {
-		throw std::runtime_error("Falied LoadVorbis");
+	try{
+		LoadVorbis();
+	} catch (const std::runtime_error& e) {
+		std::throw_with_nested(std::runtime_error("Falied LoadVorbis"));
 	}
 	SDL_AudioSpec want;
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
