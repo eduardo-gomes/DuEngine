@@ -4,7 +4,7 @@ export CXXFLAGS=-std=c++17 -pedantic-errors -Wall -Wextra -Wsign-conversion -Wer
 export LIBS=-lSDL2 -lGL -lm -ldl -lpthread
 export LIBSW64?=-lSDL2 -lopengl32 -lm -lpthread
 export DBG?=-g
-export OPTIMIZATION?=-O3 -march=native -mfpmath=sse
+export OPTIMIZATION?=-O3 -march=native -mfpmath=sse -flto
 
 DUENGLIBS=-lSDL2 -lGL -lm -ldl -lpthread
 DUENGLIBSW32=-lSDL2 -lm -lopengl32 -lpthread

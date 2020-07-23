@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install sdl2 and vorbis
+      run: sudo apt install -y libsdl2-dev libvorbis-dev
+    - name: pull submodules
+      run: git submodule set-url dependencies/imgui https://github.com/eduardo-gomes/imgui.git && git submodule update --init --recursive
+    - name: make libDuEngine
+      run: make libDuEngine.so
+    - name: make test
+      run: make test
