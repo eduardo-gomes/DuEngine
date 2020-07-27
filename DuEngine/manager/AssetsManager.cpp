@@ -78,11 +78,11 @@ const std::shared_ptr<audio::WAVE> &Man::Manager::LoadOGG(std::string filePath) 
 }
 
 Man::log::log() {
-	std::string filename("log-");
 	std::time_t t = std::time(nullptr);
 	std::tm time = *std::localtime(&t);
-	filename += std::to_string(time.tm_year + 1900) + "-" + std::to_string(time.tm_mon + 1) + "-" + std::to_string(time.tm_mday) + "-" + std::to_string(time.tm_hour) + "-" + std::to_string(time.tm_min) + "-" + std::to_string(time.tm_sec) + ".txt";
-	logFile.open(filename, (std::fstream::out | std::fstream::app));
+	char timestr[80];
+	std::strftime(timestr, 80, "log %Y-%m-%d %H:%M:%S %z.txt", &time);
+	logFile.open(timestr, (std::fstream::out | std::fstream::app));
 	printf("Opened Log\n");
 }
 Man::log *Man::log::logger = nullptr;

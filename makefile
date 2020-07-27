@@ -40,9 +40,9 @@ libDuEngine.so: DuEngine/DuEngine.o libimgui.o libglad.o
 libDuEngine.dll: DuEngine/DuEngine.o libimgui.o libglad.o
 	$(CXX) -o $@ -shared $^ $(DUENGLIBSW32) -Wl,--output-def,libDuEngine.def -v
 
-libimgui.o:
+libimgui.o: 
 	$(MAKE) -C dependencies/imgui libimgui.o
-	cp dependencies/imgui/libimgui.o $@
+	cp -u dependencies/imgui/libimgui.o $@
 
 libglad.o:
 	$(CXX) dependencies/include/glad.c -c $(CXXFLAGS) -O3 -o $@ $(INCLUDE_F) -fPIC
